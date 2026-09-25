@@ -51,18 +51,34 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-        /* Tarjetas ergonómicas para pantallas 2-DIN de 9 pulgadas */
-        .car-card-9inch {
+
+        /* Tarjeta Cuadrada de Radio con Imagen Completa */
+        .car-radio-square {
+            aspect-ratio: 1 / 1;
+            position: relative;
+            overflow: hidden;
+            background: #090d1a;
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+        }
+        .car-radio-square:active {
+            transform: scale(0.96);
+            border-color: #db2777;
+        }
+
+        /* Tarjetas Horizontales para Álbumes en Vox Music */
+        .car-card-music {
             background: rgba(15, 23, 42, 0.95);
             border: 2px solid rgba(255, 255, 255, 0.12);
             min-height: 94px;
             transition: transform 0.12s ease, border-color 0.12s ease;
         }
-        .car-card-9inch:active {
+        .car-card-music:active {
             transform: scale(0.98);
             background: rgba(30, 41, 59, 1);
             border-color: #db2777;
         }
+
         .car-btn {
             min-height: 48px;
             min-width: 48px;
@@ -87,7 +103,7 @@
         .visualizer-active .bar-7 { animation: soundWave 0.7s infinite 0.2s ease-in-out alternate; }
         .visualizer-active .bar-8 { animation: soundWave 0.55s infinite 0.35s ease-in-out alternate; }
 
-        /* Transición suave para ocultar/mostrar el reproductor */
+        /* Transición suave del reproductor deslizable */
         #bottomPlayer {
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -95,7 +111,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
 
-    <!-- Header Compacto y Accesible -->
+    <!-- Header Compacto -->
     <header class="bg-slate-900 border-b-2 border-slate-800 px-5 py-2.5 flex items-center justify-between shadow-xl flex-shrink-0 z-30">
         <div class="flex items-center space-x-3">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-600/30 flex-shrink-0">
@@ -110,7 +126,7 @@
             </div>
         </div>
 
-        <!-- Ecualizador de Barras en Cabecera (Sincronizado al ritmo en ambas secciones) -->
+        <!-- Ecualizador de Barras en Cabecera -->
         <div id="headerVisualizer" class="flex items-center space-x-2 px-3.5 py-1.5 bg-slate-950/80 rounded-xl border border-slate-800">
             <span class="text-[11px] font-bold text-slate-400 tracking-wider flex items-center gap-1.5 uppercase">
                 <i class="fa-solid fa-music text-pink-500 text-xs"></i>
@@ -128,7 +144,7 @@
             </div>
         </div>
 
-        <!-- Selector de Sección y Acciones Rápidas -->
+        <!-- Selector de Sección -->
         <div class="flex items-center space-x-2">
             <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
                 <button onclick="switchMode('radio')" id="tabRadioBtn" class="car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all bg-pink-600 text-white shadow">
@@ -156,10 +172,10 @@
         </div>
     </header>
 
-    <!-- Área de Contenido Principal (Tarjetas diseñadas para pantalla táctil de 9") -->
+    <!-- Área de Cuadrícula -->
     <main id="mainContainer" class="flex-1 overflow-y-auto p-4 md:p-5 bg-slate-950 pb-20">
         
-        <!-- Banner de Filtro de Favoritos -->
+        <!-- Banner de Favoritos Activo -->
         <div id="favoritesActiveBanner" class="hidden mb-4 p-3.5 rounded-2xl bg-pink-950/40 border border-pink-500/50 items-center justify-between shadow-lg">
             <div class="flex items-center space-x-3">
                 <div class="w-9 h-9 rounded-xl bg-pink-600 flex items-center justify-center text-white text-base">
@@ -176,7 +192,7 @@
             </button>
         </div>
 
-        <!-- Mensajes de Notificación / Reintento -->
+        <!-- Mensajes de Estado -->
         <div id="statusMessage" class="hidden mb-4 p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-sm flex items-center justify-between text-slate-300 shadow-xl">
             <div class="flex items-center space-x-2.5">
                 <i id="statusIcon" class="fa-solid fa-circle-info text-pink-400 text-lg"></i>
@@ -188,15 +204,16 @@
         </div>
 
         <!-- Estado de Carga -->
-        <div id="loadingState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-24"></div>
-            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-24"></div>
-            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-24"></div>
-            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-24"></div>
+        <div id="loadingState" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
+            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
         </div>
 
-        <!-- Cuadrícula de Tarjetas Horizontales para 9" -->
-        <div id="contentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 hidden">
+        <!-- Cuadrícula Dinámica -->
+        <div id="contentGrid" class="hidden">
         </div>
 
         <!-- Estado Vacío -->
@@ -209,7 +226,7 @@
         </div>
     </main>
 
-    <!-- Botón / Pestaña Flotante Discreta (Aparece cuando el reproductor se oculta) -->
+    <!-- Botón / Pestaña Flotante Discreta (Reabre el reproductor si está oculto) -->
     <button id="playerHandleBtn" onclick="wakePlayer(5)" class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur border-2 border-pink-500 text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center space-x-3 z-40 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none active:scale-95">
         <i class="fa-solid fa-compact-disc text-pink-400 text-lg animate-spin" style="animation-duration: 4s;"></i>
         <div class="text-left min-w-0 max-w-[190px]">
@@ -219,11 +236,11 @@
         <i class="fa-solid fa-chevron-up text-pink-400 text-sm ml-1"></i>
     </button>
 
-    <!-- Reproductor Inferior Deslizable (Se oculta automáticamente a los 5 segundos) -->
+    <!-- Reproductor Inferior (Desaparece tras 5 segundos) -->
     <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-slate-900/98 backdrop-blur-md border-t-2 border-pink-600 px-5 py-2.5 z-50 shadow-2xl translate-y-full">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
             
-            <!-- Pista / Emisora Actual -->
+            <!-- Info Actual -->
             <div class="flex items-center space-x-3 min-w-0 flex-1 cursor-pointer" onclick="openCurrentAlbumTracks()">
                 <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 shadow-md">
                     <img id="playerImg" src="https://placehold.co/150x150/1e293b/ec4899?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
@@ -234,7 +251,7 @@
                 </div>
             </div>
 
-            <!-- Controles Táctiles Centrales -->
+            <!-- Controles Centrales -->
             <div class="flex items-center space-x-2 md:space-x-3">
                 <button onclick="playPrevious()" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-lg transition-all shadow active:scale-95" title="Anterior">
                     <i class="fa-solid fa-backward-step"></i>
@@ -254,13 +271,12 @@
                     <i class="fa-regular fa-heart"></i>
                 </button>
 
-                <!-- Botón Minimizar Reproductor Manualmente -->
                 <button onclick="hidePlayer()" class="car-btn w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm transition-all" title="Ocultar barra">
                     <i class="fa-solid fa-chevron-down"></i>
                 </button>
             </div>
 
-            <!-- Volumen (Para pantallas 9" en formato apaisado) -->
+            <!-- Volumen -->
             <div class="hidden md:flex items-center space-x-3 w-44 justify-end">
                 <button onclick="toggleMute()" id="muteBtn" class="car-btn p-1 text-slate-300 hover:text-white">
                     <i id="muteIcon" class="fa-solid fa-volume-high text-xl"></i>
@@ -334,7 +350,6 @@
         const MAX_RECONNECT_ATTEMPTS = 3;
         let statusTimeout = null;
 
-        // Temporizador de auto-ocultamiento (5 segundos)
         let playerHideTimer = null;
         const AUTO_HIDE_SECONDS = 5;
 
@@ -364,17 +379,14 @@
         const headerSubtitle = document.getElementById('headerSubtitle');
         const modeBadge = document.getElementById('modeBadge');
         
-        // Elementos del reproductor deslizable y botón flotante
         const bottomPlayer = document.getElementById('bottomPlayer');
         const playerHandleBtn = document.getElementById('playerHandleBtn');
         const handleTitle = document.getElementById('handleTitle');
         const handleSubtitle = document.getElementById('handleSubtitle');
 
-        // Visualizador en Cabecera
         const visualizerBars = document.getElementById('visualizerBars');
         const headerVisualizerStatus = document.getElementById('headerVisualizerStatus');
 
-        // Modal de Pistas
         const tracksModal = document.getElementById('tracksModal');
         const modalAlbumCover = document.getElementById('modalAlbumCover');
         const modalAlbumTitle = document.getElementById('modalAlbumTitle');
@@ -410,7 +422,6 @@
                 setLoadingState(true);
             });
 
-            // Avance automático a la siguiente canción al terminar el tema en Vox Music
             audio.addEventListener('ended', () => {
                 if (currentMode === 'music' && currentAlbum && currentAlbum.tracks) {
                     if (currentTrackIndex + 1 < currentAlbum.tracks.length) {
@@ -419,18 +430,15 @@
                 }
             });
 
-            // Mantener reproductor visible mientras el usuario interactúa con la barra
             bottomPlayer.addEventListener('pointerdown', () => keepPlayerAlive());
             bottomPlayer.addEventListener('touchstart', () => keepPlayerAlive());
 
             setupMediaSessionHandlers();
         });
 
-        // Control del Auto-Ocultamiento (5 segundos)
         function showPlayerWithTimeout(seconds = AUTO_HIDE_SECONDS) {
             bottomPlayer.classList.remove('translate-y-full');
             
-            // Ocultar la píldora flotante
             playerHandleBtn.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
             playerHandleBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
 
@@ -441,7 +449,6 @@
             bottomPlayer.classList.add('translate-y-full');
             if (playerHideTimer) clearTimeout(playerHideTimer);
 
-            // Si hay algo en reproducción o seleccionado, mostrar la píldora flotante
             if (currentItem) {
                 playerHandleBtn.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
                 playerHandleBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
@@ -577,8 +584,8 @@
         }
 
         function getItemImage(item) {
-            if (!item) return 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
-            return item.logo || item.cover || item.image || 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
+            if (!item) return 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
+            return item.logo || item.cover || item.image || 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
         }
 
         function getFilteredList() {
@@ -593,7 +600,7 @@
             });
         }
 
-        // Renderizado de tarjetas apaisadas ideales para pantallas de 9"
+        // Renderizado Dinámico
         function renderCurrentContent() {
             loadingState.classList.add('hidden');
             renderedGridItems = getFilteredList();
@@ -609,42 +616,90 @@
             contentGrid.classList.remove('hidden');
 
             let html = '';
-            renderedGridItems.forEach((item, index) => {
-                const id = getItemId(item);
-                const name = getItemName(item);
-                const subtitle = getItemSubtitle(item);
-                const image = getItemImage(item);
-                const isFav = favs.includes(id);
-                
-                const isCurrent = currentItem && (
-                    (currentMode === 'radio' && getItemId(currentItem) === id) ||
-                    (currentMode === 'music' && currentAlbum && getItemId(currentAlbum) === id)
-                );
 
-                html += `
-                    <div onclick="handleCardClick(${index})" class="car-card-9inch p-3 rounded-2xl flex items-center justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-xl shadow-pink-500/20 ring-1 ring-pink-500/40' : ''}">
-                        
-                        <div class="flex items-center space-x-3 min-w-0 flex-1">
-                            <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow">
-                                <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/1e293b/ec4899?text=BOX'">
-                                ${isCurrent && !audio.paused ? '<div class="absolute inset-0 bg-pink-600/70 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-lg"></i></div>' : ''}
+            if (currentMode === 'radio') {
+                // Cuadrícula de Tarjetas Cuadradas con Imagen que Abarca Toda la Tarjeta
+                contentGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5";
+
+                renderedGridItems.forEach((item, index) => {
+                    const id = getItemId(item);
+                    const name = getItemName(item);
+                    const subtitle = getItemSubtitle(item);
+                    const image = getItemImage(item);
+                    const isFav = favs.includes(id);
+                    const isCurrent = currentItem && getItemId(currentItem) === id;
+
+                    html += `
+                        <div onclick="handleCardClick(${index})" class="car-radio-square rounded-2xl relative overflow-hidden cursor-pointer group ${isCurrent ? 'border-2 border-pink-500 shadow-2xl shadow-pink-500/40 ring-2 ring-pink-500/50' : 'border-2 border-slate-800/80 hover:border-slate-700'}">
+                            
+                            <!-- Imagen de Fondo que Abarca Toda la Tarjeta Cuadrada -->
+                            <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="absolute inset-0 w-full h-full object-cover bg-slate-950 transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/300x300/1e293b/ec4899?text=RADIO'">
+
+                            <!-- Capa Degradada para Contraste y Legibilidad Óptima -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/30"></div>
+
+                            <!-- Animación Central de Reproducción Activa -->
+                            ${isCurrent && !audio.paused ? `
+                                <div class="absolute inset-0 bg-pink-950/40 backdrop-blur-[1px] flex items-center justify-center">
+                                    <div class="w-12 h-12 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-lg shadow-pink-600/50 animate-pulse">
+                                        <i class="fa-solid fa-volume-high text-xl"></i>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <!-- Parte Superior: Badge y Botón de Favorito Flotante -->
+                            <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
+                                <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${isCurrent && !audio.paused ? 'bg-pink-600 text-white' : 'bg-slate-950/80 text-pink-400 border border-pink-500/40'} shadow-md backdrop-blur-sm">
+                                    ${isCurrent && !audio.paused ? '▶ EN VIVO' : 'RADIO'}
+                                </span>
+                                <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="w-8 h-8 rounded-full bg-slate-950/70 border border-slate-700/60 text-slate-300 hover:text-pink-500 flex items-center justify-center backdrop-blur-sm shadow-md transition-colors">
+                                    <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular text-white'} fa-heart text-sm"></i>
+                                </button>
                             </div>
-                            <div class="min-w-0 flex-1">
-                                <h3 class="text-sm md:text-base font-bold text-white truncate leading-snug">${escapeHtml(name)}</h3>
-                                <p class="text-[11px] text-pink-400 font-semibold truncate mt-0.5">${escapeHtml(subtitle)}</p>
-                                <span class="text-[10px] text-slate-400 mt-1 inline-block">${currentMode === 'radio' ? '⚡ En Vivo' : '📂 Ver Pistas'}</span>
+
+                            <!-- Parte Inferior: Nombre y Género de la Estación -->
+                            <div class="absolute bottom-2 left-2.5 right-2.5 text-left z-10">
+                                <h3 class="text-xs md:text-sm font-black text-white truncate drop-shadow-md leading-tight">${escapeHtml(name)}</h3>
+                                <p class="text-[10px] text-pink-300 font-bold truncate mt-0.5 drop-shadow">${escapeHtml(subtitle)}</p>
                             </div>
                         </div>
+                    `;
+                });
+            } else {
+                // Cuadrícula Horizontal para Álbumes en Vox Music
+                contentGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5";
 
-                        <!-- Botón Favorito Táctil -->
-                        <div class="flex items-center space-x-1 pl-2">
-                            <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="car-btn p-2 text-slate-400 hover:text-pink-500 flex items-center justify-center">
-                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-xl"></i>
-                            </button>
+                renderedGridItems.forEach((item, index) => {
+                    const id = getItemId(item);
+                    const name = getItemName(item);
+                    const subtitle = getItemSubtitle(item);
+                    const image = getItemImage(item);
+                    const isFav = favs.includes(id);
+                    const isCurrent = currentItem && currentAlbum && getItemId(currentAlbum) === id;
+
+                    html += `
+                        <div onclick="handleCardClick(${index})" class="car-card-music p-3 rounded-2xl flex items-center justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-xl shadow-pink-500/20 ring-1 ring-pink-500/40' : ''}">
+                            <div class="flex items-center space-x-3 min-w-0 flex-1">
+                                <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow">
+                                    <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/1e293b/ec4899?text=BOX'">
+                                    ${isCurrent && !audio.paused ? '<div class="absolute inset-0 bg-pink-600/70 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-lg"></i></div>' : ''}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="text-sm md:text-base font-bold text-white truncate leading-snug">${escapeHtml(name)}</h3>
+                                    <p class="text-[11px] text-pink-400 font-semibold truncate mt-0.5">${escapeHtml(subtitle)}</p>
+                                    <span class="text-[10px] text-slate-400 mt-1 inline-block">📂 Ver Pistas</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-1 pl-2">
+                                <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="car-btn p-2 text-slate-400 hover:text-pink-500 flex items-center justify-center">
+                                    <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-xl"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
 
             contentGrid.innerHTML = html;
         }
@@ -655,14 +710,12 @@
 
             if (currentMode === 'radio') {
                 playRadio(item);
-                // Mostrar reproductor y activar temporizador de 5 segundos
                 showPlayerWithTimeout(AUTO_HIDE_SECONDS);
             } else {
                 openAlbumModal(item);
             }
         }
 
-        // Reproducción de Radio
         function playRadio(station) {
             currentAlbum = null;
             currentItem = station;
@@ -700,7 +753,6 @@
             renderCurrentContent();
         }
 
-        // Modal de Pistas de Álbum
         function openAlbumModal(album) {
             modalAlbumCover.src = album.cover || 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
             modalAlbumTitle.textContent = album.album || 'Álbum';
@@ -715,7 +767,7 @@
                 tracks.forEach((track, tIdx) => {
                     const isTrackActive = currentAlbum === album && currentTrackIndex === tIdx && !audio.paused;
                     html += `
-                        <div onclick="playAlbumTrackByIndex(${albumList.indexOf(album)}, ${tIdx})" class="car-card-9inch p-3 rounded-xl flex items-center justify-between cursor-pointer ${isTrackActive ? 'border-pink-500 bg-slate-900 ring-1 ring-pink-500' : ''}">
+                        <div onclick="playAlbumTrackByIndex(${albumList.indexOf(album)}, ${tIdx})" class="car-card-music p-3 rounded-xl flex items-center justify-between cursor-pointer ${isTrackActive ? 'border-pink-500 bg-slate-900 ring-1 ring-pink-500' : ''}">
                             <div class="flex items-center space-x-3 min-w-0">
                                 <span class="w-6 text-center font-bold text-slate-400 text-sm">${tIdx + 1}</span>
                                 <div class="min-w-0">
@@ -848,7 +900,6 @@
             }
         }
 
-        // Animación sincronizada en el Header y Bottom Player
         function setIsPlaying(isPlaying) {
             if (isPlaying) {
                 playPauseIcon.className = "fa-solid fa-pause text-xl";
@@ -881,18 +932,17 @@
             if (currentMode === 'radio') {
                 title = currentItem.title || 'Emisora';
                 subtitle = currentItem.genre || 'En Vivo';
-                coverImg = currentItem.logo || 'https://placehold.co/150x150/1e293b/ec4899?text=BOX';
+                coverImg = currentItem.logo || 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
             } else if (currentAlbum) {
                 title = currentItem.title || 'Pista';
                 subtitle = `${currentAlbum.artist} • ${currentAlbum.album}`;
-                coverImg = currentAlbum.cover || 'https://placehold.co/150x150/1e293b/ec4899?text=BOX';
+                coverImg = currentAlbum.cover || 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
             }
 
             playerTitle.textContent = title;
             playerCategory.textContent = subtitle;
             playerImg.src = coverImg;
 
-            // Actualizar píldora flotante
             handleTitle.textContent = title;
             handleSubtitle.textContent = subtitle;
 
@@ -1015,7 +1065,7 @@
                 const image = getItemImage(item);
                 
                 html += `
-                    <div onclick="playSearchIndex(${index})" class="car-card-9inch p-3 rounded-xl flex items-center justify-between cursor-pointer">
+                    <div onclick="playSearchIndex(${index})" class="car-card-music p-3 rounded-xl flex items-center justify-between cursor-pointer">
                         <div class="flex items-center space-x-3 min-w-0">
                             <img src="${escapeHtml(image)}" class="w-14 h-14 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
                             <div class="min-w-0">
