@@ -1,4 +1,1090 @@
-(index):64 cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
-(anonymous) @ (index):64
-esmat.html:1 Unsafe attempt to load URL file:///home/jorgedez/Escritorio/esmat.html from frame with URL file:///home/jorgedez/Escritorio/esmat.html. 'file:' URLs are treated as unique security origins.
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Box Play Media Suite</title>
 
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- HLS.js para streams .m3u8 -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            500: '#ec4899',
+                            600: '#db2777',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #db2777;
+            border-radius: 9999px;
+        }
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        /* Tarjetas ergonómicas para pantallas 2-DIN de 9 pulgadas */
+        .car-card-9inch {
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            min-height: 94px;
+            transition: transform 0.12s ease, border-color 0.12s ease;
+        }
+        .car-card-9inch:active {
+            transform: scale(0.98);
+            background: rgba(30, 41, 59, 1);
+            border-color: #db2777;
+        }
+        .car-btn {
+            min-height: 48px;
+            min-width: 48px;
+        }
+
+        /* Animación de barras en el Header */
+        @keyframes soundWave {
+            0% { height: 15%; }
+            50% { height: 100%; }
+            100% { height: 25%; }
+        }
+        .bar-anim {
+            height: 20%;
+            transition: height 0.2s ease;
+        }
+        .visualizer-active .bar-1 { animation: soundWave 0.65s infinite ease-in-out alternate; }
+        .visualizer-active .bar-2 { animation: soundWave 0.45s infinite 0.1s ease-in-out alternate; }
+        .visualizer-active .bar-3 { animation: soundWave 0.75s infinite 0.25s ease-in-out alternate; }
+        .visualizer-active .bar-4 { animation: soundWave 0.5s infinite 0.15s ease-in-out alternate; }
+        .visualizer-active .bar-5 { animation: soundWave 0.85s infinite 0.3s ease-in-out alternate; }
+        .visualizer-active .bar-6 { animation: soundWave 0.4s infinite 0.05s ease-in-out alternate; }
+        .visualizer-active .bar-7 { animation: soundWave 0.7s infinite 0.2s ease-in-out alternate; }
+        .visualizer-active .bar-8 { animation: soundWave 0.55s infinite 0.35s ease-in-out alternate; }
+
+        /* Transición suave para ocultar/mostrar el reproductor */
+        #bottomPlayer {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
+
+    <!-- Header Compacto y Accesible -->
+    <header class="bg-slate-900 border-b-2 border-slate-800 px-5 py-2.5 flex items-center justify-between shadow-xl flex-shrink-0 z-30">
+        <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-600/30 flex-shrink-0">
+                <i class="fa-solid fa-car text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-2">
+                    <span id="headerTitle">Box Play Radio</span> 
+                    <span id="modeBadge" class="text-[10px] px-2 py-0.5 rounded-md bg-pink-600/30 text-pink-400 border border-pink-500/40 font-black uppercase">EN VIVO</span>
+                </h1>
+                <p id="headerSubtitle" class="text-xs text-slate-400 font-medium">9" Automotive Stereo Edition</p>
+            </div>
+        </div>
+
+        <!-- Ecualizador de Barras en Cabecera (Sincronizado al ritmo en ambas secciones) -->
+        <div id="headerVisualizer" class="flex items-center space-x-2 px-3.5 py-1.5 bg-slate-950/80 rounded-xl border border-slate-800">
+            <span class="text-[11px] font-bold text-slate-400 tracking-wider flex items-center gap-1.5 uppercase">
+                <i class="fa-solid fa-music text-pink-500 text-xs"></i>
+                <span id="headerVisualizerStatus" class="hidden sm:inline">Pausa</span>
+            </span>
+            <div id="visualizerBars" class="flex items-end space-x-1 h-6 w-20">
+                <span class="w-1.5 bg-pink-500 rounded-full bar-anim bar-1"></span>
+                <span class="w-1.5 bg-pink-400 rounded-full bar-anim bar-2"></span>
+                <span class="w-1.5 bg-purple-400 rounded-full bar-anim bar-3"></span>
+                <span class="w-1.5 bg-pink-500 rounded-full bar-anim bar-4"></span>
+                <span class="w-1.5 bg-purple-500 rounded-full bar-anim bar-5"></span>
+                <span class="w-1.5 bg-pink-400 rounded-full bar-anim bar-6"></span>
+                <span class="w-1.5 bg-pink-600 rounded-full bar-anim bar-7"></span>
+                <span class="w-1.5 bg-purple-400 rounded-full bar-anim bar-8"></span>
+            </div>
+        </div>
+
+        <!-- Selector de Sección y Acciones Rápidas -->
+        <div class="flex items-center space-x-2">
+            <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button onclick="switchMode('radio')" id="tabRadioBtn" class="car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all bg-pink-600 text-white shadow">
+                    <i class="fa-solid fa-radio text-base"></i>
+                    <span>Radio</span>
+                </button>
+                <button onclick="switchMode('music')" id="tabMusicBtn" class="car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-compact-disc text-base"></i>
+                    <span>Vox Music</span>
+                </button>
+            </div>
+
+            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="car-btn px-4 rounded-xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-1.5 text-sm transition-all shadow">
+                <i class="fa-solid fa-heart text-pink-500 text-lg"></i>
+                <span id="favTextCount" class="hidden lg:inline">(0)</span>
+            </button>
+
+            <button onclick="openSearchModal()" class="car-btn px-4 rounded-xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-1.5 text-sm transition-all shadow">
+                <i class="fa-solid fa-magnifying-glass text-pink-400 text-lg"></i>
+            </button>
+
+            <button onclick="refreshCurrentContent()" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 hover:text-pink-400 flex items-center justify-center transition-all shadow" title="Actualizar">
+                <i class="fa-solid fa-rotate text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Área de Contenido Principal (Tarjetas diseñadas para pantalla táctil de 9") -->
+    <main id="mainContainer" class="flex-1 overflow-y-auto p-4 md:p-5 bg-slate-950 pb-20">
+        
+        <!-- Banner de Filtro de Favoritos -->
+        <div id="favoritesActiveBanner" class="hidden mb-4 p-3.5 rounded-2xl bg-pink-950/40 border border-pink-500/50 items-center justify-between shadow-lg">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-pink-600 flex items-center justify-center text-white text-base">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold text-white">Mostrando Favoritos</h3>
+                    <p class="text-[11px] text-pink-300">Tus estaciones y álbumes guardados</p>
+                </div>
+            </div>
+            <button onclick="exitFavorites()" class="car-btn px-4 py-2 rounded-xl bg-slate-900 border border-pink-500 text-pink-400 hover:bg-pink-600 hover:text-white font-bold text-xs flex items-center space-x-1.5 transition-all shadow">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Ver Todo</span>
+            </button>
+        </div>
+
+        <!-- Mensajes de Notificación / Reintento -->
+        <div id="statusMessage" class="hidden mb-4 p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-sm flex items-center justify-between text-slate-300 shadow-xl">
+            <div class="flex items-center space-x-2.5">
+                <i id="statusIcon" class="fa-solid fa-circle-info text-pink-400 text-lg"></i>
+                <span id="statusText">Cargando contenido...</span>
+            </div>
+            <button onclick="closeStatus()" class="car-btn p-1 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Estado de Carga -->
+        <div id="loadingState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-24"></div>
+            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-24"></div>
+            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-24"></div>
+            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-24"></div>
+        </div>
+
+        <!-- Cuadrícula de Tarjetas Horizontales para 9" -->
+        <div id="contentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 hidden">
+        </div>
+
+        <!-- Estado Vacío -->
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
+            <div class="w-20 h-20 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-3xl mb-3 shadow-inner">
+                <i class="fa-solid fa-compact-disc"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-200">No se encontraron elementos</h3>
+            <p class="text-sm text-slate-400 mt-1">Verifica tu conexión o cambia de sección.</p>
+        </div>
+    </main>
+
+    <!-- Botón / Pestaña Flotante Discreta (Aparece cuando el reproductor se oculta) -->
+    <button id="playerHandleBtn" onclick="wakePlayer(5)" class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur border-2 border-pink-500 text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center space-x-3 z-40 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none active:scale-95">
+        <i class="fa-solid fa-compact-disc text-pink-400 text-lg animate-spin" style="animation-duration: 4s;"></i>
+        <div class="text-left min-w-0 max-w-[190px]">
+            <p id="handleTitle" class="text-xs font-bold text-white truncate">Reproduciendo</p>
+            <p id="handleSubtitle" class="text-[10px] text-pink-400 truncate">Toca para abrir controles</p>
+        </div>
+        <i class="fa-solid fa-chevron-up text-pink-400 text-sm ml-1"></i>
+    </button>
+
+    <!-- Reproductor Inferior Deslizable (Se oculta automáticamente a los 5 segundos) -->
+    <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-slate-900/98 backdrop-blur-md border-t-2 border-pink-600 px-5 py-2.5 z-50 shadow-2xl translate-y-full">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            
+            <!-- Pista / Emisora Actual -->
+            <div class="flex items-center space-x-3 min-w-0 flex-1 cursor-pointer" onclick="openCurrentAlbumTracks()">
+                <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 shadow-md">
+                    <img id="playerImg" src="https://placehold.co/150x150/1e293b/ec4899?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
+                </div>
+                <div class="min-w-0">
+                    <h4 id="playerTitle" class="text-base font-bold text-white truncate">Selecciona una reproducción</h4>
+                    <p id="playerCategory" class="text-xs text-pink-400 font-semibold truncate mt-0.5">Listo</p>
+                </div>
+            </div>
+
+            <!-- Controles Táctiles Centrales -->
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <button onclick="playPrevious()" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-lg transition-all shadow active:scale-95" title="Anterior">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+
+                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="car-btn w-14 h-14 rounded-2xl bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white flex items-center justify-center shadow-xl shadow-pink-600/40 transition-transform active:scale-95">
+                    <i id="playPauseIcon" class="fa-solid fa-play text-2xl ml-0.5"></i>
+                </button>
+
+                <button onclick="playNext()" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-lg transition-all shadow active:scale-95" title="Siguiente">
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
+
+                <div id="spinnerLoader" class="hidden w-9 h-9 border-3 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+
+                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-300 hover:text-pink-500 flex items-center justify-center text-xl transition-all shadow">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+
+                <!-- Botón Minimizar Reproductor Manualmente -->
+                <button onclick="hidePlayer()" class="car-btn w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm transition-all" title="Ocultar barra">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <!-- Volumen (Para pantallas 9" en formato apaisado) -->
+            <div class="hidden md:flex items-center space-x-3 w-44 justify-end">
+                <button onclick="toggleMute()" id="muteBtn" class="car-btn p-1 text-slate-300 hover:text-white">
+                    <i id="muteIcon" class="fa-solid fa-volume-high text-xl"></i>
+                </button>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-28 accent-pink-500 bg-slate-800 rounded-lg h-2 cursor-pointer">
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- Modal de Pistas de Álbum -->
+    <div id="tracksModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-5 hidden">
+        <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col">
+            <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-3">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <img id="modalAlbumCover" src="" class="w-14 h-14 rounded-xl object-cover bg-slate-900 border border-slate-700">
+                    <div class="min-w-0">
+                        <h3 class="text-lg font-black text-white truncate" id="modalAlbumTitle">Álbum</h3>
+                        <p class="text-xs text-pink-400 font-semibold truncate" id="modalAlbumArtist">Artista</p>
+                    </div>
+                </div>
+                <button onclick="closeTracksModal()" class="car-btn px-5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">Cerrar</button>
+            </div>
+            <div id="modalTracksList" class="flex-1 overflow-y-auto space-y-2 pb-8">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Búsqueda -->
+    <div id="searchModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-5 hidden">
+        <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-black text-white" id="searchModalTitle">Buscar en Box Play</h3>
+                <button onclick="closeSearchModal()" class="car-btn px-5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">Cerrar</button>
+            </div>
+            <div class="relative w-full mb-4">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400 text-lg"></i>
+                <input type="text" id="modalSearchInput" placeholder="Escribe para buscar..." class="w-full bg-slate-900 border border-slate-700 text-lg rounded-xl pl-12 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
+            </div>
+            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-2 pb-8">
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="audioStream" preload="none"></audio>
+
+    <script>
+        const RADIO_JSON_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json';
+        const MUSIC_JSON_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/videoteca.json';
+        
+        let currentMode = 'radio'; // 'radio' | 'music'
+        let stations = [];
+        let albumList = [];
+        
+        let currentItem = null;
+        let currentAlbum = null;
+        let currentTrackIndex = 0;
+
+        let searchQuery = '';
+        let favoritesOnly = false;
+        
+        let renderedGridItems = [];
+        let renderedSearchItems = [];
+
+        let radioFavorites = JSON.parse(localStorage.getItem('box_play_radio_favs') || '[]');
+        let musicFavorites = JSON.parse(localStorage.getItem('box_play_music_favs') || '[]');
+
+        let hlsInstance = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 3;
+        let statusTimeout = null;
+
+        // Temporizador de auto-ocultamiento (5 segundos)
+        let playerHideTimer = null;
+        const AUTO_HIDE_SECONDS = 5;
+
+        const audio = document.getElementById('audioStream');
+        const contentGrid = document.getElementById('contentGrid');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const spinnerLoader = document.getElementById('spinnerLoader');
+        const playerTitle = document.getElementById('playerTitle');
+        const playerCategory = document.getElementById('playerCategory');
+        const playerImg = document.getElementById('playerImg');
+        const playerFavBtn = document.getElementById('playerFavBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const muteBtn = document.getElementById('muteBtn');
+        const muteIcon = document.getElementById('muteIcon');
+        const favFilterBtn = document.getElementById('favFilterBtn');
+        const favTextCount = document.getElementById('favTextCount');
+        const searchModal = document.getElementById('searchModal');
+        const modalSearchInput = document.getElementById('modalSearchInput');
+        const searchResultsContainer = document.getElementById('searchResultsContainer');
+        const favoritesActiveBanner = document.getElementById('favoritesActiveBanner');
+        const tabRadioBtn = document.getElementById('tabRadioBtn');
+        const tabMusicBtn = document.getElementById('tabMusicBtn');
+        const headerTitle = document.getElementById('headerTitle');
+        const headerSubtitle = document.getElementById('headerSubtitle');
+        const modeBadge = document.getElementById('modeBadge');
+        
+        // Elementos del reproductor deslizable y botón flotante
+        const bottomPlayer = document.getElementById('bottomPlayer');
+        const playerHandleBtn = document.getElementById('playerHandleBtn');
+        const handleTitle = document.getElementById('handleTitle');
+        const handleSubtitle = document.getElementById('handleSubtitle');
+
+        // Visualizador en Cabecera
+        const visualizerBars = document.getElementById('visualizerBars');
+        const headerVisualizerStatus = document.getElementById('headerVisualizerStatus');
+
+        // Modal de Pistas
+        const tracksModal = document.getElementById('tracksModal');
+        const modalAlbumCover = document.getElementById('modalAlbumCover');
+        const modalAlbumTitle = document.getElementById('modalAlbumTitle');
+        const modalAlbumArtist = document.getElementById('modalAlbumArtist');
+        const modalTracksList = document.getElementById('modalTracksList');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAllData();
+            updateFavoritesBadge();
+
+            volumeSlider.addEventListener('input', (e) => {
+                audio.volume = parseFloat(e.target.value);
+                audio.muted = false;
+                updateVolumeIcon(audio.volume);
+                keepPlayerAlive();
+            });
+
+            modalSearchInput.addEventListener('input', (e) => {
+                renderModalSearchResults(e.target.value.trim().toLowerCase());
+            });
+
+            audio.addEventListener('error', () => {
+                handlePlaybackError();
+            });
+
+            audio.addEventListener('playing', () => {
+                reconnectAttempts = 0;
+                setLoadingState(false);
+                setIsPlaying(true);
+            });
+
+            audio.addEventListener('waiting', () => {
+                setLoadingState(true);
+            });
+
+            // Avance automático a la siguiente canción al terminar el tema en Vox Music
+            audio.addEventListener('ended', () => {
+                if (currentMode === 'music' && currentAlbum && currentAlbum.tracks) {
+                    if (currentTrackIndex + 1 < currentAlbum.tracks.length) {
+                        playAlbumTrack(currentAlbum, currentTrackIndex + 1);
+                    }
+                }
+            });
+
+            // Mantener reproductor visible mientras el usuario interactúa con la barra
+            bottomPlayer.addEventListener('pointerdown', () => keepPlayerAlive());
+            bottomPlayer.addEventListener('touchstart', () => keepPlayerAlive());
+
+            setupMediaSessionHandlers();
+        });
+
+        // Control del Auto-Ocultamiento (5 segundos)
+        function showPlayerWithTimeout(seconds = AUTO_HIDE_SECONDS) {
+            bottomPlayer.classList.remove('translate-y-full');
+            
+            // Ocultar la píldora flotante
+            playerHandleBtn.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            playerHandleBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+
+            keepPlayerAlive(seconds);
+        }
+
+        function hidePlayer() {
+            bottomPlayer.classList.add('translate-y-full');
+            if (playerHideTimer) clearTimeout(playerHideTimer);
+
+            // Si hay algo en reproducción o seleccionado, mostrar la píldora flotante
+            if (currentItem) {
+                playerHandleBtn.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+                playerHandleBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            }
+        }
+
+        function keepPlayerAlive(seconds = AUTO_HIDE_SECONDS) {
+            if (playerHideTimer) clearTimeout(playerHideTimer);
+            playerHideTimer = setTimeout(() => {
+                hidePlayer();
+            }, seconds * 1000);
+        }
+
+        function wakePlayer(seconds = AUTO_HIDE_SECONDS) {
+            showPlayerWithTimeout(seconds);
+        }
+
+        async function loadAllData() {
+            loadingState.classList.remove('hidden');
+            contentGrid.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            showStatus('Cargando colecciones...', 'info');
+
+            const cacheBuster = `?_t=${Date.now()}`;
+
+            try {
+                const [radioRes, musicRes] = await Promise.all([
+                    fetch(RADIO_JSON_URL + cacheBuster).catch(() => null),
+                    fetch(MUSIC_JSON_URL + cacheBuster).catch(() => null)
+                ]);
+
+                if (radioRes && radioRes.ok) {
+                    const rData = await radioRes.json();
+                    stations = Array.isArray(rData) ? rData : (rData.radios || []);
+                }
+
+                if (musicRes && musicRes.ok) {
+                    const mData = await musicRes.json();
+                    albumList = Array.isArray(mData) ? mData : (mData.albums || mData.videoteca || []);
+                }
+
+                renderCurrentContent();
+                hideStatus();
+            } catch (error) {
+                console.error(error);
+                showStatus('Error al conectar con los servidores.', 'error');
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            }
+        }
+
+        function refreshCurrentContent() {
+            loadAllData();
+        }
+
+        function switchMode(mode) {
+            if (currentMode === mode) return;
+            currentMode = mode;
+            searchQuery = '';
+            
+            if (mode === 'radio') {
+                tabRadioBtn.className = "car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all bg-pink-600 text-white shadow";
+                tabMusicBtn.className = "car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all text-slate-400 hover:text-white";
+                headerTitle.textContent = "Box Play Radio";
+                headerSubtitle.textContent = "9\" Automotive Stereo Edition";
+                modeBadge.textContent = "EN VIVO";
+            } else {
+                tabMusicBtn.className = "car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all bg-pink-600 text-white shadow";
+                tabRadioBtn.className = "car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all text-slate-400 hover:text-white";
+                headerTitle.textContent = "Vox Music";
+                headerSubtitle.textContent = "Colección de Álbumes y Clásicos";
+                modeBadge.textContent = "ÁLBUMES";
+            }
+
+            renderCurrentContent();
+            updateFavoritesBadge();
+        }
+
+        function toggleFavoritesFilter() {
+            favoritesOnly = !favoritesOnly;
+            if (favoritesOnly) {
+                favFilterBtn.classList.add('border-pink-500', 'bg-pink-950/60');
+                favoritesActiveBanner.classList.remove('hidden');
+                favoritesActiveBanner.classList.add('flex');
+            } else {
+                exitFavorites();
+            }
+            renderCurrentContent();
+        }
+
+        function exitFavorites() {
+            favoritesOnly = false;
+            favFilterBtn.classList.remove('border-pink-500', 'bg-pink-950/60');
+            favoritesActiveBanner.classList.add('hidden');
+            favoritesActiveBanner.classList.remove('flex');
+            renderCurrentContent();
+        }
+
+        function getActiveList() {
+            return currentMode === 'radio' ? stations : albumList;
+        }
+
+        function getActiveFavorites() {
+            return currentMode === 'radio' ? radioFavorites : musicFavorites;
+        }
+
+        function getItemId(item) {
+            if (!item) return '';
+            if (currentMode === 'radio') {
+                return String(item.url || item.title || JSON.stringify(item));
+            } else {
+                return String(item.album || item.artist || JSON.stringify(item));
+            }
+        }
+
+        function getItemName(item) {
+            if (!item) return 'Reproducción';
+            if (currentMode === 'radio') {
+                return item.title || 'Emisora';
+            } else {
+                return item.album || item.title || 'Álbum';
+            }
+        }
+
+        function getItemSubtitle(item) {
+            if (!item) return '';
+            if (currentMode === 'radio') {
+                return item.genre || item.group || 'Live Radio';
+            } else {
+                const trackCount = item.tracks ? `${item.tracks.length} temas` : '';
+                return `${item.artist || 'Artista'} • ${trackCount}`;
+            }
+        }
+
+        function getItemImage(item) {
+            if (!item) return 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
+            return item.logo || item.cover || item.image || 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
+        }
+
+        function getFilteredList() {
+            const list = getActiveList();
+            const favs = getActiveFavorites();
+
+            return list.filter(item => {
+                const titleStr = (getItemName(item) + ' ' + getItemSubtitle(item)).toLowerCase();
+                const matchesSearch = !searchQuery || titleStr.includes(searchQuery);
+                const matchesFav = !favoritesOnly || favs.includes(getItemId(item));
+                return matchesSearch && matchesFav;
+            });
+        }
+
+        // Renderizado de tarjetas apaisadas ideales para pantallas de 9"
+        function renderCurrentContent() {
+            loadingState.classList.add('hidden');
+            renderedGridItems = getFilteredList();
+            const favs = getActiveFavorites();
+
+            if (renderedGridItems.length === 0) {
+                contentGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            contentGrid.classList.remove('hidden');
+
+            let html = '';
+            renderedGridItems.forEach((item, index) => {
+                const id = getItemId(item);
+                const name = getItemName(item);
+                const subtitle = getItemSubtitle(item);
+                const image = getItemImage(item);
+                const isFav = favs.includes(id);
+                
+                const isCurrent = currentItem && (
+                    (currentMode === 'radio' && getItemId(currentItem) === id) ||
+                    (currentMode === 'music' && currentAlbum && getItemId(currentAlbum) === id)
+                );
+
+                html += `
+                    <div onclick="handleCardClick(${index})" class="car-card-9inch p-3 rounded-2xl flex items-center justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-xl shadow-pink-500/20 ring-1 ring-pink-500/40' : ''}">
+                        
+                        <div class="flex items-center space-x-3 min-w-0 flex-1">
+                            <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow">
+                                <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/1e293b/ec4899?text=BOX'">
+                                ${isCurrent && !audio.paused ? '<div class="absolute inset-0 bg-pink-600/70 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-lg"></i></div>' : ''}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-sm md:text-base font-bold text-white truncate leading-snug">${escapeHtml(name)}</h3>
+                                <p class="text-[11px] text-pink-400 font-semibold truncate mt-0.5">${escapeHtml(subtitle)}</p>
+                                <span class="text-[10px] text-slate-400 mt-1 inline-block">${currentMode === 'radio' ? '⚡ En Vivo' : '📂 Ver Pistas'}</span>
+                            </div>
+                        </div>
+
+                        <!-- Botón Favorito Táctil -->
+                        <div class="flex items-center space-x-1 pl-2">
+                            <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="car-btn p-2 text-slate-400 hover:text-pink-500 flex items-center justify-center">
+                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            contentGrid.innerHTML = html;
+        }
+
+        function handleCardClick(index) {
+            const item = renderedGridItems[index];
+            if (!item) return;
+
+            if (currentMode === 'radio') {
+                playRadio(item);
+                // Mostrar reproductor y activar temporizador de 5 segundos
+                showPlayerWithTimeout(AUTO_HIDE_SECONDS);
+            } else {
+                openAlbumModal(item);
+            }
+        }
+
+        // Reproducción de Radio
+        function playRadio(station) {
+            currentAlbum = null;
+            currentItem = station;
+            
+            setLoadingState(true);
+            stopAndCleanupAudio();
+            updatePlayerInfo();
+            updateMediaSession(station.title, station.genre || 'En Vivo', station.logo);
+
+            const streamUrl = station.url;
+            if (!streamUrl) {
+                showStatus('Emisora sin flujo disponible.', 'error');
+                setLoadingState(false);
+                return;
+            }
+
+            const isHls = streamUrl.toLowerCase().includes('.m3u8');
+
+            if (isHls && Hls.isSupported()) {
+                hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
+                hlsInstance.loadSource(streamUrl);
+                hlsInstance.attachMedia(audio);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => startAudioPlayback());
+                hlsInstance.on(Hls.Events.ERROR, (e, data) => {
+                    if (data.fatal) {
+                        stopAndCleanupAudio();
+                        handlePlaybackError();
+                    }
+                });
+            } else {
+                audio.src = streamUrl;
+                startAudioPlayback();
+            }
+
+            renderCurrentContent();
+        }
+
+        // Modal de Pistas de Álbum
+        function openAlbumModal(album) {
+            modalAlbumCover.src = album.cover || 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
+            modalAlbumTitle.textContent = album.album || 'Álbum';
+            modalAlbumArtist.textContent = album.artist || 'Artista';
+
+            const tracks = album.tracks || [];
+            let html = '';
+
+            if (tracks.length === 0) {
+                html = `<p class="text-center text-slate-500 py-8 text-base">No hay pistas registradas en este álbum.</p>`;
+            } else {
+                tracks.forEach((track, tIdx) => {
+                    const isTrackActive = currentAlbum === album && currentTrackIndex === tIdx && !audio.paused;
+                    html += `
+                        <div onclick="playAlbumTrackByIndex(${albumList.indexOf(album)}, ${tIdx})" class="car-card-9inch p-3 rounded-xl flex items-center justify-between cursor-pointer ${isTrackActive ? 'border-pink-500 bg-slate-900 ring-1 ring-pink-500' : ''}">
+                            <div class="flex items-center space-x-3 min-w-0">
+                                <span class="w-6 text-center font-bold text-slate-400 text-sm">${tIdx + 1}</span>
+                                <div class="min-w-0">
+                                    <h4 class="text-sm font-bold text-white truncate">${escapeHtml(track.title || 'Pista')}</h4>
+                                    <span class="text-[11px] text-slate-400">${track.duration ? 'Duración: ' + track.duration : ''}</span>
+                                </div>
+                            </div>
+                            <span class="car-btn px-4 py-1.5 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                                ${isTrackActive ? '<i class="fa-solid fa-volume-high"></i>' : 'Reproducir'}
+                            </span>
+                        </div>
+                    `;
+                });
+            }
+
+            modalTracksList.innerHTML = html;
+            tracksModal.classList.remove('hidden');
+        }
+
+        function closeTracksModal() {
+            tracksModal.classList.add('hidden');
+        }
+
+        function openCurrentAlbumTracks() {
+            if (currentAlbum) openAlbumModal(currentAlbum);
+        }
+
+        function playAlbumTrackByIndex(albumIdx, trackIdx) {
+            const album = albumList[albumIdx];
+            if (album) {
+                playAlbumTrack(album, trackIdx);
+                closeTracksModal();
+                showPlayerWithTimeout(AUTO_HIDE_SECONDS);
+            }
+        }
+
+        function playAlbumTrack(album, trackIndex) {
+            if (!album || !album.tracks || !album.tracks[trackIndex]) return;
+
+            currentAlbum = album;
+            currentTrackIndex = trackIndex;
+            const track = album.tracks[trackIndex];
+            currentItem = track;
+
+            setLoadingState(true);
+            stopAndCleanupAudio();
+            updatePlayerInfo();
+            updateMediaSession(track.title, `${album.artist} • ${album.album}`, album.cover);
+
+            audio.src = track.audio;
+            startAudioPlayback();
+            renderCurrentContent();
+        }
+
+        function startAudioPlayback() {
+            audio.play().then(() => {
+                reconnectAttempts = 0;
+                setIsPlaying(true);
+                setLoadingState(false);
+            }).catch(err => {
+                console.warn("Fallo al reproducir:", err);
+                setLoadingState(false);
+            });
+        }
+
+        function stopAndCleanupAudio() {
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+            audio.pause();
+            audio.removeAttribute('src');
+            audio.load();
+        }
+
+        function handlePlaybackError() {
+            if (currentItem && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                reconnectAttempts++;
+                showStatus(`Reintentando conexión (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, 'warning');
+                setTimeout(() => {
+                    if (currentMode === 'radio' && currentItem) playRadio(currentItem);
+                    if (currentMode === 'music' && currentAlbum) playAlbumTrack(currentAlbum, currentTrackIndex);
+                }, 2000);
+            } else {
+                showStatus('Error al reproducir el flujo multimedia.', 'error');
+                setLoadingState(false);
+                setIsPlaying(false);
+                reconnectAttempts = 0;
+            }
+        }
+
+        function togglePlayPause() {
+            if (!currentItem) return;
+            keepPlayerAlive();
+
+            if (audio.paused) {
+                audio.play().then(() => setIsPlaying(true)).catch(() => handlePlaybackError());
+            } else {
+                audio.pause();
+                setIsPlaying(false);
+            }
+            renderCurrentContent();
+        }
+
+        function playNext() {
+            keepPlayerAlive();
+            if (currentMode === 'radio') {
+                const list = getFilteredList();
+                if (!list.length) return;
+                const idx = list.findIndex(i => i.url === (currentItem ? currentItem.url : ''));
+                const nextIdx = (idx + 1) % list.length;
+                playRadio(list[nextIdx]);
+            } else if (currentAlbum && currentAlbum.tracks) {
+                const nextTrack = (currentTrackIndex + 1) % currentAlbum.tracks.length;
+                playAlbumTrack(currentAlbum, nextTrack);
+            }
+        }
+
+        function playPrevious() {
+            keepPlayerAlive();
+            if (currentMode === 'radio') {
+                const list = getFilteredList();
+                if (!list.length) return;
+                const idx = list.findIndex(i => i.url === (currentItem ? currentItem.url : ''));
+                const prevIdx = (idx - 1 + list.length) % list.length;
+                playRadio(list[prevIdx]);
+            } else if (currentAlbum && currentAlbum.tracks) {
+                const prevTrack = (currentTrackIndex - 1 + currentAlbum.tracks.length) % currentAlbum.tracks.length;
+                playAlbumTrack(currentAlbum, prevTrack);
+            }
+        }
+
+        // Animación sincronizada en el Header y Bottom Player
+        function setIsPlaying(isPlaying) {
+            if (isPlaying) {
+                playPauseIcon.className = "fa-solid fa-pause text-xl";
+                visualizerBars.classList.add('visualizer-active');
+                headerVisualizerStatus.textContent = currentMode === 'radio' ? 'Radio ON' : 'Music ON';
+            } else {
+                playPauseIcon.className = "fa-solid fa-play text-xl ml-0.5";
+                visualizerBars.classList.remove('visualizer-active');
+                headerVisualizerStatus.textContent = 'Pausa';
+            }
+        }
+
+        function setLoadingState(isLoading) {
+            if (isLoading) {
+                spinnerLoader.classList.remove('hidden');
+                playPauseBtn.classList.add('hidden');
+            } else {
+                spinnerLoader.classList.add('hidden');
+                playPauseBtn.classList.remove('hidden');
+            }
+        }
+
+        function updatePlayerInfo() {
+            if (!currentItem) return;
+
+            let title = '';
+            let subtitle = '';
+            let coverImg = '';
+
+            if (currentMode === 'radio') {
+                title = currentItem.title || 'Emisora';
+                subtitle = currentItem.genre || 'En Vivo';
+                coverImg = currentItem.logo || 'https://placehold.co/150x150/1e293b/ec4899?text=BOX';
+            } else if (currentAlbum) {
+                title = currentItem.title || 'Pista';
+                subtitle = `${currentAlbum.artist} • ${currentAlbum.album}`;
+                coverImg = currentAlbum.cover || 'https://placehold.co/150x150/1e293b/ec4899?text=BOX';
+            }
+
+            playerTitle.textContent = title;
+            playerCategory.textContent = subtitle;
+            playerImg.src = coverImg;
+
+            // Actualizar píldora flotante
+            handleTitle.textContent = title;
+            handleSubtitle.textContent = subtitle;
+
+            playPauseBtn.disabled = false;
+            const id = currentMode === 'radio' ? getItemId(currentItem) : getItemId(currentAlbum);
+            const favs = getActiveFavorites();
+            playerFavBtn.innerHTML = `<i class="${favs.includes(id) ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-xl"></i>`;
+        }
+
+        function toggleFavoriteById(id) {
+            let favs = getActiveFavorites();
+            const index = favs.indexOf(id);
+            if (index > -1) {
+                favs.splice(index, 1);
+            } else {
+                favs.push(id);
+            }
+
+            if (currentMode === 'radio') {
+                radioFavorites = favs;
+                localStorage.setItem('box_play_radio_favs', JSON.stringify(radioFavorites));
+            } else {
+                musicFavorites = favs;
+                localStorage.setItem('box_play_music_favs', JSON.stringify(musicFavorites));
+            }
+
+            updateFavoritesBadge();
+            renderCurrentContent();
+            updatePlayerInfo();
+        }
+
+        function toggleFavoriteCurrent() {
+            if (!currentItem) return;
+            keepPlayerAlive();
+            const id = currentMode === 'radio' ? getItemId(currentItem) : getItemId(currentAlbum);
+            toggleFavoriteById(id);
+        }
+
+        function updateFavoritesBadge() {
+            const count = getActiveFavorites().length;
+            favTextCount.textContent = `(${count})`;
+        }
+
+        function toggleMute() {
+            keepPlayerAlive();
+            audio.muted = !audio.muted;
+            if (audio.muted) {
+                muteIcon.className = "fa-solid fa-volume-xmark text-xl text-pink-500";
+            } else {
+                updateVolumeIcon(audio.volume);
+            }
+        }
+
+        function updateVolumeIcon(vol) {
+            if (audio.muted || vol === 0) {
+                muteIcon.className = "fa-solid fa-volume-xmark text-xl";
+            } else if (vol < 0.5) {
+                muteIcon.className = "fa-solid fa-volume-low text-xl";
+            } else {
+                muteIcon.className = "fa-solid fa-volume-high text-xl";
+            }
+        }
+
+        function setupMediaSessionHandlers() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler('play', () => {
+                    if (audio.paused) togglePlayPause();
+                });
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    if (!audio.paused) togglePlayPause();
+                });
+                navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
+                navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+            }
+        }
+
+        function updateMediaSession(title, artist, artworkUrl) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: title || 'Box Play',
+                    artist: artist || 'Box Play Media Suite',
+                    album: currentMode === 'radio' ? 'Radio en Vivo' : 'Vox Music',
+                    artwork: [
+                        { src: artworkUrl || 'https://placehold.co/192x192/1e293b/ec4899?text=BOX', sizes: '192x192', type: 'image/png' },
+                        { src: artworkUrl || 'https://placehold.co/512x512/1e293b/ec4899?text=BOX', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+            }
+        }
+
+        function openSearchModal() {
+            searchModal.classList.remove('hidden');
+            searchModalTitle.textContent = currentMode === 'radio' ? 'Buscar Emisora' : 'Buscar en Vox Music';
+            modalSearchInput.value = searchQuery;
+            renderModalSearchResults(searchQuery);
+            setTimeout(() => modalSearchInput.focus(), 100);
+        }
+
+        function closeSearchModal() {
+            searchModal.classList.add('hidden');
+            renderCurrentContent();
+        }
+
+        function renderModalSearchResults(query = '') {
+            const list = getActiveList();
+            renderedSearchItems = list.filter(item => {
+                const text = (getItemName(item) + ' ' + getItemSubtitle(item)).toLowerCase();
+                return text.includes(query);
+            });
+
+            if (renderedSearchItems.length === 0) {
+                searchResultsContainer.innerHTML = `<p class="text-center text-slate-500 py-12 text-base">No se encontraron resultados</p>`;
+                return;
+            }
+
+            let html = '';
+            renderedSearchItems.forEach((item, index) => {
+                const name = getItemName(item);
+                const subtitle = getItemSubtitle(item);
+                const image = getItemImage(item);
+                
+                html += `
+                    <div onclick="playSearchIndex(${index})" class="car-card-9inch p-3 rounded-xl flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <img src="${escapeHtml(image)}" class="w-14 h-14 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
+                            <div class="min-w-0">
+                                <h4 class="text-sm font-bold text-white truncate">${escapeHtml(name)}</h4>
+                                <span class="text-[11px] text-pink-400 font-semibold">${escapeHtml(subtitle)}</span>
+                            </div>
+                        </div>
+                        <span class="car-btn px-4 py-1.5 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                            ${currentMode === 'radio' ? 'Sintonizar' : 'Ver Pistas'}
+                        </span>
+                    </div>
+                `;
+            });
+            searchResultsContainer.innerHTML = html;
+        }
+
+        function playSearchIndex(index) {
+            const item = renderedSearchItems[index];
+            if (item) {
+                closeSearchModal();
+                if (currentMode === 'radio') {
+                    playRadio(item);
+                    showPlayerWithTimeout(AUTO_HIDE_SECONDS);
+                } else {
+                    openAlbumModal(item);
+                }
+            }
+        }
+
+        function showStatus(text, type = 'info') {
+            const statusMsg = document.getElementById('statusMessage');
+            const statusText = document.getElementById('statusText');
+            const statusIcon = document.getElementById('statusIcon');
+            
+            statusText.textContent = text;
+            
+            if (type === 'error') {
+                statusIcon.className = "fa-solid fa-triangle-exclamation text-rose-500 text-base";
+            } else if (type === 'warning') {
+                statusIcon.className = "fa-solid fa-circle-exclamation text-amber-400 text-base";
+            } else {
+                statusIcon.className = "fa-solid fa-circle-info text-pink-400 text-base";
+            }
+
+            statusMsg.classList.remove('hidden');
+
+            if (statusTimeout) clearTimeout(statusTimeout);
+            if (type !== 'info') {
+                statusTimeout = setTimeout(() => hideStatus(), 4000);
+            }
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMessage').classList.add('hidden');
+        }
+
+        function closeStatus() {
+            hideStatus();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function escapeJsString(str) {
+            if (!str) return '';
+            return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+    </script>
+</body>
+</html>
