@@ -29,8 +29,8 @@
     </script>
     <style>
         ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
+            width: 14px;
+            height: 14px;
         }
         ::-webkit-scrollbar-track {
             background: #090d16;
@@ -44,8 +44,8 @@
             user-select: none;
         }
         .car-card {
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.98);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             transition: all 0.15s ease;
         }
         .car-card:active {
@@ -54,120 +54,127 @@
             border-color: #db2777;
         }
         .car-btn {
-            min-height: 52px;
-            min-width: 52px;
+            min-height: 64px;
+            min-width: 64px;
         }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
 
-    <header class="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex items-center justify-between shadow-lg flex-shrink-0 z-20">
-        <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-md shadow-pink-600/30">
-                <i class="fa-solid fa-car text-white text-xl"></i>
+    <!-- Top Header -->
+    <header class="bg-slate-900 border-b-2 border-slate-800 px-6 py-4 flex items-center justify-between shadow-xl flex-shrink-0 z-20">
+        <div class="flex items-center space-x-5">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-600/30">
+                <i class="fa-solid fa-car text-white text-2xl"></i>
             </div>
             <div>
-                <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-                    Box Play Radio <span class="text-xs px-2 py-0.5 rounded-md bg-pink-600/30 text-pink-400 border border-pink-500/30 font-semibold">CAR MODE</span>
+                <h1 class="text-2xl font-extrabold tracking-tight text-white flex items-center gap-3">
+                    Box Play Radio <span class="text-sm px-3 py-1 rounded-lg bg-pink-600/30 text-pink-400 border border-pink-500/40 font-bold">CAR MODE</span>
                 </h1>
-                <p class="text-xs text-slate-400">Sistema de Radio Táctil Automotriz</p>
+                <p class="text-sm text-slate-400">Sistema de Radio Táctil Automotriz</p>
             </div>
         </div>
 
-        <div class="flex items-center space-x-3">
-            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="car-btn px-5 rounded-2xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-2 text-sm transition-all shadow">
-                <i class="fa-solid fa-heart text-pink-500 text-base"></i>
+        <div class="flex items-center space-x-4">
+            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="car-btn px-6 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-3 text-lg transition-all shadow-md">
+                <i class="fa-solid fa-heart text-pink-500 text-xl"></i>
                 <span id="favTextCount" class="hidden sm:inline">Favoritas (0)</span>
             </button>
-            <button onclick="openSearchModal()" class="car-btn px-5 rounded-2xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-2 text-sm transition-all shadow">
-                <i class="fa-solid fa-magnifying-glass text-pink-400 text-base"></i>
+            <button onclick="openSearchModal()" class="car-btn px-6 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-3 text-lg transition-all shadow-md">
+                <i class="fa-solid fa-magnifying-glass text-pink-400 text-xl"></i>
                 <span class="hidden sm:inline">Buscar</span>
             </button>
-            <button onclick="fetchStations()" class="car-btn w-13 h-13 rounded-2xl bg-slate-800 border border-slate-700 text-slate-200 hover:text-pink-400 flex items-center justify-center transition-all shadow" title="Actualizar">
-                <i class="fa-solid fa-rotate text-lg"></i>
+            <button onclick="fetchStations()" class="car-btn w-16 h-16 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-200 hover:text-pink-400 flex items-center justify-center transition-all shadow-md" title="Actualizar">
+                <i class="fa-solid fa-rotate text-xl"></i>
             </button>
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto p-6 bg-slate-950 pb-36">
-        <div id="statusMessage" class="hidden mb-6 p-4 rounded-2xl bg-slate-900 border border-slate-800 text-sm flex items-center justify-between text-slate-300 shadow">
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-6 bg-slate-950 pb-48">
+        <div id="statusMessage" class="hidden mb-6 p-5 rounded-2xl bg-slate-900 border-2 border-slate-800 text-base flex items-center justify-between text-slate-300 shadow-lg">
             <span id="statusText">Cargando emisoras...</span>
-            <button onclick="closeStatus()" class="p-3 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button onclick="closeStatus()" class="p-3 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
 
-        <div id="loadingState" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div class="bg-slate-900 p-5 rounded-3xl animate-pulse h-40"></div>
-            <div class="bg-slate-900 p-5 rounded-3xl animate-pulse h-40"></div>
-            <div class="bg-slate-900 p-5 rounded-3xl animate-pulse h-40"></div>
-            <div class="bg-slate-900 p-5 rounded-3xl animate-pulse h-40"></div>
+        <div id="loadingState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-900 p-6 rounded-3xl animate-pulse h-48"></div>
+            <div class="bg-slate-900 p-6 rounded-3xl animate-pulse h-48"></div>
+            <div class="bg-slate-900 p-6 rounded-3xl animate-pulse h-48"></div>
+            <div class="bg-slate-900 p-6 rounded-3xl animate-pulse h-48"></div>
         </div>
 
-        <div id="stationsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 hidden">
+        <div id="stationsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
             <!-- Dynamic Cards -->
         </div>
 
-        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
-            <div class="w-20 h-20 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-3xl mb-4">
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-24 text-center">
+            <div class="w-24 h-24 rounded-full bg-slate-900 border-2 border-slate-800 flex items-center justify-center text-slate-500 text-4xl mb-6 shadow-inner">
                 <i class="fa-solid fa-radio"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-200">No se encontraron emisoras</h3>
-            <p class="text-sm text-slate-400 mt-1">Verifica tu conexión a internet o busca de nuevo.</p>
+            <h3 class="text-2xl font-bold text-slate-200">No se encontraron emisoras</h3>
+            <p class="text-base text-slate-400 mt-2">Verifica tu conexión a internet o busca de nuevo.</p>
         </div>
     </main>
 
-    <footer class="absolute bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t-2 border-slate-800 px-6 py-4 z-40 shadow-2xl">
+    <!-- Fixed Bottom Audio Player (Permanent Foreground) -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t-4 border-pink-600 px-6 py-4 z-50 shadow-2xl">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-6">
             
-            <div class="flex items-center space-x-4 min-w-0 flex-1">
-                <div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow-md">
-                    <img id="playerImg" src="https://placehold.co/120x120/1e293b/ec4899?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/120x120/1e293b/ec4899?text=BOX'">
-                    <div id="playerEqualizer" class="absolute inset-0 bg-pink-950/60 backdrop-blur-[2px] items-center justify-center hidden">
-                        <div class="flex space-x-1.5 items-end h-5">
-                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 60%; animation-delay: 0.1s;"></span>
-                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 100%; animation-delay: 0.3s;"></span>
-                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 40%; animation-delay: 0.2s;"></span>
+            <!-- Station Info -->
+            <div class="flex items-center space-x-5 min-w-0 flex-1">
+                <div class="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border-2 border-slate-700 shadow-lg">
+                    <img id="playerImg" src="https://placehold.co/150x150/1e293b/ec4899?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
+                    <div id="playerEqualizer" class="absolute inset-0 bg-pink-950/70 backdrop-blur-[2px] items-center justify-center hidden">
+                        <div class="flex space-x-2 items-end h-6">
+                            <span class="w-2 bg-pink-400 rounded-full animate-bounce" style="height: 60%; animation-delay: 0.1s;"></span>
+                            <span class="w-2 bg-pink-400 rounded-full animate-bounce" style="height: 100%; animation-delay: 0.3s;"></span>
+                            <span class="w-2 bg-pink-400 rounded-full animate-bounce" style="height: 40%; animation-delay: 0.2s;"></span>
                         </div>
                     </div>
                 </div>
                 <div class="min-w-0">
-                    <h4 id="playerTitle" class="text-base font-bold text-white truncate">Selecciona una emisora</h4>
-                    <p id="playerCategory" class="text-sm text-pink-400 font-medium truncate mt-0.5">Listo para reproducir</p>
+                    <h4 id="playerTitle" class="text-lg font-bold text-white truncate">Selecciona una emisora</h4>
+                    <p id="playerCategory" class="text-base text-pink-400 font-semibold truncate mt-1">Listo para reproducir</p>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-5">
-                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="car-btn w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-300 hover:text-pink-500 flex items-center justify-center text-xl transition-all shadow">
+            <!-- Central Controls -->
+            <div class="flex items-center space-x-6">
+                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="car-btn w-18 h-18 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-300 hover:text-pink-500 flex items-center justify-center text-2xl transition-all shadow-lg">
                     <i class="fa-regular fa-heart"></i>
                 </button>
                 
-                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="car-btn w-16 h-16 rounded-2xl bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white flex items-center justify-center shadow-xl shadow-pink-600/40 transition-transform active:scale-95">
-                    <i id="playPauseIcon" class="fa-solid fa-play text-2xl ml-1"></i>
+                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="car-btn w-20 h-20 rounded-2xl bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white flex items-center justify-center shadow-2xl shadow-pink-600/50 transition-transform active:scale-95">
+                    <i id="playPauseIcon" class="fa-solid fa-play text-3xl ml-1"></i>
                 </button>
 
-                <div id="spinnerLoader" class="hidden w-8 h-8 border-3 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                <div id="spinnerLoader" class="hidden w-10 h-10 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
 
-            <div class="hidden md:flex items-center space-x-3 w-48 justify-end">
+            <!-- Volume Control -->
+            <div class="hidden md:flex items-center space-x-4 w-56 justify-end">
                 <button onclick="toggleMute()" id="muteBtn" class="car-btn p-3 text-slate-300 hover:text-white">
-                    <i id="muteIcon" class="fa-solid fa-volume-high text-xl"></i>
+                    <i id="muteIcon" class="fa-solid fa-volume-high text-2xl"></i>
                 </button>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-32 accent-pink-500 bg-slate-800 rounded-lg h-3 cursor-pointer">
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-36 accent-pink-500 bg-slate-800 rounded-lg h-4 cursor-pointer">
             </div>
 
         </div>
     </footer>
 
-    <div id="searchModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex flex-col p-6 hidden">
-        <div class="max-w-2xl mx-auto w-full flex-1 flex flex-col pt-4">
+    <!-- Search Modal -->
+    <div id="searchModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-6 hidden">
+        <div class="max-w-2xl mx-auto w-full flex-1 flex flex-col pt-6">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-extrabold text-white">Buscar Emisora</h3>
-                <button onclick="closeSearchModal()" class="car-btn px-6 py-3 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-bold">Cerrar</button>
+                <h3 class="text-3xl font-extrabold text-white">Buscar Emisora</h3>
+                <button onclick="closeSearchModal()" class="car-btn px-8 py-4 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-300 font-bold text-lg">Cerrar</button>
             </div>
             <div class="relative w-full mb-6">
-                <i class="fa-solid fa-magnifying-glass absolute left-5 top-5 text-slate-400 text-lg"></i>
-                <input type="text" id="modalSearchInput" placeholder="Escribe el nombre de la emisora..." class="w-full bg-slate-900 border-2 border-slate-700 text-lg rounded-2xl pl-14 pr-6 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all">
+                <i class="fa-solid fa-magnifying-glass absolute left-6 top-6 text-slate-400 text-xl"></i>
+                <input type="text" id="modalSearchInput" placeholder="Escribe el nombre de la emisora..." class="w-full bg-slate-900 border-2 border-slate-700 text-xl rounded-2xl pl-16 pr-6 py-5 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
             </div>
-            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-3 pb-8">
+            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-4 pb-12">
                 <!-- Search results injected here -->
             </div>
         </div>
@@ -271,9 +278,9 @@
         function toggleFavoritesFilter() {
             favoritesOnly = !favoritesOnly;
             if (favoritesOnly) {
-                favFilterBtn.classList.add('border-pink-500', 'bg-pink-950/50');
+                favFilterBtn.classList.add('border-pink-500', 'bg-pink-950/60');
             } else {
-                favFilterBtn.classList.remove('border-pink-500', 'bg-pink-950/50');
+                favFilterBtn.classList.remove('border-pink-500', 'bg-pink-950/60');
             }
             renderStations();
         }
@@ -307,27 +314,27 @@
                 const isCurrent = currentStation && getStationId(currentStation) === id;
 
                 html += `
-                    <div onclick="playStation(${JSON.stringify(st).replace(/"/g, '&quot;')})" class="car-card p-5 rounded-3xl flex flex-col justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-xl shadow-pink-500/10 ring-2 ring-pink-500/50' : ''}">
+                    <div onclick="playStation(${JSON.stringify(st).replace(/"/g, '&quot;')})" class="car-card p-6 rounded-3xl flex flex-col justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-2xl shadow-pink-500/20 ring-4 ring-pink-500/40' : ''}">
                         <div class="flex items-start justify-end mb-3">
-                            <button onclick="event.stopPropagation(); toggleFavorite('${escapeHtml(id)}')" class="car-btn p-2 text-slate-400 hover:text-pink-500">
-                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-lg"></i>
+                            <button onclick="event.stopPropagation(); toggleFavorite('${escapeHtml(id)}')" class="car-btn p-3 text-slate-400 hover:text-pink-500">
+                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-2xl"></i>
                             </button>
                         </div>
 
-                        <div class="flex items-center space-x-4 my-2">
-                            <div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow">
+                        <div class="flex items-center space-x-5 my-2">
+                            <div class="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border-2 border-slate-800 shadow-md">
                                 <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/1e293b/ec4899?text=BOX'">
-                                ${isCurrent ? '<div class="absolute inset-0 bg-pink-600/40 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-lg"></i></div>' : ''}
+                                ${isCurrent ? '<div class="absolute inset-0 bg-pink-600/50 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-2xl"></i></div>' : ''}
                             </div>
                             <div class="min-w-0 flex-1">
-                                <h3 class="text-base font-bold text-white truncate">${escapeHtml(name)}</h3>
-                                <p class="text-xs text-slate-400 mt-0.5">Toca para reproducir</p>
+                                <h3 class="text-lg font-bold text-white truncate">${escapeHtml(name)}</h3>
+                                <p class="text-sm text-slate-400 mt-1">Toca para reproducir</p>
                             </div>
                         </div>
 
-                        <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-pink-400">
+                        <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-sm font-bold text-pink-400">
                             <span>${isCurrent && !audio.paused ? '▶ Reproduciendo' : '⚡ En Vivo'}</span>
-                            <i class="fa-solid fa-chevron-right text-slate-500"></i>
+                            <i class="fa-solid fa-chevron-right text-slate-500 text-base"></i>
                         </div>
                     </div>
                 `;
@@ -374,11 +381,11 @@
 
         function setIsPlaying(isPlaying) {
             if (isPlaying) {
-                playPauseIcon.className = "fa-solid fa-pause text-2xl";
+                playPauseIcon.className = "fa-solid fa-pause text-3xl";
                 playerEqualizer.classList.remove('hidden');
                 playerEqualizer.classList.add('flex');
             } else {
-                playPauseIcon.className = "fa-solid fa-play text-2xl ml-1";
+                playPauseIcon.className = "fa-solid fa-play text-3xl ml-1";
                 playerEqualizer.classList.add('hidden');
                 playerEqualizer.classList.remove('flex');
             }
@@ -397,7 +404,7 @@
         function updatePlayerInfo() {
             if (!currentStation) return;
             const name = currentStation.name || currentStation.title || currentStation.nombre || 'Emisora';
-            const image = currentStation.image || currentStation.logo || currentStation.img || currentStation.poster || 'https://placehold.co/120x120/1e293b/ec4899?text=BOX';
+            const image = currentStation.image || currentStation.logo || currentStation.img || currentStation.poster || 'https://placehold.co/150x150/1e293b/ec4899?text=BOX';
             
             playerTitle.textContent = name;
             playerCategory.textContent = 'En Vivo';
@@ -406,7 +413,7 @@
 
             const id = getStationId(currentStation);
             const isFav = favorites.includes(id);
-            playerFavBtn.innerHTML = `<i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-xl"></i>`;
+            playerFavBtn.innerHTML = `<i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-2xl"></i>`;
         }
 
         function toggleFavorite(id) {
@@ -437,7 +444,7 @@
         function toggleMute() {
             audio.muted = !audio.muted;
             if (audio.muted) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-xl text-pink-500";
+                muteIcon.className = "fa-solid fa-volume-xmark text-2xl text-pink-500";
             } else {
                 updateVolumeIcon(audio.volume);
             }
@@ -445,11 +452,11 @@
 
         function updateVolumeIcon(vol) {
             if (vol == 0) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-xl";
+                muteIcon.className = "fa-solid fa-volume-xmark text-2xl";
             } else if (vol < 0.5) {
-                muteIcon.className = "fa-solid fa-volume-low text-xl";
+                muteIcon.className = "fa-solid fa-volume-low text-2xl";
             } else {
-                muteIcon.className = "fa-solid fa-volume-high text-xl";
+                muteIcon.className = "fa-solid fa-volume-high text-2xl";
             }
         }
 
@@ -473,7 +480,7 @@
             });
 
             if (filtered.length === 0) {
-                searchResultsContainer.innerHTML = `<p class="text-center text-slate-500 py-8">No se encontraron resultados</p>`;
+                searchResultsContainer.innerHTML = `<p class="text-center text-slate-500 py-12 text-lg">No se encontraron resultados</p>`;
                 return;
             }
 
@@ -483,15 +490,15 @@
                 const image = st.image || st.logo || st.img || st.poster || 'https://placehold.co/100x100/1e293b/ec4899?text=BOX';
                 
                 html += `
-                    <div onclick="playStation(${JSON.stringify(st).replace(/"/g, '&quot;')}); closeSearchModal();" class="car-card p-4 rounded-2xl flex items-center justify-between cursor-pointer">
-                        <div class="flex items-center space-x-4">
-                            <img src="${escapeHtml(image)}" class="w-14 h-14 rounded-xl object-cover bg-slate-950" onerror="this.src='https://placehold.co/100x100/1e293b/ec4899?text=BOX'">
+                    <div onclick="playStation(${JSON.stringify(st).replace(/"/g, '&quot;')}); closeSearchModal();" class="car-card p-5 rounded-2xl flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-5">
+                            <img src="${escapeHtml(image)}" class="w-18 h-18 rounded-2xl object-cover bg-slate-950 border border-slate-800" onerror="this.src='https://placehold.co/100x100/1e293b/ec4899?text=BOX'">
                             <div>
-                                <h4 class="text-base font-bold text-white">${escapeHtml(name)}</h4>
-                                <span class="text-xs text-pink-400">En Vivo</span>
+                                <h4 class="text-lg font-bold text-white">${escapeHtml(name)}</h4>
+                                <span class="text-sm text-pink-400 font-semibold">En Vivo</span>
                             </div>
                         </div>
-                        <span class="car-btn px-5 py-3 rounded-xl bg-pink-600 text-white font-bold text-sm">Escuchar</span>
+                        <span class="car-btn px-6 py-4 rounded-2xl bg-pink-600 text-white font-bold text-base flex items-center justify-center">Escuchar</span>
                     </div>
                 `;
             });
