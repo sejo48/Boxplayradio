@@ -37,8 +37,8 @@
 
     <style>
         ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
         }
         ::-webkit-scrollbar-track {
             background: #020617;
@@ -52,14 +52,14 @@
             user-select: none;
         }
 
-        /* Tarjeta Cuadrada de Radio con Imagen Completa */
+        /* Tarjeta Cuadrada de Radio (Imagen Completa) */
         .car-radio-square {
             aspect-ratio: 1 / 1;
             position: relative;
             overflow: hidden;
             background: #090d1a;
             border: 2px solid rgba(255, 255, 255, 0.12);
-            transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+            transition: transform 0.12s ease, border-color 0.12s ease;
         }
         .car-radio-square:active {
             transform: scale(0.96);
@@ -70,21 +70,15 @@
         .car-card-music {
             background: rgba(15, 23, 42, 0.95);
             border: 2px solid rgba(255, 255, 255, 0.12);
-            min-height: 94px;
+            min-height: 85px;
             transition: transform 0.12s ease, border-color 0.12s ease;
         }
         .car-card-music:active {
             transform: scale(0.98);
-            background: rgba(30, 41, 59, 1);
             border-color: #db2777;
         }
 
-        .car-btn {
-            min-height: 48px;
-            min-width: 48px;
-        }
-
-        /* Animación de barras en el Header */
+        /* Animación del Ecualizador en la Cabecera */
         @keyframes soundWave {
             0% { height: 15%; }
             50% { height: 100%; }
@@ -100,116 +94,108 @@
         .visualizer-active .bar-4 { animation: soundWave 0.5s infinite 0.15s ease-in-out alternate; }
         .visualizer-active .bar-5 { animation: soundWave 0.85s infinite 0.3s ease-in-out alternate; }
         .visualizer-active .bar-6 { animation: soundWave 0.4s infinite 0.05s ease-in-out alternate; }
-        .visualizer-active .bar-7 { animation: soundWave 0.7s infinite 0.2s ease-in-out alternate; }
-        .visualizer-active .bar-8 { animation: soundWave 0.55s infinite 0.35s ease-in-out alternate; }
 
-        /* Transición suave del reproductor deslizable */
+        /* Transiciones suaves de entrada y salida */
+        #topHeader {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
         #bottomPlayer {
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
 
-    <!-- Header Compacto -->
-    <header class="bg-slate-900 border-b-2 border-slate-800 px-5 py-2.5 flex items-center justify-between shadow-xl flex-shrink-0 z-30">
-        <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-600/30 flex-shrink-0">
-                <i class="fa-solid fa-car text-white text-xl"></i>
+    <!-- Header Ultra-Compacto (Se oculta para dejar 100% libre la pantalla) -->
+    <header id="topHeader" class="fixed top-0 left-0 right-0 h-12 bg-slate-900/98 backdrop-blur-md border-b-2 border-slate-800 px-4 flex items-center justify-between shadow-xl z-50">
+        
+        <!-- Logotipo y Nombre en una sola línea -->
+        <div class="flex items-center space-x-2.5 flex-shrink-0">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-car text-white text-sm"></i>
             </div>
-            <div>
-                <h1 class="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-2">
-                    <span id="headerTitle">Box Play Radio</span> 
-                    <span id="modeBadge" class="text-[10px] px-2 py-0.5 rounded-md bg-pink-600/30 text-pink-400 border border-pink-500/40 font-black uppercase">EN VIVO</span>
-                </h1>
-                <p id="headerSubtitle" class="text-xs text-slate-400 font-medium">9" Automotive Stereo Edition</p>
+            <span class="text-base font-black tracking-tight text-white">BoxPlay</span>
+            <span id="modeBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-pink-600/30 text-pink-400 border border-pink-500/40 font-black uppercase">EN VIVO</span>
+        </div>
+
+        <!-- Ecualizador de Barras Animado en la Cabecera -->
+        <div id="headerVisualizer" class="flex items-center space-x-2 px-2.5 py-1 bg-slate-950/80 rounded-lg border border-slate-800 flex-shrink-0">
+            <i class="fa-solid fa-music text-pink-500 text-xs"></i>
+            <div id="visualizerBars" class="flex items-end space-x-1 h-4 w-14">
+                <span class="w-1 bg-pink-500 rounded-full bar-anim bar-1"></span>
+                <span class="w-1 bg-pink-400 rounded-full bar-anim bar-2"></span>
+                <span class="w-1 bg-purple-400 rounded-full bar-anim bar-3"></span>
+                <span class="w-1 bg-pink-500 rounded-full bar-anim bar-4"></span>
+                <span class="w-1 bg-purple-500 rounded-full bar-anim bar-5"></span>
+                <span class="w-1 bg-pink-400 rounded-full bar-anim bar-6"></span>
             </div>
         </div>
 
-        <!-- Ecualizador de Barras en Cabecera -->
-        <div id="headerVisualizer" class="flex items-center space-x-2 px-3.5 py-1.5 bg-slate-950/80 rounded-xl border border-slate-800">
-            <span class="text-[11px] font-bold text-slate-400 tracking-wider flex items-center gap-1.5 uppercase">
-                <i class="fa-solid fa-music text-pink-500 text-xs"></i>
-                <span id="headerVisualizerStatus" class="hidden sm:inline">Pausa</span>
-            </span>
-            <div id="visualizerBars" class="flex items-end space-x-1 h-6 w-20">
-                <span class="w-1.5 bg-pink-500 rounded-full bar-anim bar-1"></span>
-                <span class="w-1.5 bg-pink-400 rounded-full bar-anim bar-2"></span>
-                <span class="w-1.5 bg-purple-400 rounded-full bar-anim bar-3"></span>
-                <span class="w-1.5 bg-pink-500 rounded-full bar-anim bar-4"></span>
-                <span class="w-1.5 bg-purple-500 rounded-full bar-anim bar-5"></span>
-                <span class="w-1.5 bg-pink-400 rounded-full bar-anim bar-6"></span>
-                <span class="w-1.5 bg-pink-600 rounded-full bar-anim bar-7"></span>
-                <span class="w-1.5 bg-purple-400 rounded-full bar-anim bar-8"></span>
-            </div>
-        </div>
-
-        <!-- Selector de Sección -->
-        <div class="flex items-center space-x-2">
-            <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button onclick="switchMode('radio')" id="tabRadioBtn" class="car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all bg-pink-600 text-white shadow">
-                    <i class="fa-solid fa-radio text-base"></i>
+        <!-- Selector de Modo y Acciones -->
+        <div class="flex items-center space-x-1.5 flex-shrink-0">
+            <div class="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+                <button onclick="switchMode('radio')" id="tabRadioBtn" class="px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow">
+                    <i class="fa-solid fa-radio text-xs"></i>
                     <span>Radio</span>
                 </button>
-                <button onclick="switchMode('music')" id="tabMusicBtn" class="car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-compact-disc text-base"></i>
-                    <span>Vox Music</span>
+                <button onclick="switchMode('music')" id="tabMusicBtn" class="px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-compact-disc text-xs"></i>
+                    <span>Música</span>
                 </button>
             </div>
 
-            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="car-btn px-4 rounded-xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-1.5 text-sm transition-all shadow">
-                <i class="fa-solid fa-heart text-pink-500 text-lg"></i>
-                <span id="favTextCount" class="hidden lg:inline">(0)</span>
+            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 flex items-center justify-center transition-all shadow" title="Favoritas">
+                <i class="fa-solid fa-heart text-pink-500 text-sm"></i>
             </button>
 
-            <button onclick="openSearchModal()" class="car-btn px-4 rounded-xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-1.5 text-sm transition-all shadow">
-                <i class="fa-solid fa-magnifying-glass text-pink-400 text-lg"></i>
+            <button onclick="openSearchModal()" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 flex items-center justify-center transition-all shadow" title="Buscar">
+                <i class="fa-solid fa-magnifying-glass text-pink-400 text-sm"></i>
             </button>
 
-            <button onclick="refreshCurrentContent()" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 hover:text-pink-400 flex items-center justify-center transition-all shadow" title="Actualizar">
-                <i class="fa-solid fa-rotate text-lg"></i>
+            <button onclick="toggleFullScreen()" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:text-pink-400 flex items-center justify-center transition-all shadow" title="Pantalla Completa">
+                <i id="fsIcon" class="fa-solid fa-expand text-sm"></i>
+            </button>
+
+            <!-- Botón para ocultar manualmente las barras -->
+            <button onclick="hideControls()" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all" title="Ocultar Menú">
+                <i class="fa-solid fa-chevron-up text-sm"></i>
             </button>
         </div>
     </header>
 
-    <!-- Área de Cuadrícula -->
-    <main id="mainContainer" class="flex-1 overflow-y-auto p-4 md:p-5 bg-slate-950 pb-20">
+    <!-- Área de Cuadrícula (Ocupa Toda la Pantalla) -->
+    <main id="mainContainer" class="flex-1 overflow-y-auto px-4 py-3 bg-slate-950 pt-14 pb-14" onclick="handleMainTap()">
         
         <!-- Banner de Favoritos Activo -->
-        <div id="favoritesActiveBanner" class="hidden mb-4 p-3.5 rounded-2xl bg-pink-950/40 border border-pink-500/50 items-center justify-between shadow-lg">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-pink-600 flex items-center justify-center text-white text-base">
-                    <i class="fa-solid fa-heart"></i>
-                </div>
-                <div>
-                    <h3 class="text-base font-extrabold text-white">Mostrando Favoritos</h3>
-                    <p class="text-[11px] text-pink-300">Tus estaciones y álbumes guardados</p>
-                </div>
+        <div id="favoritesActiveBanner" class="hidden mb-3 p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/50 items-center justify-between shadow-lg">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-heart text-pink-500 text-sm"></i>
+                <span class="text-xs font-bold text-white">Mostrando Favoritos</span>
             </div>
-            <button onclick="exitFavorites()" class="car-btn px-4 py-2 rounded-xl bg-slate-900 border border-pink-500 text-pink-400 hover:bg-pink-600 hover:text-white font-bold text-xs flex items-center space-x-1.5 transition-all shadow">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Ver Todo</span>
+            <button onclick="exitFavorites()" class="px-3 py-1 rounded-lg bg-slate-900 border border-pink-500 text-pink-400 hover:bg-pink-600 hover:text-white font-bold text-[11px] transition-all">
+                Ver Todo
             </button>
         </div>
 
-        <!-- Mensajes de Estado -->
-        <div id="statusMessage" class="hidden mb-4 p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-sm flex items-center justify-between text-slate-300 shadow-xl">
-            <div class="flex items-center space-x-2.5">
-                <i id="statusIcon" class="fa-solid fa-circle-info text-pink-400 text-lg"></i>
+        <!-- Mensajes de Estado / Notificación -->
+        <div id="statusMessage" class="hidden mb-3 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between text-slate-300 shadow-xl">
+            <div class="flex items-center space-x-2">
+                <i id="statusIcon" class="fa-solid fa-circle-info text-pink-400"></i>
                 <span id="statusText">Cargando contenido...</span>
             </div>
-            <button onclick="closeStatus()" class="car-btn p-1 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-lg"></i>
+            <button onclick="closeStatus()" class="p-1 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-sm"></i>
             </button>
         </div>
 
-        <!-- Estado de Carga -->
-        <div id="loadingState" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
-            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-2xl animate-pulse aspect-square"></div>
+        <!-- Skeletons de Carga -->
+        <div id="loadingState" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
+            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
         </div>
 
         <!-- Cuadrícula Dinámica -->
@@ -217,106 +203,103 @@
         </div>
 
         <!-- Estado Vacío -->
-        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
-            <div class="w-20 h-20 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-3xl mb-3 shadow-inner">
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-12 text-center">
+            <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-2xl mb-2">
                 <i class="fa-solid fa-compact-disc"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-200">No se encontraron elementos</h3>
-            <p class="text-sm text-slate-400 mt-1">Verifica tu conexión o cambia de sección.</p>
+            <h3 class="text-base font-bold text-slate-200">No se encontraron elementos</h3>
+            <p class="text-xs text-slate-400 mt-1">Verifica tu conexión o cambia de sección.</p>
         </div>
     </main>
 
-    <!-- Botón / Pestaña Flotante Discreta (Reabre el reproductor si está oculto) -->
-    <button id="playerHandleBtn" onclick="wakePlayer(5)" class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur border-2 border-pink-500 text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center space-x-3 z-40 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none active:scale-95">
-        <i class="fa-solid fa-compact-disc text-pink-400 text-lg animate-spin" style="animation-duration: 4s;"></i>
-        <div class="text-left min-w-0 max-w-[190px]">
-            <p id="handleTitle" class="text-xs font-bold text-white truncate">Reproduciendo</p>
-            <p id="handleSubtitle" class="text-[10px] text-pink-400 truncate">Toca para abrir controles</p>
-        </div>
-        <i class="fa-solid fa-chevron-up text-pink-400 text-sm ml-1"></i>
+    <!-- Botón Flotante Discreto (Aparece cuando los menús están ocultos) -->
+    <button id="playerHandleBtn" onclick="showControlsWithTimeout(5)" class="fixed bottom-2.5 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md border border-pink-500/70 text-white px-4 py-1.5 rounded-full shadow-2xl flex items-center space-x-2.5 z-40 transition-all duration-300 transform translate-y-16 opacity-0 pointer-events-none active:scale-95">
+        <i class="fa-solid fa-waveform text-pink-400 text-sm animate-pulse"></i>
+        <span id="handleTitle" class="text-xs font-bold text-white truncate max-w-[180px]">BoxPlay Radio</span>
+        <i class="fa-solid fa-bars text-pink-400 text-xs ml-1"></i>
     </button>
 
-    <!-- Reproductor Inferior (Desaparece tras 5 segundos) -->
-    <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-slate-900/98 backdrop-blur-md border-t-2 border-pink-600 px-5 py-2.5 z-50 shadow-2xl translate-y-full">
+    <!-- Reproductor Inferior (Se oculta tras 5 segundos de inactividad) -->
+    <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-slate-900/98 backdrop-blur-md border-t-2 border-pink-600 px-4 py-2 z-50 shadow-2xl translate-y-full">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
             
             <!-- Info Actual -->
-            <div class="flex items-center space-x-3 min-w-0 flex-1 cursor-pointer" onclick="openCurrentAlbumTracks()">
-                <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 shadow-md">
+            <div class="flex items-center space-x-2.5 min-w-0 flex-1 cursor-pointer" onclick="openCurrentAlbumTracks()">
+                <div class="relative w-11 h-11 rounded-lg overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 shadow">
                     <img id="playerImg" src="https://placehold.co/150x150/1e293b/ec4899?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
                 </div>
                 <div class="min-w-0">
-                    <h4 id="playerTitle" class="text-base font-bold text-white truncate">Selecciona una reproducción</h4>
-                    <p id="playerCategory" class="text-xs text-pink-400 font-semibold truncate mt-0.5">Listo</p>
+                    <h4 id="playerTitle" class="text-sm font-bold text-white truncate">Selecciona una emisora</h4>
+                    <p id="playerCategory" class="text-[11px] text-pink-400 font-semibold truncate">Listo</p>
                 </div>
             </div>
 
-            <!-- Controles Centrales -->
-            <div class="flex items-center space-x-2 md:space-x-3">
-                <button onclick="playPrevious()" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-lg transition-all shadow active:scale-95" title="Anterior">
+            <!-- Controles Táctiles Centrales -->
+            <div class="flex items-center space-x-2">
+                <button onclick="playPrevious()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-base transition-all active:scale-95" title="Anterior">
                     <i class="fa-solid fa-backward-step"></i>
                 </button>
 
-                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="car-btn w-14 h-14 rounded-2xl bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white flex items-center justify-center shadow-xl shadow-pink-600/40 transition-transform active:scale-95">
-                    <i id="playPauseIcon" class="fa-solid fa-play text-2xl ml-0.5"></i>
+                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="w-12 h-12 rounded-xl bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white flex items-center justify-center shadow-lg shadow-pink-600/40 transition-transform active:scale-95">
+                    <i id="playPauseIcon" class="fa-solid fa-play text-xl ml-0.5"></i>
                 </button>
 
-                <button onclick="playNext()" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-lg transition-all shadow active:scale-95" title="Siguiente">
+                <button onclick="playNext()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-base transition-all active:scale-95" title="Siguiente">
                     <i class="fa-solid fa-forward-step"></i>
                 </button>
 
-                <div id="spinnerLoader" class="hidden w-9 h-9 border-3 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                <div id="spinnerLoader" class="hidden w-8 h-8 border-3 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
 
-                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="car-btn w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-300 hover:text-pink-500 flex items-center justify-center text-xl transition-all shadow">
+                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-300 hover:text-pink-500 flex items-center justify-center text-lg transition-all">
                     <i class="fa-regular fa-heart"></i>
                 </button>
 
-                <button onclick="hidePlayer()" class="car-btn w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm transition-all" title="Ocultar barra">
+                <button onclick="hideControls()" class="w-9 h-9 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-all" title="Ocultar">
                     <i class="fa-solid fa-chevron-down"></i>
                 </button>
             </div>
 
-            <!-- Volumen -->
-            <div class="hidden md:flex items-center space-x-3 w-44 justify-end">
-                <button onclick="toggleMute()" id="muteBtn" class="car-btn p-1 text-slate-300 hover:text-white">
-                    <i id="muteIcon" class="fa-solid fa-volume-high text-xl"></i>
+            <!-- Control de Volumen -->
+            <div class="hidden sm:flex items-center space-x-2 w-36 justify-end">
+                <button onclick="toggleMute()" id="muteBtn" class="p-1 text-slate-300 hover:text-white">
+                    <i id="muteIcon" class="fa-solid fa-volume-high text-base"></i>
                 </button>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-28 accent-pink-500 bg-slate-800 rounded-lg h-2 cursor-pointer">
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-24 accent-pink-500 bg-slate-800 rounded-lg h-2 cursor-pointer">
             </div>
 
         </div>
     </footer>
 
-    <!-- Modal de Pistas de Álbum -->
-    <div id="tracksModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-5 hidden">
-        <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col">
-            <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-3">
+    <!-- Modal de Pistas de Álbum (Vox Music) -->
+    <div id="tracksModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-4 hidden">
+        <div class="max-w-3xl mx-auto w-full flex-1 flex flex-col">
+            <div class="flex items-center justify-between mb-2.5 border-b border-slate-800 pb-2.5">
                 <div class="flex items-center space-x-3 min-w-0">
-                    <img id="modalAlbumCover" src="" class="w-14 h-14 rounded-xl object-cover bg-slate-900 border border-slate-700">
+                    <img id="modalAlbumCover" src="" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-slate-700">
                     <div class="min-w-0">
-                        <h3 class="text-lg font-black text-white truncate" id="modalAlbumTitle">Álbum</h3>
+                        <h3 class="text-base font-black text-white truncate" id="modalAlbumTitle">Álbum</h3>
                         <p class="text-xs text-pink-400 font-semibold truncate" id="modalAlbumArtist">Artista</p>
                     </div>
                 </div>
-                <button onclick="closeTracksModal()" class="car-btn px-5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">Cerrar</button>
+                <button onclick="closeTracksModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs">Cerrar</button>
             </div>
-            <div id="modalTracksList" class="flex-1 overflow-y-auto space-y-2 pb-8">
+            <div id="modalTracksList" class="flex-1 overflow-y-auto space-y-2 pb-6">
             </div>
         </div>
     </div>
 
     <!-- Modal de Búsqueda -->
-    <div id="searchModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-5 hidden">
-        <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-black text-white" id="searchModalTitle">Buscar en Box Play</h3>
-                <button onclick="closeSearchModal()" class="car-btn px-5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">Cerrar</button>
+    <div id="searchModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-4 hidden">
+        <div class="max-w-3xl mx-auto w-full flex-1 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-black text-white" id="searchModalTitle">Buscar en Box Play</h3>
+                <button onclick="closeSearchModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs">Cerrar</button>
             </div>
-            <div class="relative w-full mb-4">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400 text-lg"></i>
-                <input type="text" id="modalSearchInput" placeholder="Escribe para buscar..." class="w-full bg-slate-900 border border-slate-700 text-lg rounded-xl pl-12 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
+            <div class="relative w-full mb-3">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-base"></i>
+                <input type="text" id="modalSearchInput" placeholder="Escribe para buscar..." class="w-full bg-slate-900 border border-slate-700 text-base rounded-xl pl-10 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
             </div>
-            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-2 pb-8">
+            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-2 pb-6">
             </div>
         </div>
     </div>
@@ -350,10 +333,12 @@
         const MAX_RECONNECT_ATTEMPTS = 3;
         let statusTimeout = null;
 
-        let playerHideTimer = null;
+        // Temporizador de auto-ocultamiento de barras (5 segundos)
+        let controlsHideTimer = null;
         const AUTO_HIDE_SECONDS = 5;
 
         const audio = document.getElementById('audioStream');
+        const mainContainer = document.getElementById('mainContainer');
         const contentGrid = document.getElementById('contentGrid');
         const loadingState = document.getElementById('loadingState');
         const emptyState = document.getElementById('emptyState');
@@ -368,24 +353,19 @@
         const muteBtn = document.getElementById('muteBtn');
         const muteIcon = document.getElementById('muteIcon');
         const favFilterBtn = document.getElementById('favFilterBtn');
-        const favTextCount = document.getElementById('favTextCount');
         const searchModal = document.getElementById('searchModal');
         const modalSearchInput = document.getElementById('modalSearchInput');
         const searchResultsContainer = document.getElementById('searchResultsContainer');
         const favoritesActiveBanner = document.getElementById('favoritesActiveBanner');
         const tabRadioBtn = document.getElementById('tabRadioBtn');
         const tabMusicBtn = document.getElementById('tabMusicBtn');
-        const headerTitle = document.getElementById('headerTitle');
-        const headerSubtitle = document.getElementById('headerSubtitle');
         const modeBadge = document.getElementById('modeBadge');
         
+        const topHeader = document.getElementById('topHeader');
         const bottomPlayer = document.getElementById('bottomPlayer');
         const playerHandleBtn = document.getElementById('playerHandleBtn');
         const handleTitle = document.getElementById('handleTitle');
-        const handleSubtitle = document.getElementById('handleSubtitle');
-
         const visualizerBars = document.getElementById('visualizerBars');
-        const headerVisualizerStatus = document.getElementById('headerVisualizerStatus');
 
         const tracksModal = document.getElementById('tracksModal');
         const modalAlbumCover = document.getElementById('modalAlbumCover');
@@ -401,7 +381,7 @@
                 audio.volume = parseFloat(e.target.value);
                 audio.muted = false;
                 updateVolumeIcon(audio.volume);
-                keepPlayerAlive();
+                keepControlsAlive();
             });
 
             modalSearchInput.addEventListener('input', (e) => {
@@ -430,47 +410,76 @@
                 }
             });
 
-            bottomPlayer.addEventListener('pointerdown', () => keepPlayerAlive());
-            bottomPlayer.addEventListener('touchstart', () => keepPlayerAlive());
+            // Mantener visible al tocar la barra superior o inferior
+            topHeader.addEventListener('pointerdown', () => keepControlsAlive());
+            bottomPlayer.addEventListener('pointerdown', () => keepControlsAlive());
 
             setupMediaSessionHandlers();
         });
 
-        function showPlayerWithTimeout(seconds = AUTO_HIDE_SECONDS) {
-            bottomPlayer.classList.remove('translate-y-full');
-            
-            playerHandleBtn.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-            playerHandleBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-
-            keepPlayerAlive(seconds);
+        // Al tocar el fondo de la pantalla mientras las barras están ocultas, reaparecen 5 segundos
+        function handleMainTap() {
+            if (bottomPlayer.classList.contains('translate-y-full')) {
+                showControlsWithTimeout(AUTO_HIDE_SECONDS);
+            }
         }
 
-        function hidePlayer() {
+        // Muestra tanto Header como BottomPlayer con temporizador
+        function showControlsWithTimeout(seconds = AUTO_HIDE_SECONDS) {
+            topHeader.classList.remove('-translate-y-full');
+            bottomPlayer.classList.remove('translate-y-full');
+            mainContainer.classList.remove('pt-2', 'pb-4');
+            mainContainer.classList.add('pt-14', 'pb-14');
+
+            // Ocultar píldora flotante
+            playerHandleBtn.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
+            playerHandleBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+
+            keepControlsAlive(seconds);
+        }
+
+        // Oculta ambas barras para dejar libre el 100% de la pantalla
+        function hideControls() {
+            topHeader.classList.add('-translate-y-full');
             bottomPlayer.classList.add('translate-y-full');
-            if (playerHideTimer) clearTimeout(playerHideTimer);
+            mainContainer.classList.remove('pt-14', 'pb-14');
+            mainContainer.classList.add('pt-2', 'pb-4');
+
+            if (controlsHideTimer) clearTimeout(controlsHideTimer);
 
             if (currentItem) {
-                playerHandleBtn.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+                playerHandleBtn.classList.remove('translate-y-16', 'opacity-0', 'pointer-events-none');
                 playerHandleBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
             }
         }
 
-        function keepPlayerAlive(seconds = AUTO_HIDE_SECONDS) {
-            if (playerHideTimer) clearTimeout(playerHideTimer);
-            playerHideTimer = setTimeout(() => {
-                hidePlayer();
+        function keepControlsAlive(seconds = AUTO_HIDE_SECONDS) {
+            if (controlsHideTimer) clearTimeout(controlsHideTimer);
+            controlsHideTimer = setTimeout(() => {
+                hideControls();
             }, seconds * 1000);
         }
 
-        function wakePlayer(seconds = AUTO_HIDE_SECONDS) {
-            showPlayerWithTimeout(seconds);
+        function toggleFullScreen() {
+            const fsIcon = document.getElementById('fsIcon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    fsIcon.className = "fa-solid fa-compress text-sm text-pink-400";
+                }).catch(err => console.log(err));
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().then(() => {
+                        fsIcon.className = "fa-solid fa-expand text-sm";
+                    }).catch(err => console.log(err));
+                }
+            }
         }
 
         async function loadAllData() {
             loadingState.classList.remove('hidden');
             contentGrid.classList.add('hidden');
             emptyState.classList.add('hidden');
-            showStatus('Cargando colecciones...', 'info');
+            showStatus('Cargando...', 'info');
 
             const cacheBuster = `?_t=${Date.now()}`;
 
@@ -492,6 +501,8 @@
 
                 renderCurrentContent();
                 hideStatus();
+                // Ocultar las barras inicialmente a los 5 segundos para dejar la cuadrícula limpia
+                keepControlsAlive(AUTO_HIDE_SECONDS);
             } catch (error) {
                 console.error(error);
                 showStatus('Error al conectar con los servidores.', 'error');
@@ -500,31 +511,24 @@
             }
         }
 
-        function refreshCurrentContent() {
-            loadAllData();
-        }
-
         function switchMode(mode) {
             if (currentMode === mode) return;
             currentMode = mode;
             searchQuery = '';
             
             if (mode === 'radio') {
-                tabRadioBtn.className = "car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all bg-pink-600 text-white shadow";
-                tabMusicBtn.className = "car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all text-slate-400 hover:text-white";
-                headerTitle.textContent = "Box Play Radio";
-                headerSubtitle.textContent = "9\" Automotive Stereo Edition";
+                tabRadioBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow";
+                tabMusicBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white";
                 modeBadge.textContent = "EN VIVO";
             } else {
-                tabMusicBtn.className = "car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all bg-pink-600 text-white shadow";
-                tabRadioBtn.className = "car-btn px-4 rounded-lg font-bold text-sm md:text-base flex items-center space-x-2 transition-all text-slate-400 hover:text-white";
-                headerTitle.textContent = "Vox Music";
-                headerSubtitle.textContent = "Colección de Álbumes y Clásicos";
+                tabMusicBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow";
+                tabRadioBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white";
                 modeBadge.textContent = "ÁLBUMES";
             }
 
             renderCurrentContent();
             updateFavoritesBadge();
+            keepControlsAlive();
         }
 
         function toggleFavoritesFilter() {
@@ -537,6 +541,7 @@
                 exitFavorites();
             }
             renderCurrentContent();
+            keepControlsAlive();
         }
 
         function exitFavorites() {
@@ -600,7 +605,6 @@
             });
         }
 
-        // Renderizado Dinámico
         function renderCurrentContent() {
             loadingState.classList.add('hidden');
             renderedGridItems = getFilteredList();
@@ -618,8 +622,8 @@
             let html = '';
 
             if (currentMode === 'radio') {
-                // Cuadrícula de Tarjetas Cuadradas con Imagen que Abarca Toda la Tarjeta
-                contentGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5";
+                // Cuadrícula de Tarjetas Cuadradas con Imagen de Borde a Borde
+                contentGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3";
 
                 renderedGridItems.forEach((item, index) => {
                     const id = getItemId(item);
@@ -632,33 +636,33 @@
                     html += `
                         <div onclick="handleCardClick(${index})" class="car-radio-square rounded-2xl relative overflow-hidden cursor-pointer group ${isCurrent ? 'border-2 border-pink-500 shadow-2xl shadow-pink-500/40 ring-2 ring-pink-500/50' : 'border-2 border-slate-800/80 hover:border-slate-700'}">
                             
-                            <!-- Imagen de Fondo que Abarca Toda la Tarjeta Cuadrada -->
+                            <!-- Imagen de Fondo Completa -->
                             <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="absolute inset-0 w-full h-full object-cover bg-slate-950 transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/300x300/1e293b/ec4899?text=RADIO'">
 
-                            <!-- Capa Degradada para Contraste y Legibilidad Óptima -->
+                            <!-- Degradado para Legibilidad de Textos -->
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/30"></div>
 
-                            <!-- Animación Central de Reproducción Activa -->
+                            <!-- Indicador de Reproducción Activa -->
                             ${isCurrent && !audio.paused ? `
                                 <div class="absolute inset-0 bg-pink-950/40 backdrop-blur-[1px] flex items-center justify-center">
-                                    <div class="w-12 h-12 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-lg shadow-pink-600/50 animate-pulse">
-                                        <i class="fa-solid fa-volume-high text-xl"></i>
+                                    <div class="w-11 h-11 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-lg shadow-pink-600/50 animate-pulse">
+                                        <i class="fa-solid fa-volume-high text-lg"></i>
                                     </div>
                                 </div>
                             ` : ''}
 
-                            <!-- Parte Superior: Badge y Botón de Favorito Flotante -->
-                            <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
-                                <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${isCurrent && !audio.paused ? 'bg-pink-600 text-white' : 'bg-slate-950/80 text-pink-400 border border-pink-500/40'} shadow-md backdrop-blur-sm">
-                                    ${isCurrent && !audio.paused ? '▶ EN VIVO' : 'RADIO'}
+                            <!-- Badge Superior y Favorito -->
+                            <div class="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
+                                <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${isCurrent && !audio.paused ? 'bg-pink-600 text-white' : 'bg-slate-950/80 text-pink-400 border border-pink-500/40'} shadow-md backdrop-blur-sm">
+                                    ${isCurrent && !audio.paused ? 'EN VIVO' : 'RADIO'}
                                 </span>
-                                <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="w-8 h-8 rounded-full bg-slate-950/70 border border-slate-700/60 text-slate-300 hover:text-pink-500 flex items-center justify-center backdrop-blur-sm shadow-md transition-colors">
-                                    <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular text-white'} fa-heart text-sm"></i>
+                                <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="w-7 h-7 rounded-full bg-slate-950/70 border border-slate-700/60 text-slate-300 hover:text-pink-500 flex items-center justify-center backdrop-blur-sm shadow-md transition-colors">
+                                    <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular text-white'} fa-heart text-xs"></i>
                                 </button>
                             </div>
 
-                            <!-- Parte Inferior: Nombre y Género de la Estación -->
-                            <div class="absolute bottom-2 left-2.5 right-2.5 text-left z-10">
+                            <!-- Nombre y Género de la Estación -->
+                            <div class="absolute bottom-2 left-2 right-2 text-left z-10">
                                 <h3 class="text-xs md:text-sm font-black text-white truncate drop-shadow-md leading-tight">${escapeHtml(name)}</h3>
                                 <p class="text-[10px] text-pink-300 font-bold truncate mt-0.5 drop-shadow">${escapeHtml(subtitle)}</p>
                             </div>
@@ -667,7 +671,7 @@
                 });
             } else {
                 // Cuadrícula Horizontal para Álbumes en Vox Music
-                contentGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5";
+                contentGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3";
 
                 renderedGridItems.forEach((item, index) => {
                     const id = getItemId(item);
@@ -678,22 +682,22 @@
                     const isCurrent = currentItem && currentAlbum && getItemId(currentAlbum) === id;
 
                     html += `
-                        <div onclick="handleCardClick(${index})" class="car-card-music p-3 rounded-2xl flex items-center justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-xl shadow-pink-500/20 ring-1 ring-pink-500/40' : ''}">
+                        <div onclick="handleCardClick(${index})" class="car-card-music p-2.5 rounded-xl flex items-center justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-xl shadow-pink-500/20 ring-1 ring-pink-500/40' : ''}">
                             <div class="flex items-center space-x-3 min-w-0 flex-1">
-                                <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow">
+                                <div class="relative w-14 h-14 rounded-lg overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow">
                                     <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/1e293b/ec4899?text=BOX'">
-                                    ${isCurrent && !audio.paused ? '<div class="absolute inset-0 bg-pink-600/70 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-lg"></i></div>' : ''}
+                                    ${isCurrent && !audio.paused ? '<div class="absolute inset-0 bg-pink-600/70 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-base"></i></div>' : ''}
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <h3 class="text-sm md:text-base font-bold text-white truncate leading-snug">${escapeHtml(name)}</h3>
+                                    <h3 class="text-sm font-bold text-white truncate leading-snug">${escapeHtml(name)}</h3>
                                     <p class="text-[11px] text-pink-400 font-semibold truncate mt-0.5">${escapeHtml(subtitle)}</p>
-                                    <span class="text-[10px] text-slate-400 mt-1 inline-block">📂 Ver Pistas</span>
+                                    <span class="text-[10px] text-slate-400 mt-0.5 inline-block">📂 Ver Pistas</span>
                                 </div>
                             </div>
 
                             <div class="flex items-center space-x-1 pl-2">
-                                <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="car-btn p-2 text-slate-400 hover:text-pink-500 flex items-center justify-center">
-                                    <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-xl"></i>
+                                <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="p-2 text-slate-400 hover:text-pink-500 flex items-center justify-center">
+                                    <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-lg"></i>
                                 </button>
                             </div>
                         </div>
@@ -710,7 +714,8 @@
 
             if (currentMode === 'radio') {
                 playRadio(item);
-                showPlayerWithTimeout(AUTO_HIDE_SECONDS);
+                // Muestra ambas barras al pulsar la emisora y programa su ocultamiento a los 5 segundos
+                showControlsWithTimeout(AUTO_HIDE_SECONDS);
             } else {
                 openAlbumModal(item);
             }
@@ -762,20 +767,20 @@
             let html = '';
 
             if (tracks.length === 0) {
-                html = `<p class="text-center text-slate-500 py-8 text-base">No hay pistas registradas en este álbum.</p>`;
+                html = `<p class="text-center text-slate-500 py-6 text-sm">No hay pistas en este álbum.</p>`;
             } else {
                 tracks.forEach((track, tIdx) => {
                     const isTrackActive = currentAlbum === album && currentTrackIndex === tIdx && !audio.paused;
                     html += `
-                        <div onclick="playAlbumTrackByIndex(${albumList.indexOf(album)}, ${tIdx})" class="car-card-music p-3 rounded-xl flex items-center justify-between cursor-pointer ${isTrackActive ? 'border-pink-500 bg-slate-900 ring-1 ring-pink-500' : ''}">
+                        <div onclick="playAlbumTrackByIndex(${albumList.indexOf(album)}, ${tIdx})" class="car-card-music p-2.5 rounded-xl flex items-center justify-between cursor-pointer ${isTrackActive ? 'border-pink-500 bg-slate-900 ring-1 ring-pink-500' : ''}">
                             <div class="flex items-center space-x-3 min-w-0">
-                                <span class="w-6 text-center font-bold text-slate-400 text-sm">${tIdx + 1}</span>
+                                <span class="w-5 text-center font-bold text-slate-400 text-xs">${tIdx + 1}</span>
                                 <div class="min-w-0">
-                                    <h4 class="text-sm font-bold text-white truncate">${escapeHtml(track.title || 'Pista')}</h4>
-                                    <span class="text-[11px] text-slate-400">${track.duration ? 'Duración: ' + track.duration : ''}</span>
+                                    <h4 class="text-xs font-bold text-white truncate">${escapeHtml(track.title || 'Pista')}</h4>
+                                    <span class="text-[10px] text-slate-400">${track.duration ? 'Duración: ' + track.duration : ''}</span>
                                 </div>
                             </div>
-                            <span class="car-btn px-4 py-1.5 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                            <span class="px-3 py-1 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
                                 ${isTrackActive ? '<i class="fa-solid fa-volume-high"></i>' : 'Reproducir'}
                             </span>
                         </div>
@@ -800,7 +805,7 @@
             if (album) {
                 playAlbumTrack(album, trackIdx);
                 closeTracksModal();
-                showPlayerWithTimeout(AUTO_HIDE_SECONDS);
+                showControlsWithTimeout(AUTO_HIDE_SECONDS);
             }
         }
 
@@ -846,13 +851,13 @@
         function handlePlaybackError() {
             if (currentItem && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                 reconnectAttempts++;
-                showStatus(`Reintentando conexión (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, 'warning');
+                showStatus(`Reintentando (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, 'warning');
                 setTimeout(() => {
                     if (currentMode === 'radio' && currentItem) playRadio(currentItem);
                     if (currentMode === 'music' && currentAlbum) playAlbumTrack(currentAlbum, currentTrackIndex);
                 }, 2000);
             } else {
-                showStatus('Error al reproducir el flujo multimedia.', 'error');
+                showStatus('Error al reproducir el flujo.', 'error');
                 setLoadingState(false);
                 setIsPlaying(false);
                 reconnectAttempts = 0;
@@ -861,7 +866,7 @@
 
         function togglePlayPause() {
             if (!currentItem) return;
-            keepPlayerAlive();
+            keepControlsAlive();
 
             if (audio.paused) {
                 audio.play().then(() => setIsPlaying(true)).catch(() => handlePlaybackError());
@@ -873,7 +878,7 @@
         }
 
         function playNext() {
-            keepPlayerAlive();
+            keepControlsAlive();
             if (currentMode === 'radio') {
                 const list = getFilteredList();
                 if (!list.length) return;
@@ -887,7 +892,7 @@
         }
 
         function playPrevious() {
-            keepPlayerAlive();
+            keepControlsAlive();
             if (currentMode === 'radio') {
                 const list = getFilteredList();
                 if (!list.length) return;
@@ -902,13 +907,11 @@
 
         function setIsPlaying(isPlaying) {
             if (isPlaying) {
-                playPauseIcon.className = "fa-solid fa-pause text-xl";
+                playPauseIcon.className = "fa-solid fa-pause text-lg";
                 visualizerBars.classList.add('visualizer-active');
-                headerVisualizerStatus.textContent = currentMode === 'radio' ? 'Radio ON' : 'Music ON';
             } else {
-                playPauseIcon.className = "fa-solid fa-play text-xl ml-0.5";
+                playPauseIcon.className = "fa-solid fa-play text-lg ml-0.5";
                 visualizerBars.classList.remove('visualizer-active');
-                headerVisualizerStatus.textContent = 'Pausa';
             }
         }
 
@@ -944,12 +947,11 @@
             playerImg.src = coverImg;
 
             handleTitle.textContent = title;
-            handleSubtitle.textContent = subtitle;
 
             playPauseBtn.disabled = false;
             const id = currentMode === 'radio' ? getItemId(currentItem) : getItemId(currentAlbum);
             const favs = getActiveFavorites();
-            playerFavBtn.innerHTML = `<i class="${favs.includes(id) ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-xl"></i>`;
+            playerFavBtn.innerHTML = `<i class="${favs.includes(id) ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-base"></i>`;
         }
 
         function toggleFavoriteById(id) {
@@ -976,21 +978,21 @@
 
         function toggleFavoriteCurrent() {
             if (!currentItem) return;
-            keepPlayerAlive();
+            keepControlsAlive();
             const id = currentMode === 'radio' ? getItemId(currentItem) : getItemId(currentAlbum);
             toggleFavoriteById(id);
         }
 
         function updateFavoritesBadge() {
             const count = getActiveFavorites().length;
-            favTextCount.textContent = `(${count})`;
+            favFilterBtn.title = `Favoritas (${count})`;
         }
 
         function toggleMute() {
-            keepPlayerAlive();
+            keepControlsAlive();
             audio.muted = !audio.muted;
             if (audio.muted) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-xl text-pink-500";
+                muteIcon.className = "fa-solid fa-volume-xmark text-base text-pink-500";
             } else {
                 updateVolumeIcon(audio.volume);
             }
@@ -998,11 +1000,11 @@
 
         function updateVolumeIcon(vol) {
             if (audio.muted || vol === 0) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-xl";
+                muteIcon.className = "fa-solid fa-volume-xmark text-base";
             } else if (vol < 0.5) {
-                muteIcon.className = "fa-solid fa-volume-low text-xl";
+                muteIcon.className = "fa-solid fa-volume-low text-base";
             } else {
-                muteIcon.className = "fa-solid fa-volume-high text-xl";
+                muteIcon.className = "fa-solid fa-volume-high text-base";
             }
         }
 
@@ -1054,7 +1056,7 @@
             });
 
             if (renderedSearchItems.length === 0) {
-                searchResultsContainer.innerHTML = `<p class="text-center text-slate-500 py-12 text-base">No se encontraron resultados</p>`;
+                searchResultsContainer.innerHTML = `<p class="text-center text-slate-500 py-8 text-sm">No se encontraron resultados</p>`;
                 return;
             }
 
@@ -1065,15 +1067,15 @@
                 const image = getItemImage(item);
                 
                 html += `
-                    <div onclick="playSearchIndex(${index})" class="car-card-music p-3 rounded-xl flex items-center justify-between cursor-pointer">
+                    <div onclick="playSearchIndex(${index})" class="car-card-music p-2.5 rounded-xl flex items-center justify-between cursor-pointer">
                         <div class="flex items-center space-x-3 min-w-0">
-                            <img src="${escapeHtml(image)}" class="w-14 h-14 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
+                            <img src="${escapeHtml(image)}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
                             <div class="min-w-0">
-                                <h4 class="text-sm font-bold text-white truncate">${escapeHtml(name)}</h4>
-                                <span class="text-[11px] text-pink-400 font-semibold">${escapeHtml(subtitle)}</span>
+                                <h4 class="text-xs font-bold text-white truncate">${escapeHtml(name)}</h4>
+                                <span class="text-[10px] text-pink-400 font-semibold">${escapeHtml(subtitle)}</span>
                             </div>
                         </div>
-                        <span class="car-btn px-4 py-1.5 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                        <span class="px-3 py-1 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
                             ${currentMode === 'radio' ? 'Sintonizar' : 'Ver Pistas'}
                         </span>
                     </div>
@@ -1088,7 +1090,7 @@
                 closeSearchModal();
                 if (currentMode === 'radio') {
                     playRadio(item);
-                    showPlayerWithTimeout(AUTO_HIDE_SECONDS);
+                    showControlsWithTimeout(AUTO_HIDE_SECONDS);
                 } else {
                     openAlbumModal(item);
                 }
@@ -1103,18 +1105,18 @@
             statusText.textContent = text;
             
             if (type === 'error') {
-                statusIcon.className = "fa-solid fa-triangle-exclamation text-rose-500 text-base";
+                statusIcon.className = "fa-solid fa-triangle-exclamation text-rose-500 text-sm";
             } else if (type === 'warning') {
-                statusIcon.className = "fa-solid fa-circle-exclamation text-amber-400 text-base";
+                statusIcon.className = "fa-solid fa-circle-exclamation text-amber-400 text-sm";
             } else {
-                statusIcon.className = "fa-solid fa-circle-info text-pink-400 text-base";
+                statusIcon.className = "fa-solid fa-circle-info text-pink-400 text-sm";
             }
 
             statusMsg.classList.remove('hidden');
 
             if (statusTimeout) clearTimeout(statusTimeout);
             if (type !== 'info') {
-                statusTimeout = setTimeout(() => hideStatus(), 4000);
+                statusTimeout = setTimeout(() => hideStatus(), 3500);
             }
         }
 
