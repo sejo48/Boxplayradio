@@ -14,7 +14,7 @@
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- HLS.js para streams .m3u8 -->
+    <!-- HLS.js para streams de TV y Radio .m3u8 -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <script>
@@ -52,8 +52,8 @@
             user-select: none;
         }
 
-        /* Tarjeta Cuadrada de Radio (Imagen Completa) */
-        .car-radio-square {
+        /* Tarjeta Cuadrada de Radio y TV */
+        .car-media-square {
             aspect-ratio: 1 / 1;
             position: relative;
             overflow: hidden;
@@ -61,20 +61,8 @@
             border: 2px solid rgba(255, 255, 255, 0.12);
             transition: transform 0.12s ease, border-color 0.12s ease;
         }
-        .car-radio-square:active {
+        .car-media-square:active {
             transform: scale(0.96);
-            border-color: #db2777;
-        }
-
-        /* Tarjetas Horizontales para Álbumes en Vox Music */
-        .car-card-music {
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px solid rgba(255, 255, 255, 0.12);
-            min-height: 85px;
-            transition: transform 0.12s ease, border-color 0.12s ease;
-        }
-        .car-card-music:active {
-            transform: scale(0.98);
             border-color: #db2777;
         }
 
@@ -95,7 +83,7 @@
         .visualizer-active .bar-5 { animation: soundWave 0.85s infinite 0.3s ease-in-out alternate; }
         .visualizer-active .bar-6 { animation: soundWave 0.4s infinite 0.05s ease-in-out alternate; }
 
-        /* Transiciones suaves de entrada y salida */
+        /* Transiciones suaves */
         #topHeader {
             transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -106,21 +94,21 @@
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
 
-    <!-- Header Ultra-Compacto (Se oculta para dejar 100% libre la pantalla) -->
+    <!-- Header Ultra-Compacto -->
     <header id="topHeader" class="fixed top-0 left-0 right-0 h-12 bg-slate-900/98 backdrop-blur-md border-b-2 border-slate-800 px-4 flex items-center justify-between shadow-xl z-50">
         
-        <!-- Logotipo y Nombre en una sola línea -->
+        <!-- Logotipo y Título -->
         <div class="flex items-center space-x-2.5 flex-shrink-0">
             <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-md">
                 <i class="fa-solid fa-car text-white text-sm"></i>
             </div>
-            <span class="text-base font-black tracking-tight text-white">BoxPlay</span>
-            <span id="modeBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-pink-600/30 text-pink-400 border border-pink-500/40 font-black uppercase">EN VIVO</span>
+            <span class="text-base font-black tracking-tight text-white" id="appMainTitle">BoxPlay Radio</span>
+            <span id="modeBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-pink-600/30 text-pink-400 border border-pink-500/40 font-black uppercase">RADIO</span>
         </div>
 
-        <!-- Ecualizador de Barras Animado en la Cabecera -->
+        <!-- Ecualizador de Barras en Cabecera -->
         <div id="headerVisualizer" class="flex items-center space-x-2 px-2.5 py-1 bg-slate-950/80 rounded-lg border border-slate-800 flex-shrink-0">
-            <i class="fa-solid fa-music text-pink-500 text-xs"></i>
+            <i id="headerModeIcon" class="fa-solid fa-radio text-pink-500 text-xs"></i>
             <div id="visualizerBars" class="flex items-end space-x-1 h-4 w-14">
                 <span class="w-1 bg-pink-500 rounded-full bar-anim bar-1"></span>
                 <span class="w-1 bg-pink-400 rounded-full bar-anim bar-2"></span>
@@ -131,16 +119,16 @@
             </div>
         </div>
 
-        <!-- Selector de Modo y Acciones -->
+        <!-- Selector de Sección: Radio vs TV -->
         <div class="flex items-center space-x-1.5 flex-shrink-0">
             <div class="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800">
                 <button onclick="switchMode('radio')" id="tabRadioBtn" class="px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow">
                     <i class="fa-solid fa-radio text-xs"></i>
                     <span>Radio</span>
                 </button>
-                <button onclick="switchMode('music')" id="tabMusicBtn" class="px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-compact-disc text-xs"></i>
-                    <span>Música</span>
+                <button onclick="switchMode('tv')" id="tabTvBtn" class="px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-tv text-xs"></i>
+                    <span>TV</span>
                 </button>
             </div>
 
@@ -156,32 +144,31 @@
                 <i id="fsIcon" class="fa-solid fa-expand text-sm"></i>
             </button>
 
-            <!-- Botón para ocultar manualmente las barras -->
             <button onclick="hideControls()" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all" title="Ocultar Menú">
                 <i class="fa-solid fa-chevron-up text-sm"></i>
             </button>
         </div>
     </header>
 
-    <!-- Área de Cuadrícula (Ocupa Toda la Pantalla) -->
+    <!-- Área de Cuadrícula de Tarjetas -->
     <main id="mainContainer" class="flex-1 overflow-y-auto px-4 py-3 bg-slate-950 pt-14 pb-14" onclick="handleMainTap()">
         
         <!-- Banner de Favoritos Activo -->
         <div id="favoritesActiveBanner" class="hidden mb-3 p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/50 items-center justify-between shadow-lg">
             <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-heart text-pink-500 text-sm"></i>
-                <span class="text-xs font-bold text-white">Mostrando Favoritos</span>
+                <span class="text-xs font-bold text-white">Mostrando Favoritos Guardados</span>
             </div>
             <button onclick="exitFavorites()" class="px-3 py-1 rounded-lg bg-slate-900 border border-pink-500 text-pink-400 hover:bg-pink-600 hover:text-white font-bold text-[11px] transition-all">
                 Ver Todo
             </button>
         </div>
 
-        <!-- Mensajes de Estado / Notificación -->
+        <!-- Mensajes de Notificación -->
         <div id="statusMessage" class="hidden mb-3 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between text-slate-300 shadow-xl">
             <div class="flex items-center space-x-2">
                 <i id="statusIcon" class="fa-solid fa-circle-info text-pink-400"></i>
-                <span id="statusText">Cargando contenido...</span>
+                <span id="statusText">Cargando canales y emisoras...</span>
             </div>
             <button onclick="closeStatus()" class="p-1 text-slate-400 hover:text-white">
                 <i class="fa-solid fa-xmark text-sm"></i>
@@ -198,33 +185,32 @@
             <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
         </div>
 
-        <!-- Cuadrícula Dinámica -->
+        <!-- Contenedor Dinámico de Tarjetas Cuadradas -->
         <div id="contentGrid" class="hidden">
         </div>
 
         <!-- Estado Vacío -->
         <div id="emptyState" class="hidden flex flex-col items-center justify-center py-12 text-center">
             <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-2xl mb-2">
-                <i class="fa-solid fa-compact-disc"></i>
+                <i class="fa-solid fa-tv"></i>
             </div>
             <h3 class="text-base font-bold text-slate-200">No se encontraron elementos</h3>
             <p class="text-xs text-slate-400 mt-1">Verifica tu conexión o cambia de sección.</p>
         </div>
     </main>
 
-    <!-- Botón Flotante Discreto (Aparece cuando los menús están ocultos) -->
+    <!-- Botón Flotante Discreto -->
     <button id="playerHandleBtn" onclick="showControlsWithTimeout(5)" class="fixed bottom-2.5 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md border border-pink-500/70 text-white px-4 py-1.5 rounded-full shadow-2xl flex items-center space-x-2.5 z-40 transition-all duration-300 transform translate-y-16 opacity-0 pointer-events-none active:scale-95">
         <i class="fa-solid fa-waveform text-pink-400 text-sm animate-pulse"></i>
-        <span id="handleTitle" class="text-xs font-bold text-white truncate max-w-[180px]">BoxPlay Radio</span>
+        <span id="handleTitle" class="text-xs font-bold text-white truncate max-w-[180px]">BoxPlay</span>
         <i class="fa-solid fa-bars text-pink-400 text-xs ml-1"></i>
     </button>
 
-    <!-- Reproductor Inferior (Se oculta tras 5 segundos de inactividad) -->
+    <!-- Reproductor Inferior de Radio (Se oculta a los 5 segundos) -->
     <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-slate-900/98 backdrop-blur-md border-t-2 border-pink-600 px-4 py-2 z-50 shadow-2xl translate-y-full">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
             
-            <!-- Info Actual -->
-            <div class="flex items-center space-x-2.5 min-w-0 flex-1 cursor-pointer" onclick="openCurrentAlbumTracks()">
+            <div class="flex items-center space-x-2.5 min-w-0 flex-1">
                 <div class="relative w-11 h-11 rounded-lg overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 shadow">
                     <img id="playerImg" src="https://placehold.co/150x150/1e293b/ec4899?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
                 </div>
@@ -234,7 +220,7 @@
                 </div>
             </div>
 
-            <!-- Controles Táctiles Centrales -->
+            <!-- Controles Centrales -->
             <div class="flex items-center space-x-2">
                 <button onclick="playPrevious()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-base transition-all active:scale-95" title="Anterior">
                     <i class="fa-solid fa-backward-step"></i>
@@ -259,7 +245,7 @@
                 </button>
             </div>
 
-            <!-- Control de Volumen -->
+            <!-- Volumen -->
             <div class="hidden sm:flex items-center space-x-2 w-36 justify-end">
                 <button onclick="toggleMute()" id="muteBtn" class="p-1 text-slate-300 hover:text-white">
                     <i id="muteIcon" class="fa-solid fa-volume-high text-base"></i>
@@ -270,20 +256,38 @@
         </div>
     </footer>
 
-    <!-- Modal de Pistas de Álbum (Vox Music) -->
-    <div id="tracksModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-4 hidden">
-        <div class="max-w-3xl mx-auto w-full flex-1 flex flex-col">
-            <div class="flex items-center justify-between mb-2.5 border-b border-slate-800 pb-2.5">
-                <div class="flex items-center space-x-3 min-w-0">
-                    <img id="modalAlbumCover" src="" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-slate-700">
-                    <div class="min-w-0">
-                        <h3 class="text-base font-black text-white truncate" id="modalAlbumTitle">Álbum</h3>
-                        <p class="text-xs text-pink-400 font-semibold truncate" id="modalAlbumArtist">Artista</p>
-                    </div>
+    <!-- Visor de Televisión en Vivo (Video Player) -->
+    <div id="tvPlayerModal" class="fixed inset-0 bg-black z-50 flex flex-col hidden">
+        <div class="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/90 via-black/50 to-transparent z-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 min-w-0">
+                <img id="tvModalLogo" src="" class="w-9 h-9 rounded-lg object-contain bg-slate-900 border border-slate-800">
+                <div class="min-w-0">
+                    <h3 id="tvModalTitle" class="text-sm md:text-base font-black text-white truncate drop-shadow">Canal</h3>
+                    <span id="tvModalGroup" class="text-[10px] text-pink-400 font-bold uppercase drop-shadow">En Vivo</span>
                 </div>
-                <button onclick="closeTracksModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs">Cerrar</button>
             </div>
-            <div id="modalTracksList" class="flex-1 overflow-y-auto space-y-2 pb-6">
+
+            <div class="flex items-center space-x-2">
+                <button onclick="playPrevious()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-700 text-white flex items-center justify-center text-base" title="Canal Anterior">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+                <button onclick="playNext()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-700 text-white flex items-center justify-center text-base" title="Canal Siguiente">
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
+                <button onclick="toggleTvFullScreen()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-700 text-white flex items-center justify-center text-base" title="Pantalla Completa">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <button onclick="closeTvPlayer()" class="px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span>Cerrar TV</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 w-full h-full flex items-center justify-center bg-black relative">
+            <video id="tvVideo" class="w-full h-full object-contain" playsinline controls autoplay></video>
+            <div id="tvLoadingSpinner" class="hidden absolute inset-0 bg-black/60 flex items-center justify-center">
+                <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
         </div>
     </div>
@@ -292,12 +296,12 @@
     <div id="searchModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-4 hidden">
         <div class="max-w-3xl mx-auto w-full flex-1 flex flex-col">
             <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-black text-white" id="searchModalTitle">Buscar en Box Play</h3>
+                <h3 class="text-base md:text-lg font-black text-white" id="searchModalTitle">Buscar</h3>
                 <button onclick="closeSearchModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs">Cerrar</button>
             </div>
             <div class="relative w-full mb-3">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-base"></i>
-                <input type="text" id="modalSearchInput" placeholder="Escribe para buscar..." class="w-full bg-slate-900 border border-slate-700 text-base rounded-xl pl-10 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
+                <input type="text" id="modalSearchInput" placeholder="Escribe para buscar..." class="w-full bg-slate-900 border border-slate-700 text-sm md:text-base rounded-xl pl-10 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
             </div>
             <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-2 pb-6">
             </div>
@@ -308,138 +312,127 @@
     <audio id="audioStream" preload="none"></audio>
 
     <script>
+        // URLs oficiales de tu repositorio
         const RADIO_JSON_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json';
-        const MUSIC_JSON_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/videoteca.json';
-        
-        let currentMode = 'radio'; // 'radio' | 'music'
-        let stations = [];
-        let albumList = [];
-        
-        let currentItem = null;
-        let currentAlbum = null;
-        let currentTrackIndex = 0;
+        const TV_M3U_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/listaoficial.m3u';
 
-        let searchQuery = '';
-        let favoritesOnly = false;
-        
-        let renderedGridItems = [];
-        let renderedSearchItems = [];
+        // Canales y emisoras de respaldo garantizadas (por si se abre con file:// sin internet o con CORS)
+        const FALLBACK_RADIOS = [
+            { title: "Radio Sinfonola 90.3 FM", group: "Nacionales", genre: "Clásicos y Recuerdos", logo: "https://static.mytuner.mobi/media/tvos_radios/415/radio-sinfonola.79d5c3e6.png", url: "https://live.turadio.stream:7006/;" },
+            { title: "Best FM 103.5", group: "Nacionales", genre: "Classic Hits 80-90s", logo: "https://placehold.co/300x300/3b82f6/ffffff?text=Best+FM", url: "https://live.turadio.stream:7004/stream?nocache=596&type=http" },
+            { title: "Radio Disney 101.1 FM", group: "Nacionales", genre: "Pop Juvenil", logo: "https://static.mytuner.mobi/media/tvos_radios/652/radio-disney-costa-rica.d297c76c.jpg", url: "https://26673.live.streamtheworld.com/DISNEY_CRI_SJ_ADP/HLS/031b1ae7-b742-4bf3-8001-31b8478440ef/0/playlist.m3u8" },
+            { title: "Los 40 104.3 FM", group: "Nacionales", genre: "Pop / Urbano", logo: "https://placehold.co/300x300/14b8a6/000000?text=Los40", url: "https://icecasthd.teletica.com/los40" },
+            { title: "Radio Bolero 97.7", group: "Nacionales", genre: "Romántica", logo: "https://static2.mytuner.mobi/media/tvos_radios/368/radio-bolero-spain.6e20e2e3.jpg", url: "https://romanticafm.radioca.st/;" }
+        ];
 
-        let radioFavorites = JSON.parse(localStorage.getItem('box_play_radio_favs') || '[]');
-        let musicFavorites = JSON.parse(localStorage.getItem('box_play_music_favs') || '[]');
+        const FALLBACK_TV = [
+            { title: "Telered", group: "Noticias Local", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc0CFBLpTdVRLyxhsV8Hq3wfIeJAPWiC2TQOhBNoFV893ShXipE0MWXG9nhjQnTPIsMtK&usqp=CAU", url: "https://k20.usastreams.com:8081/telered/index.m3u8" },
+            { title: "Canal 8", group: "Multimedios CR", logo: "https://pbs.twimg.com/profile_images/1510311834800246787/sfWgWmqk_400x400.jpg", url: "https://mdstrm.com/live-stream-playlist/5a7b1e63a8da282c34d65445/master.m3u8" },
+            { title: "Tele Sistema", group: "Entretenimiento", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9YKvejKbdJWBUfmO0c32tKTO1QKQXXu2s4A&s", url: "https://k20.usastreams.com:8081/telesistema/tracks-v1a1/mono.m3u8" },
+            { title: "TDTV", group: "Canal Turrialba", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIolIQw2AJvIdVjUFVAwAxLgPALnvBMWGyFw&s", url: "https://cloudvideo.servers10.com:8081/8230/tracks-v1a1/mono.m3u8" },
+            { title: "Retro TV", group: "Canal Retro", logo: "https://play-lh.googleusercontent.com/zLkTnFdGGq5-cuY0DBvsCoiRUToWFA8rcm_Z3ieUr7rwgmzyojRXIfqMXt9dm4ocjs", url: "https://stream.enlineatv.net/hls/retrotv/1_2/index.m3u8?tkn=3610870340" }
+        ];
 
-        let hlsInstance = null;
-        let reconnectAttempts = 0;
-        const MAX_RECONNECT_ATTEMPTS = 3;
-        let statusTimeout = null;
-
-        // Temporizador de auto-ocultamiento de barras (5 segundos)
-        let controlsHideTimer = null;
-        const AUTO_HIDE_SECONDS = 5;
-
-        const audio = document.getElementById('audioStream');
-        const mainContainer = document.getElementById('mainContainer');
-        const contentGrid = document.getElementById('contentGrid');
-        const loadingState = document.getElementById('loadingState');
-        const emptyState = document.getElementById('emptyState');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const playPauseIcon = document.getElementById('playPauseIcon');
-        const spinnerLoader = document.getElementById('spinnerLoader');
-        const playerTitle = document.getElementById('playerTitle');
-        const playerCategory = document.getElementById('playerCategory');
-        const playerImg = document.getElementById('playerImg');
-        const playerFavBtn = document.getElementById('playerFavBtn');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const muteBtn = document.getElementById('muteBtn');
-        const muteIcon = document.getElementById('muteIcon');
-        const favFilterBtn = document.getElementById('favFilterBtn');
-        const searchModal = document.getElementById('searchModal');
-        const modalSearchInput = document.getElementById('modalSearchInput');
-        const searchResultsContainer = document.getElementById('searchResultsContainer');
-        const favoritesActiveBanner = document.getElementById('favoritesActiveBanner');
-        const tabRadioBtn = document.getElementById('tabRadioBtn');
-        const tabMusicBtn = document.getElementById('tabMusicBtn');
-        const modeBadge = document.getElementById('modeBadge');
-        
-        const topHeader = document.getElementById('topHeader');
-        const bottomPlayer = document.getElementById('bottomPlayer');
-        const playerHandleBtn = document.getElementById('playerHandleBtn');
-        const handleTitle = document.getElementById('handleTitle');
-        const visualizerBars = document.getElementById('visualizerBars');
-
-        const tracksModal = document.getElementById('tracksModal');
-        const modalAlbumCover = document.getElementById('modalAlbumCover');
-        const modalAlbumTitle = document.getElementById('modalAlbumTitle');
-        const modalAlbumArtist = document.getElementById('modalAlbumArtist');
-        const modalTracksList = document.getElementById('modalTracksList');
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadAllData();
-            updateFavoritesBadge();
-
-            volumeSlider.addEventListener('input', (e) => {
-                audio.volume = parseFloat(e.target.value);
-                audio.muted = false;
-                updateVolumeIcon(audio.volume);
-                keepControlsAlive();
-            });
-
-            modalSearchInput.addEventListener('input', (e) => {
-                renderModalSearchResults(e.target.value.trim().toLowerCase());
-            });
-
-            audio.addEventListener('error', () => {
-                handlePlaybackError();
-            });
-
-            audio.addEventListener('playing', () => {
-                reconnectAttempts = 0;
-                setLoadingState(false);
-                setIsPlaying(true);
-            });
-
-            audio.addEventListener('waiting', () => {
-                setLoadingState(true);
-            });
-
-            audio.addEventListener('ended', () => {
-                if (currentMode === 'music' && currentAlbum && currentAlbum.tracks) {
-                    if (currentTrackIndex + 1 < currentAlbum.tracks.length) {
-                        playAlbumTrack(currentAlbum, currentTrackIndex + 1);
-                    }
+        // Manejo Seguro de Almacenamiento Local (Protegido contra bloqueo file://)
+        function safeGetStorage(key, defaultVal = []) {
+            try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    const val = localStorage.getItem(key);
+                    return val ? JSON.parse(val) : defaultVal;
                 }
-            });
+            } catch (e) {
+                console.warn('Almacenamiento restringido:', e);
+            }
+            return defaultVal;
+        }
 
-            // Mantener visible al tocar la barra superior o inferior
-            topHeader.addEventListener('pointerdown', () => keepControlsAlive());
-            bottomPlayer.addEventListener('pointerdown', () => keepControlsAlive());
-
-            setupMediaSessionHandlers();
-        });
-
-        // Al tocar el fondo de la pantalla mientras las barras están ocultas, reaparecen 5 segundos
-        function handleMainTap() {
-            if (bottomPlayer.classList.contains('translate-y-full')) {
-                showControlsWithTimeout(AUTO_HIDE_SECONDS);
+        function safeSetStorage(key, val) {
+            try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    localStorage.setItem(key, JSON.stringify(val));
+                }
+            } catch (e) {
+                console.warn('Almacenamiento restringido:', e);
             }
         }
 
-        // Muestra tanto Header como BottomPlayer con temporizador
-        function showControlsWithTimeout(seconds = AUTO_HIDE_SECONDS) {
+        let currentMode = 'radio';
+        let stations = [];
+        let tvChannels = [];
+        let currentRadioItem = null;
+        let currentTvItem = null;
+        let searchQuery = '';
+        let favoritesOnly = false;
+        let renderedGridItems = [];
+        let renderedSearchItems = [];
+
+        let radioFavorites = safeGetStorage('box_play_radio_favs', []);
+        let tvFavorites = safeGetStorage('box_play_tv_favs', []);
+
+        let radioHls = null;
+        let tvHls = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 3;
+        let statusTimeout = null;
+        let controlsHideTimer = null;
+        const AUTO_HIDE_SECONDS = 5;
+
+        // Referencias del DOM
+        let audio, tvVideo, tvPlayerModal, tvLoadingSpinner, tvModalLogo, tvModalTitle, tvModalGroup;
+        let mainContainer, contentGrid, loadingState, emptyState, playPauseBtn, playPauseIcon, spinnerLoader;
+        let playerTitle, playerCategory, playerImg, playerFavBtn, volumeSlider, muteBtn, muteIcon;
+        let favFilterBtn, searchModal, modalSearchInput, searchResultsContainer, favoritesActiveBanner;
+        let tabRadioBtn, tabTvBtn, modeBadge, appMainTitle, headerModeIcon, topHeader, bottomPlayer, playerHandleBtn, handleTitle, visualizerBars;
+
+        // Registro de funciones en window para garantizar disponibilidad en onclick
+        window.switchMode = function(mode) {
+            if (currentMode === mode) return;
+            currentMode = mode;
+            searchQuery = '';
+            
+            if (mode === 'radio') {
+                tabRadioBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow";
+                tabTvBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white";
+                modeBadge.textContent = "RADIO";
+                headerModeIcon.className = "fa-solid fa-radio text-pink-500 text-xs";
+                appMainTitle.textContent = "BoxPlay Radio";
+            } else {
+                tabTvBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow";
+                tabRadioBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white";
+                modeBadge.textContent = "TV EN VIVO";
+                headerModeIcon.className = "fa-solid fa-tv text-pink-500 text-xs";
+                appMainTitle.textContent = "BoxPlay TV";
+                bottomPlayer.classList.add('translate-y-full');
+            }
+
+            renderCurrentContent();
+            updateFavoritesBadge();
+            keepControlsAlive();
+        };
+
+        window.handleMainTap = function() {
+            if (bottomPlayer && bottomPlayer.classList.contains('translate-y-full')) {
+                showControlsWithTimeout(AUTO_HIDE_SECONDS);
+            }
+        };
+
+        window.showControlsWithTimeout = function(seconds = AUTO_HIDE_SECONDS) {
+            if (!topHeader) return;
             topHeader.classList.remove('-translate-y-full');
-            bottomPlayer.classList.remove('translate-y-full');
+            if (currentMode === 'radio') {
+                bottomPlayer.classList.remove('translate-y-full');
+            }
             mainContainer.classList.remove('pt-2', 'pb-4');
             mainContainer.classList.add('pt-14', 'pb-14');
 
-            // Ocultar píldora flotante
             playerHandleBtn.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
             playerHandleBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
 
             keepControlsAlive(seconds);
-        }
+        };
 
-        // Oculta ambas barras para dejar libre el 100% de la pantalla
-        function hideControls() {
+        window.hideControls = function() {
+            if (!topHeader) return;
             topHeader.classList.add('-translate-y-full');
             bottomPlayer.classList.add('translate-y-full');
             mainContainer.classList.remove('pt-14', 'pb-14');
@@ -447,91 +440,13 @@
 
             if (controlsHideTimer) clearTimeout(controlsHideTimer);
 
-            if (currentItem) {
+            if ((currentMode === 'radio' && currentRadioItem) || (currentMode === 'tv' && currentTvItem)) {
                 playerHandleBtn.classList.remove('translate-y-16', 'opacity-0', 'pointer-events-none');
                 playerHandleBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
             }
-        }
+        };
 
-        function keepControlsAlive(seconds = AUTO_HIDE_SECONDS) {
-            if (controlsHideTimer) clearTimeout(controlsHideTimer);
-            controlsHideTimer = setTimeout(() => {
-                hideControls();
-            }, seconds * 1000);
-        }
-
-        function toggleFullScreen() {
-            const fsIcon = document.getElementById('fsIcon');
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().then(() => {
-                    fsIcon.className = "fa-solid fa-compress text-sm text-pink-400";
-                }).catch(err => console.log(err));
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().then(() => {
-                        fsIcon.className = "fa-solid fa-expand text-sm";
-                    }).catch(err => console.log(err));
-                }
-            }
-        }
-
-        async function loadAllData() {
-            loadingState.classList.remove('hidden');
-            contentGrid.classList.add('hidden');
-            emptyState.classList.add('hidden');
-            showStatus('Cargando...', 'info');
-
-            const cacheBuster = `?_t=${Date.now()}`;
-
-            try {
-                const [radioRes, musicRes] = await Promise.all([
-                    fetch(RADIO_JSON_URL + cacheBuster).catch(() => null),
-                    fetch(MUSIC_JSON_URL + cacheBuster).catch(() => null)
-                ]);
-
-                if (radioRes && radioRes.ok) {
-                    const rData = await radioRes.json();
-                    stations = Array.isArray(rData) ? rData : (rData.radios || []);
-                }
-
-                if (musicRes && musicRes.ok) {
-                    const mData = await musicRes.json();
-                    albumList = Array.isArray(mData) ? mData : (mData.albums || mData.videoteca || []);
-                }
-
-                renderCurrentContent();
-                hideStatus();
-                // Ocultar las barras inicialmente a los 5 segundos para dejar la cuadrícula limpia
-                keepControlsAlive(AUTO_HIDE_SECONDS);
-            } catch (error) {
-                console.error(error);
-                showStatus('Error al conectar con los servidores.', 'error');
-                loadingState.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-            }
-        }
-
-        function switchMode(mode) {
-            if (currentMode === mode) return;
-            currentMode = mode;
-            searchQuery = '';
-            
-            if (mode === 'radio') {
-                tabRadioBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow";
-                tabMusicBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white";
-                modeBadge.textContent = "EN VIVO";
-            } else {
-                tabMusicBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow";
-                tabRadioBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white";
-                modeBadge.textContent = "ÁLBUMES";
-            }
-
-            renderCurrentContent();
-            updateFavoritesBadge();
-            keepControlsAlive();
-        }
-
-        function toggleFavoritesFilter() {
+        window.toggleFavoritesFilter = function() {
             favoritesOnly = !favoritesOnly;
             if (favoritesOnly) {
                 favFilterBtn.classList.add('border-pink-500', 'bg-pink-950/60');
@@ -542,55 +457,283 @@
             }
             renderCurrentContent();
             keepControlsAlive();
-        }
+        };
 
-        function exitFavorites() {
+        window.exitFavorites = function() {
             favoritesOnly = false;
             favFilterBtn.classList.remove('border-pink-500', 'bg-pink-950/60');
             favoritesActiveBanner.classList.add('hidden');
             favoritesActiveBanner.classList.remove('flex');
             renderCurrentContent();
+        };
+
+        window.openSearchModal = function() {
+            searchModal.classList.remove('hidden');
+            document.getElementById('searchModalTitle').textContent = currentMode === 'radio' ? 'Buscar Emisora' : 'Buscar Canal de TV';
+            modalSearchInput.value = searchQuery;
+            renderModalSearchResults(searchQuery);
+            setTimeout(() => modalSearchInput.focus(), 100);
+        };
+
+        window.closeSearchModal = function() {
+            searchModal.classList.add('hidden');
+            renderCurrentContent();
+        };
+
+        window.toggleFullScreen = function() {
+            const fsIcon = document.getElementById('fsIcon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    fsIcon.className = "fa-solid fa-compress text-sm text-pink-400";
+                }).catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().then(() => {
+                        fsIcon.className = "fa-solid fa-expand text-sm";
+                    }).catch(() => {});
+                }
+            }
+        };
+
+        window.toggleTvFullScreen = function() {
+            if (!document.fullscreenElement) {
+                tvPlayerModal.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        };
+
+        window.closeTvPlayer = function() {
+            stopTv();
+            tvPlayerModal.classList.add('hidden');
+            visualizerBars.classList.remove('visualizer-active');
+            renderCurrentContent();
+        };
+
+        window.handleCardClick = function(index) {
+            const item = renderedGridItems[index];
+            if (!item) return;
+
+            if (currentMode === 'radio') {
+                playRadio(item);
+                showControlsWithTimeout(AUTO_HIDE_SECONDS);
+            } else {
+                playTvChannel(item);
+            }
+        };
+
+        window.toggleFavoriteById = function(id) {
+            let favs = getActiveFavorites();
+            const index = favs.indexOf(id);
+            if (index > -1) {
+                favs.splice(index, 1);
+            } else {
+                favs.push(id);
+            }
+
+            if (currentMode === 'radio') {
+                radioFavorites = favs;
+                safeSetStorage('box_play_radio_favs', radioFavorites);
+            } else {
+                tvFavorites = favs;
+                safeSetStorage('box_play_tv_favs', tvFavorites);
+            }
+
+            updateFavoritesBadge();
+            renderCurrentContent();
+            if (currentMode === 'radio') updatePlayerInfo();
+        };
+
+        window.toggleFavoriteCurrent = function() {
+            if (currentMode === 'radio' && currentRadioItem) {
+                keepControlsAlive();
+                toggleFavoriteById(getItemId(currentRadioItem));
+            }
+        };
+
+        window.togglePlayPause = function() {
+            if (currentMode === 'radio' && currentRadioItem) {
+                keepControlsAlive();
+                if (audio.paused) {
+                    audio.play().then(() => setIsPlaying(true)).catch(() => handleAudioError());
+                } else {
+                    audio.pause();
+                    setIsPlaying(false);
+                }
+                renderCurrentContent();
+            }
+        };
+
+        window.playNext = function() {
+            const list = getFilteredList();
+            if (!list.length) return;
+
+            if (currentMode === 'radio') {
+                keepControlsAlive();
+                const idx = list.findIndex(i => i.url === (currentRadioItem ? currentRadioItem.url : ''));
+                const nextIdx = (idx + 1) % list.length;
+                playRadio(list[nextIdx]);
+            } else if (currentMode === 'tv') {
+                const idx = list.findIndex(i => i.url === (currentTvItem ? currentTvItem.url : ''));
+                const nextIdx = (idx + 1) % list.length;
+                playTvChannel(list[nextIdx]);
+            }
+        };
+
+        window.playPrevious = function() {
+            const list = getFilteredList();
+            if (!list.length) return;
+
+            if (currentMode === 'radio') {
+                keepControlsAlive();
+                const idx = list.findIndex(i => i.url === (currentRadioItem ? currentRadioItem.url : ''));
+                const prevIdx = (idx - 1 + list.length) % list.length;
+                playRadio(list[prevIdx]);
+            } else if (currentMode === 'tv') {
+                const idx = list.findIndex(i => i.url === (currentTvItem ? currentTvItem.url : ''));
+                const prevIdx = (idx - 1 + list.length) % list.length;
+                playTvChannel(list[prevIdx]);
+            }
+        };
+
+        window.toggleMute = function() {
+            keepControlsAlive();
+            audio.muted = !audio.muted;
+            if (audio.muted) {
+                muteIcon.className = "fa-solid fa-volume-xmark text-base text-pink-500";
+            } else {
+                updateVolumeIcon(audio.volume);
+            }
+        };
+
+        window.closeStatus = function() {
+            document.getElementById('statusMessage').classList.add('hidden');
+        };
+
+        window.playSearchIndex = function(index) {
+            const item = renderedSearchItems[index];
+            if (item) {
+                closeSearchModal();
+                if (currentMode === 'radio') {
+                    playRadio(item);
+                    showControlsWithTimeout(AUTO_HIDE_SECONDS);
+                } else {
+                    playTvChannel(item);
+                }
+            }
+        };
+
+        function keepControlsAlive(seconds = AUTO_HIDE_SECONDS) {
+            if (controlsHideTimer) clearTimeout(controlsHideTimer);
+            controlsHideTimer = setTimeout(() => {
+                hideControls();
+            }, seconds * 1000);
+        }
+
+        // Lector / Parser de Lista M3U
+        function parseM3U(m3uText) {
+            if (!m3uText) return [];
+            const lines = m3uText.split(/\r?\n/);
+            const list = [];
+            let current = null;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                if (line.startsWith('#EXTINF:')) {
+                    current = {};
+                    const nameMatch = line.match(/tvg-name="([^"]+)"/i);
+                    const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
+                    const groupMatch = line.match(/group-title="([^"]+)"/i);
+                    
+                    const commaIdx = line.lastIndexOf(',');
+                    let displayName = '';
+                    if (commaIdx !== -1) {
+                        displayName = line.substring(commaIdx + 1).trim();
+                    }
+
+                    current.title = displayName || (nameMatch ? nameMatch : 'Canal TV');
+                    current.logo = logoMatch ? logoMatch : 'https://placehold.co/300x300/1e293b/ec4899?text=TV';
+                    current.group = groupMatch ? groupMatch.replace(/\.$/, '') : 'En Vivo';
+                } else if (!line.startsWith('#') && current) {
+                    current.url = line;
+                    list.push(current);
+                    current = null;
+                }
+            }
+            return list;
+        }
+
+        async function loadAllData() {
+            loadingState.classList.remove('hidden');
+            contentGrid.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            showStatus('Cargando señales...', 'info');
+
+            const cacheBuster = `?_t=${Date.now()}`;
+
+            try {
+                const [radioRes, tvRes] = await Promise.all([
+                    fetch(RADIO_JSON_URL + cacheBuster).catch(() => null),
+                    fetch(TV_M3U_URL + cacheBuster).catch(() => null)
+                ]);
+
+                if (radioRes && radioRes.ok) {
+                    const rData = await radioRes.json();
+                    stations = Array.isArray(rData) ? rData : (rData.radios || []);
+                }
+                if (!stations || stations.length === 0) {
+                    stations = FALLBACK_RADIOS;
+                }
+
+                if (tvRes && tvRes.ok) {
+                    const tvText = await tvRes.text();
+                    tvChannels = parseM3U(tvText);
+                }
+                if (!tvChannels || tvChannels.length === 0) {
+                    tvChannels = FALLBACK_TV;
+                }
+
+                renderCurrentContent();
+                hideStatus();
+                keepControlsAlive(AUTO_HIDE_SECONDS);
+            } catch (error) {
+                console.warn(error);
+                stations = FALLBACK_RADIOS;
+                tvChannels = FALLBACK_TV;
+                renderCurrentContent();
+                hideStatus();
+                keepControlsAlive(AUTO_HIDE_SECONDS);
+            }
         }
 
         function getActiveList() {
-            return currentMode === 'radio' ? stations : albumList;
+            return currentMode === 'radio' ? stations : tvChannels;
         }
 
         function getActiveFavorites() {
-            return currentMode === 'radio' ? radioFavorites : musicFavorites;
+            return currentMode === 'radio' ? radioFavorites : tvFavorites;
         }
 
         function getItemId(item) {
             if (!item) return '';
-            if (currentMode === 'radio') {
-                return String(item.url || item.title || JSON.stringify(item));
-            } else {
-                return String(item.album || item.artist || JSON.stringify(item));
-            }
+            return String(item.url || item.title || JSON.stringify(item));
         }
 
         function getItemName(item) {
-            if (!item) return 'Reproducción';
-            if (currentMode === 'radio') {
-                return item.title || 'Emisora';
-            } else {
-                return item.album || item.title || 'Álbum';
-            }
+            if (!item) return 'Emisión';
+            return item.title || item.name || 'Emisión';
         }
 
         function getItemSubtitle(item) {
             if (!item) return '';
-            if (currentMode === 'radio') {
-                return item.genre || item.group || 'Live Radio';
-            } else {
-                const trackCount = item.tracks ? `${item.tracks.length} temas` : '';
-                return `${item.artist || 'Artista'} • ${trackCount}`;
-            }
+            return item.group || item.genre || 'En Vivo';
         }
 
         function getItemImage(item) {
             if (!item) return 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
-            return item.logo || item.cover || item.image || 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
+            return item.logo || item.image || 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
         }
 
         function getFilteredList() {
@@ -619,120 +762,64 @@
             emptyState.classList.add('hidden');
             contentGrid.classList.remove('hidden');
 
+            contentGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3";
+
             let html = '';
+            renderedGridItems.forEach((item, index) => {
+                const id = getItemId(item);
+                const name = getItemName(item);
+                const subtitle = getItemSubtitle(item);
+                const image = getItemImage(item);
+                const isFav = favs.includes(id);
+                
+                const isCurrent = (currentMode === 'radio' && currentRadioItem && getItemId(currentRadioItem) === id) ||
+                                  (currentMode === 'tv' && currentTvItem && getItemId(currentTvItem) === id);
 
-            if (currentMode === 'radio') {
-                // Cuadrícula de Tarjetas Cuadradas con Imagen de Borde a Borde
-                contentGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3";
+                html += `
+                    <div onclick="handleCardClick(${index})" class="car-media-square rounded-2xl relative overflow-hidden cursor-pointer group ${isCurrent ? 'border-2 border-pink-500 shadow-2xl shadow-pink-500/40 ring-2 ring-pink-500/50' : 'border-2 border-slate-800/80 hover:border-slate-700'}">
+                        
+                        <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="absolute inset-0 w-full h-full object-cover bg-slate-950 transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/300x300/1e293b/ec4899?text=${currentMode === 'radio' ? 'RADIO' : 'TV'}'">
 
-                renderedGridItems.forEach((item, index) => {
-                    const id = getItemId(item);
-                    const name = getItemName(item);
-                    const subtitle = getItemSubtitle(item);
-                    const image = getItemImage(item);
-                    const isFav = favs.includes(id);
-                    const isCurrent = currentItem && getItemId(currentItem) === id;
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/30"></div>
 
-                    html += `
-                        <div onclick="handleCardClick(${index})" class="car-radio-square rounded-2xl relative overflow-hidden cursor-pointer group ${isCurrent ? 'border-2 border-pink-500 shadow-2xl shadow-pink-500/40 ring-2 ring-pink-500/50' : 'border-2 border-slate-800/80 hover:border-slate-700'}">
-                            
-                            <!-- Imagen de Fondo Completa -->
-                            <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="absolute inset-0 w-full h-full object-cover bg-slate-950 transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/300x300/1e293b/ec4899?text=RADIO'">
-
-                            <!-- Degradado para Legibilidad de Textos -->
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/30"></div>
-
-                            <!-- Indicador de Reproducción Activa -->
-                            ${isCurrent && !audio.paused ? `
-                                <div class="absolute inset-0 bg-pink-950/40 backdrop-blur-[1px] flex items-center justify-center">
-                                    <div class="w-11 h-11 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-lg shadow-pink-600/50 animate-pulse">
-                                        <i class="fa-solid fa-volume-high text-lg"></i>
-                                    </div>
+                        ${isCurrent ? `
+                            <div class="absolute inset-0 bg-pink-950/40 backdrop-blur-[1px] flex items-center justify-center">
+                                <div class="w-11 h-11 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-lg shadow-pink-600/50 animate-pulse">
+                                    <i class="fa-solid ${currentMode === 'radio' ? 'fa-volume-high' : 'fa-play'} text-lg"></i>
                                 </div>
-                            ` : ''}
-
-                            <!-- Badge Superior y Favorito -->
-                            <div class="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
-                                <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${isCurrent && !audio.paused ? 'bg-pink-600 text-white' : 'bg-slate-950/80 text-pink-400 border border-pink-500/40'} shadow-md backdrop-blur-sm">
-                                    ${isCurrent && !audio.paused ? 'EN VIVO' : 'RADIO'}
-                                </span>
-                                <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="w-7 h-7 rounded-full bg-slate-950/70 border border-slate-700/60 text-slate-300 hover:text-pink-500 flex items-center justify-center backdrop-blur-sm shadow-md transition-colors">
-                                    <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular text-white'} fa-heart text-xs"></i>
-                                </button>
                             </div>
+                        ` : ''}
 
-                            <!-- Nombre y Género de la Estación -->
-                            <div class="absolute bottom-2 left-2 right-2 text-left z-10">
-                                <h3 class="text-xs md:text-sm font-black text-white truncate drop-shadow-md leading-tight">${escapeHtml(name)}</h3>
-                                <p class="text-[10px] text-pink-300 font-bold truncate mt-0.5 drop-shadow">${escapeHtml(subtitle)}</p>
-                            </div>
+                        <div class="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
+                            <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${isCurrent ? 'bg-pink-600 text-white' : 'bg-slate-950/80 text-pink-400 border border-pink-500/40'} shadow-md backdrop-blur-sm">
+                                ${currentMode === 'radio' ? 'RADIO' : 'TV'}
+                            </span>
+                            <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="w-7 h-7 rounded-full bg-slate-950/70 border border-slate-700/60 text-slate-300 hover:text-pink-500 flex items-center justify-center backdrop-blur-sm shadow-md transition-colors">
+                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular text-white'} fa-heart text-xs"></i>
+                            </button>
                         </div>
-                    `;
-                });
-            } else {
-                // Cuadrícula Horizontal para Álbumes en Vox Music
-                contentGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3";
 
-                renderedGridItems.forEach((item, index) => {
-                    const id = getItemId(item);
-                    const name = getItemName(item);
-                    const subtitle = getItemSubtitle(item);
-                    const image = getItemImage(item);
-                    const isFav = favs.includes(id);
-                    const isCurrent = currentItem && currentAlbum && getItemId(currentAlbum) === id;
-
-                    html += `
-                        <div onclick="handleCardClick(${index})" class="car-card-music p-2.5 rounded-xl flex items-center justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-xl shadow-pink-500/20 ring-1 ring-pink-500/40' : ''}">
-                            <div class="flex items-center space-x-3 min-w-0 flex-1">
-                                <div class="relative w-14 h-14 rounded-lg overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow">
-                                    <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/1e293b/ec4899?text=BOX'">
-                                    ${isCurrent && !audio.paused ? '<div class="absolute inset-0 bg-pink-600/70 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-base"></i></div>' : ''}
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h3 class="text-sm font-bold text-white truncate leading-snug">${escapeHtml(name)}</h3>
-                                    <p class="text-[11px] text-pink-400 font-semibold truncate mt-0.5">${escapeHtml(subtitle)}</p>
-                                    <span class="text-[10px] text-slate-400 mt-0.5 inline-block">📂 Ver Pistas</span>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center space-x-1 pl-2">
-                                <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="p-2 text-slate-400 hover:text-pink-500 flex items-center justify-center">
-                                    <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-lg"></i>
-                                </button>
-                            </div>
+                        <div class="absolute bottom-2 left-2 right-2 text-left z-10">
+                            <h3 class="text-xs md:text-sm font-black text-white truncate drop-shadow-md leading-tight">${escapeHtml(name)}</h3>
+                            <p class="text-[10px] text-pink-300 font-bold truncate mt-0.5 drop-shadow">${escapeHtml(subtitle)}</p>
                         </div>
-                    `;
-                });
-            }
+                    </div>
+                `;
+            });
 
             contentGrid.innerHTML = html;
         }
 
-        function handleCardClick(index) {
-            const item = renderedGridItems[index];
-            if (!item) return;
-
-            if (currentMode === 'radio') {
-                playRadio(item);
-                // Muestra ambas barras al pulsar la emisora y programa su ocultamiento a los 5 segundos
-                showControlsWithTimeout(AUTO_HIDE_SECONDS);
-            } else {
-                openAlbumModal(item);
-            }
-        }
-
         function playRadio(station) {
-            currentAlbum = null;
-            currentItem = station;
-            
+            stopTv();
+            currentRadioItem = station;
             setLoadingState(true);
             stopAndCleanupAudio();
             updatePlayerInfo();
-            updateMediaSession(station.title, station.genre || 'En Vivo', station.logo);
 
             const streamUrl = station.url;
             if (!streamUrl) {
-                showStatus('Emisora sin flujo disponible.', 'error');
+                showStatus('Flujo no disponible.', 'error');
                 setLoadingState(false);
                 return;
             }
@@ -740,14 +827,14 @@
             const isHls = streamUrl.toLowerCase().includes('.m3u8');
 
             if (isHls && Hls.isSupported()) {
-                hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
-                hlsInstance.loadSource(streamUrl);
-                hlsInstance.attachMedia(audio);
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => startAudioPlayback());
-                hlsInstance.on(Hls.Events.ERROR, (e, data) => {
+                radioHls = new Hls({ enableWorker: true, lowLatencyMode: true });
+                radioHls.loadSource(streamUrl);
+                radioHls.attachMedia(audio);
+                radioHls.on(Hls.Events.MANIFEST_PARSED, () => startAudioPlayback());
+                radioHls.on(Hls.Events.ERROR, (e, data) => {
                     if (data.fatal) {
                         stopAndCleanupAudio();
-                        handlePlaybackError();
+                        handleAudioError();
                     }
                 });
             } else {
@@ -758,73 +845,57 @@
             renderCurrentContent();
         }
 
-        function openAlbumModal(album) {
-            modalAlbumCover.src = album.cover || 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
-            modalAlbumTitle.textContent = album.album || 'Álbum';
-            modalAlbumArtist.textContent = album.artist || 'Artista';
-
-            const tracks = album.tracks || [];
-            let html = '';
-
-            if (tracks.length === 0) {
-                html = `<p class="text-center text-slate-500 py-6 text-sm">No hay pistas en este álbum.</p>`;
-            } else {
-                tracks.forEach((track, tIdx) => {
-                    const isTrackActive = currentAlbum === album && currentTrackIndex === tIdx && !audio.paused;
-                    html += `
-                        <div onclick="playAlbumTrackByIndex(${albumList.indexOf(album)}, ${tIdx})" class="car-card-music p-2.5 rounded-xl flex items-center justify-between cursor-pointer ${isTrackActive ? 'border-pink-500 bg-slate-900 ring-1 ring-pink-500' : ''}">
-                            <div class="flex items-center space-x-3 min-w-0">
-                                <span class="w-5 text-center font-bold text-slate-400 text-xs">${tIdx + 1}</span>
-                                <div class="min-w-0">
-                                    <h4 class="text-xs font-bold text-white truncate">${escapeHtml(track.title || 'Pista')}</h4>
-                                    <span class="text-[10px] text-slate-400">${track.duration ? 'Duración: ' + track.duration : ''}</span>
-                                </div>
-                            </div>
-                            <span class="px-3 py-1 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
-                                ${isTrackActive ? '<i class="fa-solid fa-volume-high"></i>' : 'Reproducir'}
-                            </span>
-                        </div>
-                    `;
-                });
-            }
-
-            modalTracksList.innerHTML = html;
-            tracksModal.classList.remove('hidden');
-        }
-
-        function closeTracksModal() {
-            tracksModal.classList.add('hidden');
-        }
-
-        function openCurrentAlbumTracks() {
-            if (currentAlbum) openAlbumModal(currentAlbum);
-        }
-
-        function playAlbumTrackByIndex(albumIdx, trackIdx) {
-            const album = albumList[albumIdx];
-            if (album) {
-                playAlbumTrack(album, trackIdx);
-                closeTracksModal();
-                showControlsWithTimeout(AUTO_HIDE_SECONDS);
-            }
-        }
-
-        function playAlbumTrack(album, trackIndex) {
-            if (!album || !album.tracks || !album.tracks[trackIndex]) return;
-
-            currentAlbum = album;
-            currentTrackIndex = trackIndex;
-            const track = album.tracks[trackIndex];
-            currentItem = track;
-
-            setLoadingState(true);
+        function playTvChannel(channel) {
             stopAndCleanupAudio();
-            updatePlayerInfo();
-            updateMediaSession(track.title, `${album.artist} • ${album.album}`, album.cover);
+            setIsPlaying(false);
 
-            audio.src = track.audio;
-            startAudioPlayback();
+            currentTvItem = channel;
+            tvModalLogo.src = channel.logo || 'https://placehold.co/150x150/1e293b/ec4899?text=TV';
+            tvModalTitle.textContent = channel.title;
+            tvModalGroup.textContent = channel.group || 'En Vivo';
+
+            tvLoadingSpinner.classList.remove('hidden');
+            tvPlayerModal.classList.remove('hidden');
+
+            const streamUrl = channel.url;
+
+            if (tvHls) {
+                tvHls.destroy();
+                tvHls = null;
+            }
+
+            const isHls = streamUrl.toLowerCase().includes('.m3u8') || streamUrl.includes('tracks-v1a1');
+
+            if (isHls && Hls.isSupported()) {
+                tvHls = new Hls({ enableWorker: true, lowLatencyMode: true });
+                tvHls.loadSource(streamUrl);
+                tvHls.attachMedia(tvVideo);
+                tvHls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    tvVideo.play().catch(() => {});
+                });
+                tvHls.on(Hls.Events.ERROR, (e, data) => {
+                    if (data.fatal) {
+                        showStatus('Error al cargar la señal de TV.', 'error');
+                        tvLoadingSpinner.classList.add('hidden');
+                    }
+                });
+            } else {
+                tvVideo.src = streamUrl;
+                tvVideo.play().catch(() => {});
+            }
+
+            handleTitle.textContent = channel.title;
             renderCurrentContent();
+        }
+
+        function stopTv() {
+            if (tvHls) {
+                tvHls.destroy();
+                tvHls = null;
+            }
+            tvVideo.pause();
+            tvVideo.removeAttribute('src');
+            tvVideo.load();
         }
 
         function startAudioPlayback() {
@@ -832,76 +903,31 @@
                 reconnectAttempts = 0;
                 setIsPlaying(true);
                 setLoadingState(false);
-            }).catch(err => {
-                console.warn("Fallo al reproducir:", err);
-                setLoadingState(false);
-            });
+            }).catch(() => setLoadingState(false));
         }
 
         function stopAndCleanupAudio() {
-            if (hlsInstance) {
-                hlsInstance.destroy();
-                hlsInstance = null;
+            if (radioHls) {
+                radioHls.destroy();
+                radioHls = null;
             }
             audio.pause();
             audio.removeAttribute('src');
             audio.load();
         }
 
-        function handlePlaybackError() {
-            if (currentItem && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        function handleAudioError() {
+            if (currentRadioItem && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                 reconnectAttempts++;
-                showStatus(`Reintentando (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, 'warning');
+                showStatus(`Reconectando (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, 'warning');
                 setTimeout(() => {
-                    if (currentMode === 'radio' && currentItem) playRadio(currentItem);
-                    if (currentMode === 'music' && currentAlbum) playAlbumTrack(currentAlbum, currentTrackIndex);
+                    if (currentRadioItem) playRadio(currentRadioItem);
                 }, 2000);
             } else {
-                showStatus('Error al reproducir el flujo.', 'error');
+                showStatus('Error al reproducir emisora.', 'error');
                 setLoadingState(false);
                 setIsPlaying(false);
                 reconnectAttempts = 0;
-            }
-        }
-
-        function togglePlayPause() {
-            if (!currentItem) return;
-            keepControlsAlive();
-
-            if (audio.paused) {
-                audio.play().then(() => setIsPlaying(true)).catch(() => handlePlaybackError());
-            } else {
-                audio.pause();
-                setIsPlaying(false);
-            }
-            renderCurrentContent();
-        }
-
-        function playNext() {
-            keepControlsAlive();
-            if (currentMode === 'radio') {
-                const list = getFilteredList();
-                if (!list.length) return;
-                const idx = list.findIndex(i => i.url === (currentItem ? currentItem.url : ''));
-                const nextIdx = (idx + 1) % list.length;
-                playRadio(list[nextIdx]);
-            } else if (currentAlbum && currentAlbum.tracks) {
-                const nextTrack = (currentTrackIndex + 1) % currentAlbum.tracks.length;
-                playAlbumTrack(currentAlbum, nextTrack);
-            }
-        }
-
-        function playPrevious() {
-            keepControlsAlive();
-            if (currentMode === 'radio') {
-                const list = getFilteredList();
-                if (!list.length) return;
-                const idx = list.findIndex(i => i.url === (currentItem ? currentItem.url : ''));
-                const prevIdx = (idx - 1 + list.length) % list.length;
-                playRadio(list[prevIdx]);
-            } else if (currentAlbum && currentAlbum.tracks) {
-                const prevTrack = (currentTrackIndex - 1 + currentAlbum.tracks.length) % currentAlbum.tracks.length;
-                playAlbumTrack(currentAlbum, prevTrack);
             }
         }
 
@@ -926,76 +952,23 @@
         }
 
         function updatePlayerInfo() {
-            if (!currentItem) return;
+            if (!currentRadioItem) return;
 
-            let title = '';
-            let subtitle = '';
-            let coverImg = '';
+            playerTitle.textContent = currentRadioItem.title || 'Emisora';
+            playerCategory.textContent = currentRadioItem.genre || 'Radio en Vivo';
+            playerImg.src = currentRadioItem.logo || 'https://placehold.co/300x300/1e293b/ec4899?text=RADIO';
 
-            if (currentMode === 'radio') {
-                title = currentItem.title || 'Emisora';
-                subtitle = currentItem.genre || 'En Vivo';
-                coverImg = currentItem.logo || 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
-            } else if (currentAlbum) {
-                title = currentItem.title || 'Pista';
-                subtitle = `${currentAlbum.artist} • ${currentAlbum.album}`;
-                coverImg = currentAlbum.cover || 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
-            }
-
-            playerTitle.textContent = title;
-            playerCategory.textContent = subtitle;
-            playerImg.src = coverImg;
-
-            handleTitle.textContent = title;
+            handleTitle.textContent = currentRadioItem.title;
 
             playPauseBtn.disabled = false;
-            const id = currentMode === 'radio' ? getItemId(currentItem) : getItemId(currentAlbum);
+            const id = getItemId(currentRadioItem);
             const favs = getActiveFavorites();
             playerFavBtn.innerHTML = `<i class="${favs.includes(id) ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-base"></i>`;
-        }
-
-        function toggleFavoriteById(id) {
-            let favs = getActiveFavorites();
-            const index = favs.indexOf(id);
-            if (index > -1) {
-                favs.splice(index, 1);
-            } else {
-                favs.push(id);
-            }
-
-            if (currentMode === 'radio') {
-                radioFavorites = favs;
-                localStorage.setItem('box_play_radio_favs', JSON.stringify(radioFavorites));
-            } else {
-                musicFavorites = favs;
-                localStorage.setItem('box_play_music_favs', JSON.stringify(musicFavorites));
-            }
-
-            updateFavoritesBadge();
-            renderCurrentContent();
-            updatePlayerInfo();
-        }
-
-        function toggleFavoriteCurrent() {
-            if (!currentItem) return;
-            keepControlsAlive();
-            const id = currentMode === 'radio' ? getItemId(currentItem) : getItemId(currentAlbum);
-            toggleFavoriteById(id);
         }
 
         function updateFavoritesBadge() {
             const count = getActiveFavorites().length;
             favFilterBtn.title = `Favoritas (${count})`;
-        }
-
-        function toggleMute() {
-            keepControlsAlive();
-            audio.muted = !audio.muted;
-            if (audio.muted) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-base text-pink-500";
-            } else {
-                updateVolumeIcon(audio.volume);
-            }
         }
 
         function updateVolumeIcon(vol) {
@@ -1011,41 +984,14 @@
         function setupMediaSessionHandlers() {
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.setActionHandler('play', () => {
-                    if (audio.paused) togglePlayPause();
+                    if (currentMode === 'radio' && audio.paused) togglePlayPause();
                 });
                 navigator.mediaSession.setActionHandler('pause', () => {
-                    if (!audio.paused) togglePlayPause();
+                    if (currentMode === 'radio' && !audio.paused) togglePlayPause();
                 });
                 navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
                 navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
             }
-        }
-
-        function updateMediaSession(title, artist, artworkUrl) {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: title || 'Box Play',
-                    artist: artist || 'Box Play Media Suite',
-                    album: currentMode === 'radio' ? 'Radio en Vivo' : 'Vox Music',
-                    artwork: [
-                        { src: artworkUrl || 'https://placehold.co/192x192/1e293b/ec4899?text=BOX', sizes: '192x192', type: 'image/png' },
-                        { src: artworkUrl || 'https://placehold.co/512x512/1e293b/ec4899?text=BOX', sizes: '512x512', type: 'image/png' }
-                    ]
-                });
-            }
-        }
-
-        function openSearchModal() {
-            searchModal.classList.remove('hidden');
-            searchModalTitle.textContent = currentMode === 'radio' ? 'Buscar Emisora' : 'Buscar en Vox Music';
-            modalSearchInput.value = searchQuery;
-            renderModalSearchResults(searchQuery);
-            setTimeout(() => modalSearchInput.focus(), 100);
-        }
-
-        function closeSearchModal() {
-            searchModal.classList.add('hidden');
-            renderCurrentContent();
         }
 
         function renderModalSearchResults(query = '') {
@@ -1067,16 +1013,16 @@
                 const image = getItemImage(item);
                 
                 html += `
-                    <div onclick="playSearchIndex(${index})" class="car-card-music p-2.5 rounded-xl flex items-center justify-between cursor-pointer">
+                    <div onclick="playSearchIndex(${index})" class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between cursor-pointer">
                         <div class="flex items-center space-x-3 min-w-0">
-                            <img src="${escapeHtml(image)}" class="w-12 h-12 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
+                            <img src="${escapeHtml(image)}" class="w-11 h-11 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
                             <div class="min-w-0">
                                 <h4 class="text-xs font-bold text-white truncate">${escapeHtml(name)}</h4>
                                 <span class="text-[10px] text-pink-400 font-semibold">${escapeHtml(subtitle)}</span>
                             </div>
                         </div>
                         <span class="px-3 py-1 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
-                            ${currentMode === 'radio' ? 'Sintonizar' : 'Ver Pistas'}
+                            ${currentMode === 'radio' ? 'Sintonizar' : 'Ver Canal'}
                         </span>
                     </div>
                 `;
@@ -1084,26 +1030,13 @@
             searchResultsContainer.innerHTML = html;
         }
 
-        function playSearchIndex(index) {
-            const item = renderedSearchItems[index];
-            if (item) {
-                closeSearchModal();
-                if (currentMode === 'radio') {
-                    playRadio(item);
-                    showControlsWithTimeout(AUTO_HIDE_SECONDS);
-                } else {
-                    openAlbumModal(item);
-                }
-            }
-        }
-
         function showStatus(text, type = 'info') {
             const statusMsg = document.getElementById('statusMessage');
             const statusText = document.getElementById('statusText');
             const statusIcon = document.getElementById('statusIcon');
+            if (!statusMsg) return;
             
             statusText.textContent = text;
-            
             if (type === 'error') {
                 statusIcon.className = "fa-solid fa-triangle-exclamation text-rose-500 text-sm";
             } else if (type === 'warning') {
@@ -1113,7 +1046,6 @@
             }
 
             statusMsg.classList.remove('hidden');
-
             if (statusTimeout) clearTimeout(statusTimeout);
             if (type !== 'info') {
                 statusTimeout = setTimeout(() => hideStatus(), 3500);
@@ -1121,11 +1053,8 @@
         }
 
         function hideStatus() {
-            document.getElementById('statusMessage').classList.add('hidden');
-        }
-
-        function closeStatus() {
-            hideStatus();
+            const msg = document.getElementById('statusMessage');
+            if (msg) msg.classList.add('hidden');
         }
 
         function escapeHtml(str) {
@@ -1137,6 +1066,86 @@
             if (!str) return '';
             return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         }
+
+        // Inicialización de elementos del DOM al cargar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            audio = document.getElementById('audioStream');
+            tvVideo = document.getElementById('tvVideo');
+            tvPlayerModal = document.getElementById('tvPlayerModal');
+            tvLoadingSpinner = document.getElementById('tvLoadingSpinner');
+            tvModalLogo = document.getElementById('tvModalLogo');
+            tvModalTitle = document.getElementById('tvModalTitle');
+            tvModalGroup = document.getElementById('tvModalGroup');
+
+            mainContainer = document.getElementById('mainContainer');
+            contentGrid = document.getElementById('contentGrid');
+            loadingState = document.getElementById('loadingState');
+            emptyState = document.getElementById('emptyState');
+            playPauseBtn = document.getElementById('playPauseBtn');
+            playPauseIcon = document.getElementById('playPauseIcon');
+            spinnerLoader = document.getElementById('spinnerLoader');
+            playerTitle = document.getElementById('playerTitle');
+            playerCategory = document.getElementById('playerCategory');
+            playerImg = document.getElementById('playerImg');
+            playerFavBtn = document.getElementById('playerFavBtn');
+            volumeSlider = document.getElementById('volumeSlider');
+            muteBtn = document.getElementById('muteBtn');
+            muteIcon = document.getElementById('muteIcon');
+            favFilterBtn = document.getElementById('favFilterBtn');
+            searchModal = document.getElementById('searchModal');
+            modalSearchInput = document.getElementById('modalSearchInput');
+            searchResultsContainer = document.getElementById('searchResultsContainer');
+            favoritesActiveBanner = document.getElementById('favoritesActiveBanner');
+            tabRadioBtn = document.getElementById('tabRadioBtn');
+            tabTvBtn = document.getElementById('tabTvBtn');
+            modeBadge = document.getElementById('modeBadge');
+            appMainTitle = document.getElementById('appMainTitle');
+            headerModeIcon = document.getElementById('headerModeIcon');
+            
+            topHeader = document.getElementById('topHeader');
+            bottomPlayer = document.getElementById('bottomPlayer');
+            playerHandleBtn = document.getElementById('playerHandleBtn');
+            handleTitle = document.getElementById('handleTitle');
+            visualizerBars = document.getElementById('visualizerBars');
+
+            loadAllData();
+            updateFavoritesBadge();
+
+            volumeSlider.addEventListener('input', (e) => {
+                audio.volume = parseFloat(e.target.value);
+                audio.muted = false;
+                updateVolumeIcon(audio.volume);
+                keepControlsAlive();
+            });
+
+            modalSearchInput.addEventListener('input', (e) => {
+                renderModalSearchResults(e.target.value.trim().toLowerCase());
+            });
+
+            audio.addEventListener('error', () => handleAudioError());
+
+            audio.addEventListener('playing', () => {
+                reconnectAttempts = 0;
+                setLoadingState(false);
+                setIsPlaying(true);
+            });
+
+            audio.addEventListener('waiting', () => setLoadingState(true));
+
+            tvVideo.addEventListener('waiting', () => tvLoadingSpinner.classList.remove('hidden'));
+            tvVideo.addEventListener('playing', () => {
+                tvLoadingSpinner.classList.add('hidden');
+                visualizerBars.classList.add('visualizer-active');
+            });
+            tvVideo.addEventListener('pause', () => {
+                visualizerBars.classList.remove('visualizer-active');
+            });
+
+            topHeader.addEventListener('pointerdown', () => keepControlsAlive());
+            bottomPlayer.addEventListener('pointerdown', () => keepControlsAlive());
+
+            setupMediaSessionHandlers();
+        });
     </script>
 </body>
 </html>
