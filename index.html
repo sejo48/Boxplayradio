@@ -170,15 +170,20 @@
       overflow-y: auto;
       padding: 14px 16px;
       -webkit-overflow-scrolling: touch;
-      transition: opacity 0.35s ease, transform 0.35s ease;
+      transition: opacity 0.35s ease;
     }
 
-    /* TARJETAS MÁS PEQUEÑAS Y COMPACTAS */
+    /* TARJETAS COMPACTAS */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
       gap: 12px;
       padding-bottom: 96px;
+    }
+
+    /* Si estamos en TV no hay barra inferior, por lo que se ajusta el margen inferior */
+    body.tv-mode .grid {
+      padding-bottom: 24px;
     }
 
     .card {
@@ -256,7 +261,6 @@
       border-radius: 5px;
     }
 
-    /* ECUALIZADOR COMPACTO EN TARJETA */
     .card-equalizer-badge {
       display: none;
       position: absolute;
@@ -293,21 +297,21 @@
       100% { height: 100%; }
     }
 
-    /* VISTA DE CONDUCCIÓN CUANDO DESAPARECEN LAS TARJETAS */
+    /* PANTALLA LIMPIA DE CONDUCCIÓN (OCUPA EL 100% AL OCULTAR LA BARRA) */
     .driving-view {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      bottom: 84px;
+      bottom: 0; /* Ocupa toda la altura disponible */
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
       text-align: center;
-      background: radial-gradient(circle at center, #152233 0%, var(--bg-main) 70%);
-      z-index: 5;
+      background: radial-gradient(circle at center, #152233 0%, var(--bg-main) 75%);
+      z-index: 10;
     }
 
     .driving-view.active {
@@ -315,8 +319,8 @@
     }
 
     .driving-logo-box {
-      width: 96px;
-      height: 96px;
+      width: 100px;
+      height: 100px;
       border-radius: 20px;
       background: #0d1117;
       border: 2px solid var(--accent-radio);
@@ -325,7 +329,8 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+      cursor: pointer;
     }
 
     .driving-logo-box img {
@@ -339,7 +344,7 @@
       font-size: 26px;
       font-weight: 900;
       color: #fff;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       max-width: 80%;
       white-space: nowrap;
       overflow: hidden;
@@ -350,8 +355,8 @@
       display: flex;
       align-items: flex-end;
       gap: 5px;
-      height: 28px;
-      margin-bottom: 6px;
+      height: 30px;
+      margin-bottom: 12px;
     }
 
     .driving-eq .eq-bar {
@@ -360,25 +365,25 @@
       border-radius: 3px;
     }
 
-    /* BOTÓN FLOTANTE INFERIOR PEQUEÑO PARA MOSTRAR TARJETAS */
+    /* BOTÓN FLOTANTE INFERIOR: ABAJO CENTRADO */
     .floating-cards-btn {
       position: fixed;
-      bottom: 96px; /* Justo sobre la barra del reproductor */
+      bottom: 24px; /* Posicionado abajo al desaparecer la barra */
       left: 50%;
       transform: translateX(-50%);
       background: var(--bg-surface-elevated);
       border: 1.5px solid var(--accent-radio);
       color: #ffffff;
-      height: 42px;
-      padding: 0 18px;
-      border-radius: 21px;
+      height: 44px;
+      padding: 0 22px;
+      border-radius: 22px;
       display: none;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 10px var(--accent-radio-glow);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7), 0 0 12px var(--accent-radio-glow);
       z-index: 60;
       transition: transform 0.15s ease, background 0.15s ease;
     }
@@ -398,7 +403,7 @@
       fill: var(--accent-radio);
     }
 
-    /* REPRODUCTOR INFERIOR */
+    /* BARRA INFERIOR DEL REPRODUCTOR */
     .radio-player-bar {
       position: fixed;
       bottom: 0;
@@ -413,6 +418,7 @@
       padding: 0 20px;
       z-index: 50;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+      transition: transform 0.25s ease, opacity 0.25s ease;
     }
 
     .player-track-info {
@@ -590,7 +596,7 @@
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR -->
+  <!-- ENCABEZADO -->
   <header>
     <div class="brand">
       <div class="brand-logo">V</div>
@@ -621,8 +627,8 @@
       <div class="grid" id="cardsGrid" style="display: none;"></div>
     </div>
 
-    <!-- PANTALLA LIMPIA DE CONDUCCIÓN (SE ACTIVA TRAS 5 SEGUNDOS DE REPRODUCCIÓN) -->
-    <div class="driving-view" id="drivingView">
+    <!-- PANTALLA LIMPIA DE CONDUCCIÓN (SIN BARRA INFERIOR) -->
+    <div class="driving-view" id="drivingView" onclick="restoreCards()">
       <div class="driving-logo-box">
         <img id="drivingLogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Station">
       </div>
@@ -637,14 +643,14 @@
     </div>
   </main>
 
-  <!-- BOTÓN FLOTANTE INFERIOR PARA REACTIVAR LAS TARJETAS -->
+  <!-- BOTÓN FLOTANTE INFERIOR -->
   <button class="floating-cards-btn" id="restoreBtn" onclick="restoreCards()">
     <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
     Ver emisoras
   </button>
 
-  <!-- BARRA INFERIOR DEL REPRODUCTOR -->
-  <footer class="radio-player-bar">
+  <!-- BARRA DE REPRODUCCIÓN (SE OCULTA EN MODO CONDUCCIÓN Y EN TELEVISIÓN) -->
+  <footer class="radio-player-bar" id="radioBar">
     <div class="player-track-info">
       <div class="player-logo-container">
         <img id="playerLogo" class="player-logo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Logo">
@@ -701,13 +707,13 @@
 
     const audioPlayer = document.getElementById('radioAudio');
     const tvVideo = document.getElementById('tvVideo');
+    const radioBar = document.getElementById('radioBar');
     let hlsInstance = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       loadRadioData();
       loadTvData();
 
-      // Eventos del reproductor
       audioPlayer.addEventListener('playing', () => {
         isRadioPlaying = true;
         updateRadioUI('EN VIVO');
@@ -733,7 +739,6 @@
         updateRadioUI('ERROR DE TRANSMISIÓN');
       });
 
-      // Si el usuario toca el área de tarjetas, posponer la ocultación
       document.getElementById('scrollArea').addEventListener('touchstart', resetTimerOnInteraction);
       document.getElementById('scrollArea').addEventListener('mousedown', resetTimerOnInteraction);
     });
@@ -744,7 +749,7 @@
       }
     }
 
-    // Inicia cuenta de 5 segundos para ocultar tarjetas
+    // Iniciar temporizador de 5 segundos
     function startAutoHideTimer() {
       clearTimeout(hideTimer);
       if (currentSection !== 'radio' || !isRadioPlaying) return;
@@ -753,16 +758,19 @@
         if (isRadioPlaying && currentSection === 'radio') {
           hideCards();
         }
-      }, 5000); // 5 segundos
+      }, 5000);
     }
 
+    // Ocultar tarjetas y ocultar la barra inferior
     function hideCards() {
       areCardsHidden = true;
       document.getElementById('scrollArea').style.display = 'none';
       document.getElementById('drivingView').classList.add('active');
       document.getElementById('restoreBtn').classList.add('visible');
+      
+      // Ocultar la barra inferior en este estado
+      radioBar.style.display = 'none';
 
-      // Actualizar vista de conducción limpia
       if (currentRadio) {
         document.getElementById('drivingTitle').textContent = currentRadio.name;
         if (currentRadio.logo) {
@@ -771,6 +779,7 @@
       }
     }
 
+    // Mostrar de nuevo las tarjetas y la barra inferior (solo en sección Radio)
     function restoreCards() {
       areCardsHidden = false;
       clearTimeout(hideTimer);
@@ -778,18 +787,41 @@
       document.getElementById('drivingView').classList.remove('active');
       document.getElementById('restoreBtn').classList.remove('visible');
 
-      // Reiniciar temporizador si continúa la música
-      if (isRadioPlaying) {
+      // Reaparece la barra inferior solo si estamos en Radio
+      if (currentSection === 'radio') {
+        radioBar.style.display = 'flex';
+      }
+
+      if (isRadioPlaying && currentSection === 'radio') {
         startAutoHideTimer();
       }
     }
 
+    // Cambiar entre Radio y Televisión
     function switchSection(section) {
       currentSection = section;
       restoreCards();
       document.getElementById('searchInput').value = '';
       document.getElementById('tab-radio').classList.toggle('active', section === 'radio');
       document.getElementById('tab-tv').classList.toggle('active', section === 'tv');
+
+      if (section === 'tv') {
+        document.body.classList.add('tv-mode');
+        // Ocultar completamente la barra de música en TV
+        radioBar.style.display = 'none';
+        
+        // Detener o pausar la música para no solapar con la televisión
+        if (!audioPlayer.paused) {
+          audioPlayer.pause();
+          isRadioPlaying = false;
+          updateRadioUI('PAUSADO');
+        }
+      } else {
+        document.body.classList.remove('tv-mode');
+        // Mostrar la barra en radio si las tarjetas están visibles
+        radioBar.style.display = areCardsHidden ? 'none' : 'flex';
+      }
+
       renderGrid();
     }
 
@@ -835,12 +867,12 @@
         if (line.startsWith('#EXTINF:')) {
           const logoMatch = line.match(/tvg-logo="([^"]*)"/i) || line.match(/logo="([^"]*)"/i);
           const groupMatch = line.match(/group-title="([^"]*)"/i);
-          const nameMatch = line.split(',')[1] || 'Canal';
+          const nameMatch = line.split(',') || 'Canal';
 
           currentInfo = {
             name: nameMatch.trim(),
-            logo: logoMatch ? logoMatch[1] : '',
-            category: groupMatch ? groupMatch[1].trim() : 'TV'
+            logo: logoMatch ? logoMatch : '',
+            category: groupMatch ? groupMatch.trim() : 'TV'
           };
         } else if (!line.startsWith('#') && currentInfo) {
           currentInfo.url = line;
