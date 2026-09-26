@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>VoxPlay Auto</title>
-  <!-- HLS.js para reproducción de video IPTV / m3u8 -->
+  <!-- HLS.js para reproducción de video IPTV en vivo -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     :root {
@@ -83,11 +83,11 @@
       color: var(--accent-radio);
     }
 
-    /* BOTONES PRINCIPALES SEPARADOS */
+    /* BOTONES PRINCIPALES CON ESPACIADO AMPLIO PARA AUTOMÓVIL */
     .nav-tabs {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 26px;
     }
 
     .tab-btn {
@@ -172,7 +172,7 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* CUADRÍCULA DE TARJETAS */
+    /* CUADRÍCULA DE TARJETAS COMPACTAS */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
@@ -295,7 +295,7 @@
       100% { height: 100%; }
     }
 
-    /* PANTALLA DE CONDUCCIÓN COMPLETA */
+    /* PANTALLA LIMPIA DE CONDUCCIÓN (OCUPA TODO EL ESPACIO AL OCULTAR LA BARRA) */
     .driving-view {
       position: absolute;
       top: 0;
@@ -362,7 +362,7 @@
       border-radius: 3px;
     }
 
-    /* BOTÓN FLOTANTE INFERIOR */
+    /* BOTÓN FLOTANTE INFERIOR CENTRADO */
     .floating-cards-btn {
       position: fixed;
       bottom: 24px;
@@ -515,7 +515,7 @@
       fill: currentColor;
     }
 
-    /* REPRODUCTOR DE TV MODAL */
+    /* REPRODUCTOR MODAL DE TELEVISIÓN */
     .tv-modal {
       position: fixed;
       top: 0;
@@ -609,6 +609,7 @@
       <div class="brand-title">VoxPlay <span>Auto</span></div>
     </div>
 
+    <!-- BOTONES PRINCIPALES SEPARADOS -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="tab-radio" onclick="switchSection('radio')">
         <svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-.83-.51-1.57-1.24-1.85L10.2 2.18c-.7-.27-1.48-.27-2.18 0L3.24 6.15zM4 9h16v11H4V9zm8 3c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
@@ -806,7 +807,7 @@
 
       if (section === 'tv') {
         document.body.classList.add('tv-mode');
-        radioBar.style.display = 'none'; // Ocultar barra en TV
+        radioBar.style.display = 'none';
         if (!audioPlayer.paused) {
           audioPlayer.pause();
           isRadioPlaying = false;
@@ -835,11 +836,11 @@
 
         if (currentSection === 'radio') renderGrid();
       } catch (err) {
-        console.error('Error cargando radios:', err);
+        console.error('Error radios:', err);
       }
     }
 
-    // CARGA DE TV CORREGIDA
+    // CARGA DE TV
     async function loadTvData() {
       try {
         const res = await fetch(TV_URL);
@@ -855,13 +856,12 @@
       }
     }
 
-    // PARSER M3U CORREGIDO Y ROBUSTO
+    // ANALIZADOR M3U VERIFICADO
     function parseM3U(m3uText) {
       if (!m3uText || typeof m3uText !== 'string') return [];
       
-      // Eliminar posibles caracteres BOM iniciales
-      const cleanText = m3uText.replace(/^\uFEFF/, '');
-      const lines = cleanText.split(/\r?\n/);
+      const clean = m3uText.replace(/^\uFEFF/, '');
+      const lines = clean.split(/\r?\n/);
       const items = [];
       let currentInfo = null;
 
@@ -869,31 +869,21 @@
         const line = lines[i].trim();
         if (!line) continue;
 
-        if (line.toUpperCase().startsWith('#EXTINF:')) {
-          // Extraer Logo
-          const logoMatch = line.match(/(?:tvg-logo|logo)="([^"]*)"/i);
-          const logo = (logoMatch && logoMatch) ? logoMatch.trim() : '';
+        if (line.toUpperCase().startsWith('#EXTINF')) {
+          const logoMatch = /(?:tvg-logo|logo)="([^"]*)"/i.exec(line);
+          const logo = logoMatch ? String(logoMatch || '').trim() : '';
 
-          // Extraer Grupo/Categoría
-          const groupMatch = line.match(/group-title="([^"]*)"/i);
-          const category = (groupMatch && groupMatch) ? groupMatch.trim() : 'TV';
+          const groupMatch = /group-title="([^"]*)"/i.exec(line);
+          const category = groupMatch ? String(groupMatch || '').trim() : 'TV';
 
-          // Extraer Nombre (después de la primera coma tras los atributos)
           const commaIndex = line.indexOf(',');
-          let name = '';
-          if (commaIndex !== -1) {
-            name = line.substring(commaIndex + 1).trim();
-          }
+          let name = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : '';
           if (!name) {
-            const tvgNameMatch = line.match(/tvg-name="([^"]*)"/i);
-            name = (tvgNameMatch && tvgNameMatch) ? tvgNameMatch.trim() : 'Canal';
+            const tvgNameMatch = /tvg-name="([^"]*)"/i.exec(line);
+            name = tvgNameMatch ? String(tvgNameMatch || '').trim() : 'Canal';
           }
 
-          currentInfo = {
-            name: name,
-            logo: logo,
-            category: category
-          };
+          currentInfo = { name, logo, category };
         } else if (!line.startsWith('#') && currentInfo) {
           currentInfo.url = line;
           items.push(currentInfo);
