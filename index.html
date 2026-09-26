@@ -18,7 +18,7 @@
       --text-primary: #ffffff;
       --text-secondary: #8c96a8;
       --border-color: rgba(255, 255, 255, 0.1);
-      --card-radius: 16px;
+      --card-radius: 12px;
     }
 
     * {
@@ -40,40 +40,41 @@
       flex-direction: column;
     }
 
-    /* BARRA SUPERIOR ADAPTADA A CONDUCCIÓN */
+    /* ENCABEZADO */
     header {
       background: var(--bg-surface);
-      height: 82px;
+      height: 76px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0 16px;
       border-bottom: 2px solid var(--border-color);
       flex-shrink: 0;
       gap: 16px;
+      z-index: 20;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .brand-logo {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       background: linear-gradient(135deg, var(--accent-radio), #0066ff);
-      border-radius: 12px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 900;
-      font-size: 22px;
+      font-size: 20px;
       color: #0a0d12;
     }
 
     .brand-title {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 800;
       letter-spacing: 0.5px;
     }
@@ -82,34 +83,34 @@
       color: var(--accent-radio);
     }
 
-    /* BOTONES PRINCIPALES SEPARADOS CON GRAN ÁREA TÁCTIL */
+    /* BOTONES PRINCIPALES SEPARADOS */
     .nav-tabs {
       display: flex;
       align-items: center;
-      gap: 28px; /* Separación amplia para evitar toques accidentales */
+      gap: 24px;
     }
 
     .tab-btn {
-      width: 175px;
-      height: 60px;
-      border-radius: 14px;
+      width: 160px;
+      height: 56px;
+      border-radius: 12px;
       border: 2px solid var(--border-color);
       background: var(--bg-surface-elevated);
       color: var(--text-secondary);
-      font-size: 19px;
+      font-size: 17px;
       font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
       transition: all 0.15s ease;
     }
 
     .tab-btn svg {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       fill: currentColor;
     }
 
@@ -117,7 +118,6 @@
       transform: scale(0.95);
     }
 
-    /* Estilos activos individuales para mayor claridad */
     .tab-btn#tab-radio.active {
       color: #ffffff;
       background: #112638;
@@ -138,16 +138,15 @@
       fill: var(--accent-tv);
     }
 
-    /* BÚSQUEDA RÁPIDA */
     .search-box {
       display: flex;
       align-items: center;
       background: var(--bg-surface-elevated);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 0 14px;
-      height: 52px;
-      width: 230px;
+      border-radius: 10px;
+      padding: 0 12px;
+      height: 46px;
+      width: 210px;
     }
 
     .search-box input {
@@ -155,131 +154,121 @@
       border: none;
       outline: none;
       color: #fff;
-      font-size: 16px;
+      font-size: 15px;
       width: 100%;
-    }
-
-    .search-box input::placeholder {
-      color: var(--text-secondary);
     }
 
     /* CONTENEDOR PRINCIPAL */
     main {
       flex: 1;
-      overflow-y: auto;
-      padding: 18px;
-      -webkit-overflow-scrolling: touch;
+      position: relative;
+      overflow: hidden;
     }
 
-    /* CUADRÍCULA DE TARJETAS */
+    #scrollArea {
+      height: 100%;
+      overflow-y: auto;
+      padding: 14px 16px;
+      -webkit-overflow-scrolling: touch;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    /* TARJETAS MÁS PEQUEÑAS Y COMPACTAS */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
-      gap: 16px;
-      padding-bottom: 110px;
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 12px;
+      padding-bottom: 96px;
     }
 
     .card {
       position: relative;
       background: var(--bg-surface);
-      border: 2px solid var(--border-color);
+      border: 1.5px solid var(--border-color);
       border-radius: var(--card-radius);
-      padding: 14px;
+      padding: 10px 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
       cursor: pointer;
-      min-height: 180px;
+      min-height: 130px;
       justify-content: space-between;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
 
     .card:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
       background: var(--bg-surface-elevated);
     }
 
-    /* TARJETA SONANDO (ANIMACIÓN VISIBLE DESDE EL VOLANTE) */
     .card.is-playing {
       border-color: var(--accent-radio);
       background: linear-gradient(180deg, rgba(0, 210, 255, 0.15) 0%, var(--bg-surface) 100%);
-      box-shadow: 0 0 20px var(--accent-radio-glow);
-      animation: pulseActiveCard 2s infinite alternate;
-    }
-
-    @keyframes pulseActiveCard {
-      0% {
-        border-color: var(--accent-radio);
-        box-shadow: 0 0 14px var(--accent-radio-glow);
-      }
-      100% {
-        border-color: #ffffff;
-        box-shadow: 0 0 26px var(--accent-radio);
-      }
+      box-shadow: 0 0 14px var(--accent-radio-glow);
     }
 
     .card-img-wrapper {
       position: relative;
-      width: 90px;
-      height: 90px;
-      border-radius: 14px;
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
       background: #0d1117;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .card-img-wrapper img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      padding: 6px;
+      padding: 4px;
     }
 
     .card-img-wrapper .placeholder-icon {
-      font-size: 36px;
+      font-size: 26px;
       color: var(--text-secondary);
     }
 
     .card-title {
-      font-size: 16px;
-      font-weight: 800;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--text-primary);
-      line-height: 1.25;
+      line-height: 1.2;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .card-tag {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       color: var(--text-secondary);
       background: rgba(255, 255, 255, 0.06);
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 2px 7px;
+      border-radius: 5px;
     }
 
-    /* ECUALIZADOR DINÁMICO EN LA TARJETA */
+    /* ECUALIZADOR COMPACTO EN TARJETA */
     .card-equalizer-badge {
       display: none;
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 6px;
+      right: 6px;
       background: rgba(0, 0, 0, 0.85);
       border: 1px solid var(--accent-radio);
-      border-radius: 8px;
-      padding: 4px 8px;
+      border-radius: 6px;
+      padding: 3px 5px;
       align-items: flex-end;
-      gap: 3px;
-      height: 24px;
+      gap: 2.5px;
+      height: 18px;
       z-index: 5;
     }
 
@@ -288,59 +277,164 @@
     }
 
     .eq-bar {
-      width: 3.5px;
+      width: 2.5px;
       background: var(--accent-radio);
       border-radius: 2px;
       animation: eqBounce 0.8s ease-in-out infinite alternate;
     }
 
-    .eq-bar:nth-child(1) { height: 45%; animation-delay: 0.1s; }
+    .eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
     .eq-bar:nth-child(2) { height: 100%; animation-delay: 0.35s; }
-    .eq-bar:nth-child(3) { height: 70%; animation-delay: 0.2s; }
-    .eq-bar:nth-child(4) { height: 90%; animation-delay: 0.45s; }
+    .eq-bar:nth-child(3) { height: 65%; animation-delay: 0.2s; }
+    .eq-bar:nth-child(4) { height: 85%; animation-delay: 0.45s; }
 
     @keyframes eqBounce {
       0% { height: 25%; }
       100% { height: 100%; }
     }
 
-    /* BARRA INFERIOR DEL REPRODUCTOR */
+    /* VISTA DE CONDUCCIÓN CUANDO DESAPARECEN LAS TARJETAS */
+    .driving-view {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 84px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      background: radial-gradient(circle at center, #152233 0%, var(--bg-main) 70%);
+      z-index: 5;
+    }
+
+    .driving-view.active {
+      display: flex;
+    }
+
+    .driving-logo-box {
+      width: 96px;
+      height: 96px;
+      border-radius: 20px;
+      background: #0d1117;
+      border: 2px solid var(--accent-radio);
+      box-shadow: 0 0 25px var(--accent-radio-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .driving-logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 8px;
+    }
+
+    .driving-station-name {
+      font-size: 26px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 10px;
+      max-width: 80%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .driving-eq {
+      display: flex;
+      align-items: flex-end;
+      gap: 5px;
+      height: 28px;
+      margin-bottom: 6px;
+    }
+
+    .driving-eq .eq-bar {
+      width: 5px;
+      background: var(--accent-radio);
+      border-radius: 3px;
+    }
+
+    /* BOTÓN FLOTANTE INFERIOR PEQUEÑO PARA MOSTRAR TARJETAS */
+    .floating-cards-btn {
+      position: fixed;
+      bottom: 96px; /* Justo sobre la barra del reproductor */
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-surface-elevated);
+      border: 1.5px solid var(--accent-radio);
+      color: #ffffff;
+      height: 42px;
+      padding: 0 18px;
+      border-radius: 21px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 10px var(--accent-radio-glow);
+      z-index: 60;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .floating-cards-btn.visible {
+      display: flex;
+    }
+
+    .floating-cards-btn:active {
+      transform: translateX(-50%) scale(0.93);
+      background: #112638;
+    }
+
+    .floating-cards-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--accent-radio);
+    }
+
+    /* REPRODUCTOR INFERIOR */
     .radio-player-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 90px;
+      height: 84px;
       background: var(--bg-surface-elevated);
       border-top: 2px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
+      padding: 0 20px;
       z-index: 50;
-      box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
     }
 
     .player-track-info {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       max-width: 48%;
     }
 
     .player-logo-container {
-      position: relative;
-      width: 62px;
-      height: 62px;
+      width: 54px;
+      height: 54px;
+      flex-shrink: 0;
     }
 
     .player-logo {
       width: 100%;
       height: 100%;
-      border-radius: 12px;
+      border-radius: 10px;
       background: #0d1117;
       object-fit: contain;
-      padding: 4px;
+      padding: 3px;
       border: 1px solid var(--border-color);
     }
 
@@ -349,7 +443,7 @@
     }
 
     .player-name {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
       white-space: nowrap;
       overflow: hidden;
@@ -360,43 +454,37 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
     .player-status {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--accent-radio);
       text-transform: uppercase;
     }
 
-    /* ECUALIZADOR EN BARRA INFERIOR */
     .bar-equalizer {
       display: none;
       align-items: flex-end;
-      gap: 3px;
-      height: 15px;
-      width: 18px;
+      gap: 2.5px;
+      height: 14px;
+      width: 16px;
     }
 
     .bar-equalizer.active {
       display: flex;
     }
 
-    .bar-equalizer .eq-bar {
-      width: 3px;
-      background: var(--accent-radio);
-    }
-
     .player-controls {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 18px;
     }
 
     .ctrl-btn {
-      width: 62px;
-      height: 62px;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
       border: none;
       background: #283244;
@@ -405,24 +493,23 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: transform 0.1s ease;
     }
 
     .ctrl-btn:active {
-      transform: scale(0.9);
+      transform: scale(0.92);
     }
 
     .ctrl-btn.play-btn {
       background: var(--accent-radio);
       color: #0a0d12;
-      width: 68px;
-      height: 68px;
-      box-shadow: 0 0 16px var(--accent-radio-glow);
+      width: 62px;
+      height: 62px;
+      box-shadow: 0 0 14px var(--accent-radio-glow);
     }
 
     .ctrl-btn svg {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       fill: currentColor;
     }
 
@@ -444,7 +531,7 @@
     }
 
     .tv-header {
-      height: 64px;
+      height: 60px;
       background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
       position: absolute;
       top: 0;
@@ -453,30 +540,25 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0 16px;
       z-index: 10;
     }
 
     .tv-title {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 800;
       color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     }
 
     .tv-close-btn {
       background: rgba(255, 255, 255, 0.25);
       border: 1px solid rgba(255, 255, 255, 0.4);
       color: #fff;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
-      padding: 12px 22px;
-      border-radius: 10px;
+      padding: 10px 20px;
+      border-radius: 8px;
       cursor: pointer;
-    }
-
-    .tv-close-btn:active {
-      background: rgba(255, 255, 255, 0.5);
     }
 
     .tv-video-container {
@@ -499,34 +581,22 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 70px 20px;
+      padding: 60px 20px;
       color: var(--text-secondary);
-      font-size: 18px;
-      gap: 16px;
-    }
-
-    .status-msg button {
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      background: var(--accent-radio);
-      color: #0a0d12;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      font-size: 17px;
+      gap: 14px;
     }
   </style>
 </head>
 <body>
 
-  <!-- ENCABEZADO CON BOTONES SEPARADOS PARA EL AUTOMÓVIL -->
+  <!-- BARRA SUPERIOR -->
   <header>
     <div class="brand">
       <div class="brand-logo">V</div>
       <div class="brand-title">VoxPlay <span>Auto</span></div>
     </div>
 
-    <!-- Pestañas separadas con amplio margen para tocar sin mirar con precisión -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="tab-radio" onclick="switchSection('radio')">
         <svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-.83-.51-1.57-1.24-1.85L10.2 2.18c-.7-.27-1.48-.27-2.18 0L3.24 6.15zM4 9h16v11H4V9zm8 3c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
@@ -544,17 +614,40 @@
     </div>
   </header>
 
-  <!-- CONTENEDOR DE TARJETAS -->
-  <main id="contentArea">
-    <div class="status-msg" id="loadingMsg">Cargando emisoras...</div>
-    <div class="grid" id="cardsGrid" style="display: none;"></div>
+  <!-- ÁREA DE CONTENIDO -->
+  <main>
+    <div id="scrollArea">
+      <div class="status-msg" id="loadingMsg">Cargando emisoras...</div>
+      <div class="grid" id="cardsGrid" style="display: none;"></div>
+    </div>
+
+    <!-- PANTALLA LIMPIA DE CONDUCCIÓN (SE ACTIVA TRAS 5 SEGUNDOS DE REPRODUCCIÓN) -->
+    <div class="driving-view" id="drivingView">
+      <div class="driving-logo-box">
+        <img id="drivingLogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Station">
+      </div>
+      <div class="driving-station-name" id="drivingTitle">Emisora en Vivo</div>
+      <div class="driving-eq">
+        <span class="eq-bar"></span>
+        <span class="eq-bar"></span>
+        <span class="eq-bar"></span>
+        <span class="eq-bar"></span>
+        <span class="eq-bar"></span>
+      </div>
+    </div>
   </main>
 
-  <!-- BARRA DE REPRODUCCIÓN INFERIOR -->
-  <footer class="radio-player-bar" id="radioBar">
+  <!-- BOTÓN FLOTANTE INFERIOR PARA REACTIVAR LAS TARJETAS -->
+  <button class="floating-cards-btn" id="restoreBtn" onclick="restoreCards()">
+    <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+    Ver emisoras
+  </button>
+
+  <!-- BARRA INFERIOR DEL REPRODUCTOR -->
+  <footer class="radio-player-bar">
     <div class="player-track-info">
       <div class="player-logo-container">
-        <img id="playerLogo" class="player-logo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Logo">
+        <img id="playerLogo" class="player-logo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Logo">
       </div>
       <div class="player-texts">
         <div class="player-name" id="playerTitle">Seleccione una emisora</div>
@@ -603,6 +696,8 @@
     let tvList = [];
     let currentRadio = null;
     let isRadioPlaying = false;
+    let hideTimer = null;
+    let areCardsHidden = false;
 
     const audioPlayer = document.getElementById('radioAudio');
     const tvVideo = document.getElementById('tvVideo');
@@ -612,28 +707,86 @@
       loadRadioData();
       loadTvData();
 
-      // Control de estados de audio
+      // Eventos del reproductor
       audioPlayer.addEventListener('playing', () => {
         isRadioPlaying = true;
         updateRadioUI('EN VIVO');
+        startAutoHideTimer();
       });
+
       audioPlayer.addEventListener('waiting', () => {
         updateRadioUI('SINTONIZANDO...');
       });
+
       audioPlayer.addEventListener('pause', () => {
         isRadioPlaying = false;
+        clearTimeout(hideTimer);
         if (audioPlayer.currentTime > 0 && !audioPlayer.ended) {
           updateRadioUI('PAUSADO');
         }
       });
+
       audioPlayer.addEventListener('error', () => {
         isRadioPlaying = false;
+        clearTimeout(hideTimer);
+        restoreCards();
         updateRadioUI('ERROR DE TRANSMISIÓN');
       });
+
+      // Si el usuario toca el área de tarjetas, posponer la ocultación
+      document.getElementById('scrollArea').addEventListener('touchstart', resetTimerOnInteraction);
+      document.getElementById('scrollArea').addEventListener('mousedown', resetTimerOnInteraction);
     });
+
+    function resetTimerOnInteraction() {
+      if (isRadioPlaying && !areCardsHidden) {
+        startAutoHideTimer();
+      }
+    }
+
+    // Inicia cuenta de 5 segundos para ocultar tarjetas
+    function startAutoHideTimer() {
+      clearTimeout(hideTimer);
+      if (currentSection !== 'radio' || !isRadioPlaying) return;
+
+      hideTimer = setTimeout(() => {
+        if (isRadioPlaying && currentSection === 'radio') {
+          hideCards();
+        }
+      }, 5000); // 5 segundos
+    }
+
+    function hideCards() {
+      areCardsHidden = true;
+      document.getElementById('scrollArea').style.display = 'none';
+      document.getElementById('drivingView').classList.add('active');
+      document.getElementById('restoreBtn').classList.add('visible');
+
+      // Actualizar vista de conducción limpia
+      if (currentRadio) {
+        document.getElementById('drivingTitle').textContent = currentRadio.name;
+        if (currentRadio.logo) {
+          document.getElementById('drivingLogo').src = currentRadio.logo;
+        }
+      }
+    }
+
+    function restoreCards() {
+      areCardsHidden = false;
+      clearTimeout(hideTimer);
+      document.getElementById('scrollArea').style.display = 'block';
+      document.getElementById('drivingView').classList.remove('active');
+      document.getElementById('restoreBtn').classList.remove('visible');
+
+      // Reiniciar temporizador si continúa la música
+      if (isRadioPlaying) {
+        startAutoHideTimer();
+      }
+    }
 
     function switchSection(section) {
       currentSection = section;
+      restoreCards();
       document.getElementById('searchInput').value = '';
       document.getElementById('tab-radio').classList.toggle('active', section === 'radio');
       document.getElementById('tab-tv').classList.toggle('active', section === 'tv');
@@ -656,7 +809,6 @@
         if (currentSection === 'radio') renderGrid();
       } catch (err) {
         console.error('Error radios:', err);
-        if (currentSection === 'radio') showError('No se pudieron cargar las emisoras.');
       }
     }
 
@@ -668,7 +820,6 @@
         if (currentSection === 'tv') renderGrid();
       } catch (err) {
         console.error('Error TV:', err);
-        if (currentSection === 'tv') showError('No se pudo cargar la lista de televisión.');
       }
     }
 
@@ -739,7 +890,6 @@
           : `<span class="placeholder-icon">${fallbackIcon}</span>`;
 
         card.innerHTML = `
-          <!-- Indicador de ecualizador animado visible en la tarjeta -->
           <div class="card-equalizer-badge">
             <span class="eq-bar"></span>
             <span class="eq-bar"></span>
@@ -780,6 +930,7 @@
       });
 
       renderGrid();
+      startAutoHideTimer();
     }
 
     function toggleRadioPlay() {
@@ -792,11 +943,13 @@
     }
 
     function stopRadio() {
+      clearTimeout(hideTimer);
       audioPlayer.pause();
       audioPlayer.src = '';
       currentRadio = null;
       isRadioPlaying = false;
       document.getElementById('playerTitle').textContent = 'Seleccione una emisora';
+      restoreCards();
       updateRadioUI('DETENIDO');
       renderGrid();
     }
@@ -810,6 +963,7 @@
     }
 
     function playTv(item) {
+      clearTimeout(hideTimer);
       if (!audioPlayer.paused) {
         audioPlayer.pause();
         isRadioPlaying = false;
@@ -841,15 +995,6 @@
         hlsInstance.destroy();
         hlsInstance = null;
       }
-    }
-
-    function showError(msg) {
-      const loading = document.getElementById('loadingMsg');
-      loading.style.display = 'flex';
-      loading.innerHTML = `
-        <div>${msg}</div>
-        <button onclick="location.reload()">Reintentar</button>
-      `;
     }
   </script>
 </body>
