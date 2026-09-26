@@ -83,7 +83,7 @@
       color: var(--accent-radio);
     }
 
-    /* BOTONES PRINCIPALES CON ESPACIADO AMPLIO PARA AUTOMÓVIL */
+    /* BOTONES PRINCIPALES SEPARADOS */
     .nav-tabs {
       display: flex;
       align-items: center;
@@ -172,7 +172,7 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* CUADRÍCULA DE TARJETAS COMPACTAS */
+    /* CUADRÍCULA DE TARJETAS */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
@@ -295,7 +295,7 @@
       100% { height: 100%; }
     }
 
-    /* PANTALLA LIMPIA DE CONDUCCIÓN (OCUPA TODO EL ESPACIO AL OCULTAR LA BARRA) */
+    /* PANTALLA LIMPIA DE CONDUCCIÓN */
     .driving-view {
       position: absolute;
       top: 0;
@@ -362,7 +362,7 @@
       border-radius: 3px;
     }
 
-    /* BOTÓN FLOTANTE INFERIOR CENTRADO */
+    /* BOTÓN FLOTANTE INFERIOR */
     .floating-cards-btn {
       position: fixed;
       bottom: 24px;
@@ -400,7 +400,7 @@
       fill: var(--accent-radio);
     }
 
-    /* BARRA INFERIOR DEL REPRODUCTOR */
+    /* BARRA INFERIOR DE RADIO */
     .radio-player-bar {
       position: fixed;
       bottom: 0;
@@ -578,25 +578,39 @@
       object-fit: contain;
     }
 
+    /* MENSAJES Y OPCIONES DE CARGA */
     .status-msg {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 60px 20px;
+      padding: 40px 20px;
       color: var(--text-secondary);
-      font-size: 17px;
-      gap: 14px;
+      font-size: 16px;
+      gap: 16px;
+      text-align: center;
     }
 
-    .status-msg button {
-      padding: 10px 22px;
+    .btn-action {
+      padding: 12px 24px;
       background: var(--accent-radio);
       border: none;
       color: #0a0d12;
       font-weight: 800;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-tv-action {
+      background: var(--accent-tv);
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
     }
   </style>
 </head>
@@ -609,7 +623,7 @@
       <div class="brand-title">VoxPlay <span>Auto</span></div>
     </div>
 
-    <!-- BOTONES PRINCIPALES SEPARADOS -->
+    <!-- NAVEGACIÓN PRINCIPAL -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="tab-radio" onclick="switchSection('radio')">
         <svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-.83-.51-1.57-1.24-1.85L10.2 2.18c-.7-.27-1.48-.27-2.18 0L3.24 6.15zM4 9h16v11H4V9zm8 3c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
@@ -656,7 +670,7 @@
     Ver emisoras
   </button>
 
-  <!-- BARRA INFERIOR DE RADIO -->
+  <!-- BARRA DE REPRODUCCIÓN (SE OCULTA EN MODO CONDUCCIÓN Y EN TELEVISIÓN) -->
   <footer class="radio-player-bar" id="radioBar">
     <div class="player-track-info">
       <div class="player-logo-container">
@@ -698,6 +712,9 @@
     </div>
   </div>
 
+  <!-- INPUT OCULTO PARA CARGAR ARCHIVO M3U LOCAL DESDE USB / DISPOSITIVO -->
+  <input type="file" id="localM3uInput" accept=".m3u,.m3u8,.txt" style="display:none;" onchange="handleLocalM3uFile(event)">
+
   <audio id="radioAudio" preload="none"></audio>
 
   <script>
@@ -707,6 +724,9 @@
     let currentSection = 'radio';
     let radioList = [];
     let tvList = [];
+    let tvError = null;
+    let tvIsLoading = false;
+
     let currentRadio = null;
     let isRadioPlaying = false;
     let hideTimer = null;
@@ -807,11 +827,15 @@
 
       if (section === 'tv') {
         document.body.classList.add('tv-mode');
-        radioBar.style.display = 'none';
+        radioBar.style.display = 'none'; // Ocultar barra en TV
         if (!audioPlayer.paused) {
           audioPlayer.pause();
           isRadioPlaying = false;
           updateRadioUI('PAUSADO');
+        }
+        // Si no se han cargado los canales, intentar de nuevo
+        if (tvList.length === 0 && !tvIsLoading) {
+          loadTvData();
         }
       } else {
         document.body.classList.remove('tv-mode');
@@ -836,27 +860,62 @@
 
         if (currentSection === 'radio') renderGrid();
       } catch (err) {
-        console.error('Error radios:', err);
+        console.error('Error cargando radios:', err);
       }
     }
 
-    // CARGA DE TV
+    // CARGA DE TV CON DIAGNÓSTICO
     async function loadTvData() {
+      tvIsLoading = true;
+      tvError = null;
+      if (currentSection === 'tv') {
+        document.getElementById('loadingMsg').style.display = 'flex';
+        document.getElementById('loadingMsg').innerHTML = 'Conectando con lista oficial M3U...';
+        document.getElementById('cardsGrid').style.display = 'none';
+      }
+
       try {
         const res = await fetch(TV_URL);
-        if (!res.ok) throw new Error('Error de red al obtener M3U');
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
         const text = await res.text();
         tvList = parseM3U(text);
-        if (currentSection === 'tv') renderGrid();
+
+        if (tvList.length === 0) {
+          throw new Error('La lista se descargó pero no se encontraron canales con formato #EXTINF.');
+        }
+
+        console.log(`Canales de TV cargados: ${tvList.length}`);
       } catch (err) {
         console.error('Error cargando TV:', err);
-        if (currentSection === 'tv') {
-          showError('No se pudo cargar la lista de canales de TV.');
-        }
+        tvError = err.message;
+      } finally {
+        tvIsLoading = false;
+        if (currentSection === 'tv') renderGrid();
       }
     }
 
-    // ANALIZADOR M3U VERIFICADO
+    // LECTURA DE ARCHIVO M3U LOCAL (USB / DISPOSITIVO)
+    function triggerLocalM3u() {
+      document.getElementById('localM3uInput').click();
+    }
+
+    function handleLocalM3uFile(e) {
+      const file = e.target.files.at(0);
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const content = evt.target.result;
+        tvList = parseM3U(content);
+        tvError = null;
+        if (currentSection === 'tv') renderGrid();
+      };
+      reader.readAsText(file);
+    }
+
+    // PARSER M3U OPTIMIZADO
     function parseM3U(m3uText) {
       if (!m3uText || typeof m3uText !== 'string') return [];
       
@@ -866,21 +925,21 @@
       let currentInfo = null;
 
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+        const line = lines.at(i).trim();
         if (!line) continue;
 
         if (line.toUpperCase().startsWith('#EXTINF')) {
           const logoMatch = /(?:tvg-logo|logo)="([^"]*)"/i.exec(line);
-          const logo = logoMatch ? String(logoMatch || '').trim() : '';
+          const logo = logoMatch ? logoMatch.at(1).trim() : '';
 
           const groupMatch = /group-title="([^"]*)"/i.exec(line);
-          const category = groupMatch ? String(groupMatch || '').trim() : 'TV';
+          const category = groupMatch ? groupMatch.at(1).trim() : 'TV';
 
           const commaIndex = line.indexOf(',');
           let name = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : '';
           if (!name) {
             const tvgNameMatch = /tvg-name="([^"]*)"/i.exec(line);
-            name = tvgNameMatch ? String(tvgNameMatch || '').trim() : 'Canal';
+            name = tvgNameMatch ? tvgNameMatch.at(1).trim() : 'Canal';
           }
 
           currentInfo = { name, logo, category };
@@ -898,6 +957,21 @@
       const loading = document.getElementById('loadingMsg');
       const filter = document.getElementById('searchInput').value.toLowerCase().trim();
       const list = currentSection === 'radio' ? radioList : tvList;
+
+      // Si hubo un error en TV
+      if (currentSection === 'tv' && tvError && tvList.length === 0) {
+        loading.style.display = 'flex';
+        loading.innerHTML = `
+          <div style="color: var(--accent-tv); font-weight: bold; font-size: 18px;">No se pudo descargar la lista de TV</div>
+          <div style="font-size: 14px; max-width: 90%; color: var(--text-secondary);">${tvError}</div>
+          <div style="display: flex; gap: 12px; margin-top: 8px;">
+            <button class="btn-action btn-tv-action" onclick="loadTvData()">Reintentar conexión</button>
+            <button class="btn-action btn-secondary" onclick="triggerLocalM3u()">Cargar M3U desde USB</button>
+          </div>
+        `;
+        grid.style.display = 'none';
+        return;
+      }
 
       if (!list || list.length === 0) {
         loading.style.display = 'flex';
@@ -1039,17 +1113,6 @@
         hlsInstance.destroy();
         hlsInstance = null;
       }
-    }
-
-    function showError(msg) {
-      const loading = document.getElementById('loadingMsg');
-      const grid = document.getElementById('cardsGrid');
-      grid.style.display = 'none';
-      loading.style.display = 'flex';
-      loading.innerHTML = `
-        <div>${msg}</div>
-        <button onclick="loadTvData()">Reintentar</button>
-      `;
     }
   </script>
 </body>
