@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>VoxPlay Auto</title>
-  <!-- HLS.js para IPTV -->
+  <!-- HLS.js para reproducción de video IPTV / m3u8 -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     :root {
@@ -170,10 +170,9 @@
       overflow-y: auto;
       padding: 14px 16px;
       -webkit-overflow-scrolling: touch;
-      transition: opacity 0.35s ease;
     }
 
-    /* TARJETAS COMPACTAS */
+    /* CUADRÍCULA DE TARJETAS */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
@@ -181,7 +180,6 @@
       padding-bottom: 96px;
     }
 
-    /* Si estamos en TV no hay barra inferior, por lo que se ajusta el margen inferior */
     body.tv-mode .grid {
       padding-bottom: 24px;
     }
@@ -297,13 +295,13 @@
       100% { height: 100%; }
     }
 
-    /* PANTALLA LIMPIA DE CONDUCCIÓN (OCUPA EL 100% AL OCULTAR LA BARRA) */
+    /* PANTALLA DE CONDUCCIÓN COMPLETA */
     .driving-view {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      bottom: 0; /* Ocupa toda la altura disponible */
+      bottom: 0;
       display: none;
       flex-direction: column;
       align-items: center;
@@ -330,7 +328,6 @@
       justify-content: center;
       overflow: hidden;
       margin-bottom: 14px;
-      cursor: pointer;
     }
 
     .driving-logo-box img {
@@ -365,10 +362,10 @@
       border-radius: 3px;
     }
 
-    /* BOTÓN FLOTANTE INFERIOR: ABAJO CENTRADO */
+    /* BOTÓN FLOTANTE INFERIOR */
     .floating-cards-btn {
       position: fixed;
-      bottom: 24px; /* Posicionado abajo al desaparecer la barra */
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--bg-surface-elevated);
@@ -418,7 +415,6 @@
       padding: 0 20px;
       z-index: 50;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
-      transition: transform 0.25s ease, opacity 0.25s ease;
     }
 
     .player-track-info {
@@ -519,7 +515,7 @@
       fill: currentColor;
     }
 
-    /* MODAL DE TV */
+    /* REPRODUCTOR DE TV MODAL */
     .tv-modal {
       position: fixed;
       top: 0;
@@ -592,6 +588,16 @@
       font-size: 17px;
       gap: 14px;
     }
+
+    .status-msg button {
+      padding: 10px 22px;
+      background: var(--accent-radio);
+      border: none;
+      color: #0a0d12;
+      font-weight: 800;
+      border-radius: 8px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -620,14 +626,14 @@
     </div>
   </header>
 
-  <!-- ÁREA DE CONTENIDO -->
+  <!-- CONTENIDO -->
   <main>
     <div id="scrollArea">
-      <div class="status-msg" id="loadingMsg">Cargando emisoras...</div>
+      <div class="status-msg" id="loadingMsg">Cargando...</div>
       <div class="grid" id="cardsGrid" style="display: none;"></div>
     </div>
 
-    <!-- PANTALLA LIMPIA DE CONDUCCIÓN (SIN BARRA INFERIOR) -->
+    <!-- PANTALLA LIMPIA DE CONDUCCIÓN -->
     <div class="driving-view" id="drivingView" onclick="restoreCards()">
       <div class="driving-logo-box">
         <img id="drivingLogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Station">
@@ -649,7 +655,7 @@
     Ver emisoras
   </button>
 
-  <!-- BARRA DE REPRODUCCIÓN (SE OCULTA EN MODO CONDUCCIÓN Y EN TELEVISIÓN) -->
+  <!-- BARRA INFERIOR DE RADIO -->
   <footer class="radio-player-bar" id="radioBar">
     <div class="player-track-info">
       <div class="player-logo-container">
@@ -749,7 +755,6 @@
       }
     }
 
-    // Iniciar temporizador de 5 segundos
     function startAutoHideTimer() {
       clearTimeout(hideTimer);
       if (currentSection !== 'radio' || !isRadioPlaying) return;
@@ -761,14 +766,11 @@
       }, 5000);
     }
 
-    // Ocultar tarjetas y ocultar la barra inferior
     function hideCards() {
       areCardsHidden = true;
       document.getElementById('scrollArea').style.display = 'none';
       document.getElementById('drivingView').classList.add('active');
       document.getElementById('restoreBtn').classList.add('visible');
-      
-      // Ocultar la barra inferior en este estado
       radioBar.style.display = 'none';
 
       if (currentRadio) {
@@ -779,7 +781,6 @@
       }
     }
 
-    // Mostrar de nuevo las tarjetas y la barra inferior (solo en sección Radio)
     function restoreCards() {
       areCardsHidden = false;
       clearTimeout(hideTimer);
@@ -787,7 +788,6 @@
       document.getElementById('drivingView').classList.remove('active');
       document.getElementById('restoreBtn').classList.remove('visible');
 
-      // Reaparece la barra inferior solo si estamos en Radio
       if (currentSection === 'radio') {
         radioBar.style.display = 'flex';
       }
@@ -797,7 +797,6 @@
       }
     }
 
-    // Cambiar entre Radio y Televisión
     function switchSection(section) {
       currentSection = section;
       restoreCards();
@@ -807,10 +806,7 @@
 
       if (section === 'tv') {
         document.body.classList.add('tv-mode');
-        // Ocultar completamente la barra de música en TV
-        radioBar.style.display = 'none';
-        
-        // Detener o pausar la música para no solapar con la televisión
+        radioBar.style.display = 'none'; // Ocultar barra en TV
         if (!audioPlayer.paused) {
           audioPlayer.pause();
           isRadioPlaying = false;
@@ -818,7 +814,6 @@
         }
       } else {
         document.body.classList.remove('tv-mode');
-        // Mostrar la barra en radio si las tarjetas están visibles
         radioBar.style.display = areCardsHidden ? 'none' : 'flex';
       }
 
@@ -840,23 +835,33 @@
 
         if (currentSection === 'radio') renderGrid();
       } catch (err) {
-        console.error('Error radios:', err);
+        console.error('Error cargando radios:', err);
       }
     }
 
+    // CARGA DE TV CORREGIDA
     async function loadTvData() {
       try {
         const res = await fetch(TV_URL);
+        if (!res.ok) throw new Error('Error de red al obtener M3U');
         const text = await res.text();
         tvList = parseM3U(text);
         if (currentSection === 'tv') renderGrid();
       } catch (err) {
-        console.error('Error TV:', err);
+        console.error('Error cargando TV:', err);
+        if (currentSection === 'tv') {
+          showError('No se pudo cargar la lista de canales de TV.');
+        }
       }
     }
 
+    // PARSER M3U CORREGIDO Y ROBUSTO
     function parseM3U(m3uText) {
-      const lines = m3uText.split(/\r?\n/);
+      if (!m3uText || typeof m3uText !== 'string') return [];
+      
+      // Eliminar posibles caracteres BOM iniciales
+      const cleanText = m3uText.replace(/^\uFEFF/, '');
+      const lines = cleanText.split(/\r?\n/);
       const items = [];
       let currentInfo = null;
 
@@ -864,15 +869,30 @@
         const line = lines[i].trim();
         if (!line) continue;
 
-        if (line.startsWith('#EXTINF:')) {
-          const logoMatch = line.match(/tvg-logo="([^"]*)"/i) || line.match(/logo="([^"]*)"/i);
+        if (line.toUpperCase().startsWith('#EXTINF:')) {
+          // Extraer Logo
+          const logoMatch = line.match(/(?:tvg-logo|logo)="([^"]*)"/i);
+          const logo = (logoMatch && logoMatch) ? logoMatch.trim() : '';
+
+          // Extraer Grupo/Categoría
           const groupMatch = line.match(/group-title="([^"]*)"/i);
-          const nameMatch = line.split(',') || 'Canal';
+          const category = (groupMatch && groupMatch) ? groupMatch.trim() : 'TV';
+
+          // Extraer Nombre (después de la primera coma tras los atributos)
+          const commaIndex = line.indexOf(',');
+          let name = '';
+          if (commaIndex !== -1) {
+            name = line.substring(commaIndex + 1).trim();
+          }
+          if (!name) {
+            const tvgNameMatch = line.match(/tvg-name="([^"]*)"/i);
+            name = (tvgNameMatch && tvgNameMatch) ? tvgNameMatch.trim() : 'Canal';
+          }
 
           currentInfo = {
-            name: nameMatch.trim(),
-            logo: logoMatch ? logoMatch : '',
-            category: groupMatch ? groupMatch.trim() : 'TV'
+            name: name,
+            logo: logo,
+            category: category
           };
         } else if (!line.startsWith('#') && currentInfo) {
           currentInfo.url = line;
@@ -1006,15 +1026,17 @@
       document.getElementById('tvChannelName').textContent = item.name;
       modal.classList.add('active');
 
-      if (Hls.isSupported() && item.url.includes('.m3u8')) {
+      if (Hls.isSupported() && (item.url.includes('.m3u8') || item.url.includes('m3u'))) {
         if (hlsInstance) hlsInstance.destroy();
-        hlsInstance = new Hls();
+        hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
         hlsInstance.loadSource(item.url);
         hlsInstance.attachMedia(tvVideo);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => tvVideo.play());
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+          tvVideo.play().catch(e => console.log('Autoplay bloqueado:', e));
+        });
       } else {
         tvVideo.src = item.url;
-        tvVideo.play();
+        tvVideo.play().catch(e => console.log('Autoplay bloqueado:', e));
       }
     }
 
@@ -1027,6 +1049,17 @@
         hlsInstance.destroy();
         hlsInstance = null;
       }
+    }
+
+    function showError(msg) {
+      const loading = document.getElementById('loadingMsg');
+      const grid = document.getElementById('cardsGrid');
+      grid.style.display = 'none';
+      loading.style.display = 'flex';
+      loading.innerHTML = `
+        <div>${msg}</div>
+        <button onclick="loadTvData()">Reintentar</button>
+      `;
     }
   </script>
 </body>
