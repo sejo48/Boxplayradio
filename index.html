@@ -1,874 +1,739 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Box Play Media Suite</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VoxPlay Auto</title>
+  <!-- HLS.js para reproducción de transmisiones IPTV en vivo -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    :root {
+      --bg-main: #0c0f14;
+      --bg-surface: #171c24;
+      --bg-surface-elevated: #212834;
+      --accent: #00d2ff;
+      --accent-glow: rgba(0, 210, 255, 0.35);
+      --accent-tv: #ff4757;
+      --text-primary: #ffffff;
+      --text-secondary: #9aa3b2;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --card-radius: 14px;
+      --touch-min: 54px;
+    }
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    <!-- FontAwesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    /* BARRA SUPERIOR / NAVEGACIÓN PRINCIPAL */
+    header {
+      background: var(--bg-surface);
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+      gap: 12px;
+    }
 
-    <!-- HLS.js para reproducción de streams .m3u8 -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            500: '#ec4899',
-                            600: '#db2777',
-                        }
-                    }
-                }
-            }
-        };
-    </script>
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--accent), #0077ff);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 19px;
+      color: #0c0f14;
+    }
 
-    <style>
-        ::-webkit-scrollbar {
-            width: 14px;
-            height: 14px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #020617;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #db2777;
-            border-radius: 9999px;
-        }
-        * {
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        .car-card {
-            background: rgba(15, 23, 42, 0.98);
-            border: 3px solid rgba(255, 255, 255, 0.12);
-            transition: all 0.15s ease;
-        }
-        .car-card:active {
-            transform: scale(0.98);
-            background: rgba(30, 41, 59, 1);
-            border-color: #db2777;
-        }
-        .car-btn {
-            min-height: 56px;
-            min-width: 56px;
-        }
-        .car-tab-btn {
-            min-height: 52px;
-        }
-        #bottomPlayer {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-    </style>
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-title span {
+      color: var(--accent);
+    }
+
+    /* PESTAÑAS PRINCIPALES TÁCTILES */
+    .nav-tabs {
+      display: flex;
+      background: #0f131a;
+      border-radius: 12px;
+      padding: 4px;
+      gap: 6px;
+    }
+
+    .tab-btn {
+      min-width: 140px;
+      height: var(--touch-min);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-surface-elevated);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .tab-btn#tab-radio.active {
+      color: var(--accent);
+    }
+
+    .tab-btn#tab-tv.active {
+      color: var(--accent-tv);
+    }
+
+    /* BUSCADOR RÁPIDO */
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-surface-elevated);
+      border-radius: 10px;
+      padding: 0 12px;
+      height: 48px;
+      width: 240px;
+    }
+
+    .search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 15px;
+      width: 100%;
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    /* ÁREA DE CONTENIDO (SCROLL TÁCTIL) */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* CUADRÍCULA DE TARJETAS */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      padding-bottom: 90px;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      min-height: 160px;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .card:active {
+      transform: scale(0.96);
+      background: var(--bg-surface-elevated);
+    }
+
+    .card.active {
+      border-color: var(--accent);
+      background: rgba(0, 210, 255, 0.08);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .card-img-wrapper {
+      width: 82px;
+      height: 82px;
+      border-radius: 12px;
+      background: #0f131a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .card-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 4px;
+    }
+
+    .card-img-wrapper .placeholder-icon {
+      font-size: 32px;
+      color: var(--text-secondary);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .card-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    /* REPRODUCTOR DE RADIO INFERIOR */
+    .radio-player-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: var(--bg-surface-elevated);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 50;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .player-track-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      max-width: 40%;
+    }
+
+    .player-logo {
+      width: 54px;
+      height: 54px;
+      border-radius: 10px;
+      background: #0c0f14;
+      object-fit: contain;
+      padding: 3px;
+    }
+
+    .player-texts {
+      overflow: hidden;
+    }
+
+    .player-name {
+      font-size: 16px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-status {
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ctrl-btn {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: none;
+      background: #2a3342;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .ctrl-btn:active {
+      transform: scale(0.9);
+    }
+
+    .ctrl-btn.play-btn {
+      background: var(--accent);
+      color: #0c0f14;
+      width: 62px;
+      height: 62px;
+    }
+
+    .ctrl-btn svg {
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
+    }
+
+    /* MODAL DE REPRODUCTOR DE TV */
+    .tv-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #000;
+      display: none;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .tv-modal.active {
+      display: flex;
+    }
+
+    .tv-header {
+      height: 58px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 10;
+    }
+
+    .tv-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .tv-close-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .tv-close-btn:active {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .tv-video-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      max-height: 100vh;
+      object-fit: contain;
+    }
+
+    /* MENSAJES DE ESTADO Y CARGA */
+    .status-msg {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+      font-size: 18px;
+      gap: 16px;
+    }
+
+    .status-msg button {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      background: var(--accent);
+      color: #0c0f14;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
+<body>
 
-    <!-- Header Principal -->
-    <header class="bg-slate-900 border-b-4 border-slate-800 px-6 py-3 flex items-center justify-between shadow-2xl flex-shrink-0 z-30">
-        <div class="flex items-center space-x-4">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-xl shadow-pink-600/30 flex-shrink-0">
-                <i class="fa-solid fa-car text-white text-2xl"></i>
-            </div>
-            <div>
-                <h1 class="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-3">
-                    <span id="headerTitle">Box Play Radio</span> 
-                    <span id="modeBadge" class="text-xs px-2.5 py-0.5 rounded-lg bg-pink-600/30 text-pink-400 border border-pink-500/40 font-extrabold uppercase">EN VIVO</span>
-                </h1>
-                <p id="headerSubtitle" class="text-xs md:text-sm text-slate-400 font-medium">Sistema de Radio Táctil Automotriz</p>
-            </div>
-        </div>
-
-        <!-- Selector de Modo y Accesos Rápidos -->
-        <div class="flex items-center space-x-3">
-            <div class="flex bg-slate-950 p-1 rounded-2xl border-2 border-slate-800">
-                <button onclick="switchMode('radio')" id="tabRadioBtn" class="car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all bg-pink-600 text-white shadow-lg">
-                    <i class="fa-solid fa-radio text-lg"></i>
-                    <span>Radio</span>
-                </button>
-                <button onclick="switchMode('music')" id="tabMusicBtn" class="car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-music text-lg"></i>
-                    <span>Vox Music</span>
-                </button>
-            </div>
-
-            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="car-btn px-5 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-2 text-base md:text-lg transition-all shadow-lg">
-                <i class="fa-solid fa-heart text-pink-500 text-xl"></i>
-                <span id="favTextCount" class="hidden xl:inline">Favoritas (0)</span>
-            </button>
-
-            <button onclick="openSearchModal()" class="car-btn px-5 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-2 text-base md:text-lg transition-all shadow-lg">
-                <i class="fa-solid fa-magnifying-glass text-pink-400 text-xl"></i>
-                <span class="hidden xl:inline">Buscar</span>
-            </button>
-
-            <button onclick="refreshCurrentContent()" class="car-btn w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-200 hover:text-pink-400 flex items-center justify-center transition-all shadow-lg" title="Actualizar">
-                <i class="fa-solid fa-rotate text-xl"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- Contenedor Principal -->
-    <main class="flex-1 overflow-y-auto p-6 bg-slate-950 pb-44">
-        
-        <!-- Banner de Filtro de Favoritos Activo -->
-        <div id="favoritesActiveBanner" class="hidden mb-6 p-4 rounded-2xl bg-pink-950/40 border-2 border-pink-500/50 items-center justify-between shadow-lg">
-            <div class="flex items-center space-x-4">
-                <div class="w-10 h-10 rounded-xl bg-pink-600 flex items-center justify-center text-white text-lg">
-                    <i class="fa-solid fa-heart"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-extrabold text-white">Mostrando Mis Favoritos</h3>
-                    <p class="text-xs text-pink-300">Tus estaciones y canciones guardadas</p>
-                </div>
-            </div>
-            <button onclick="exitFavorites()" class="car-btn px-5 py-2.5 rounded-xl bg-slate-900 border-2 border-pink-500 text-pink-400 hover:bg-pink-600 hover:text-white font-bold text-base flex items-center space-x-2 transition-all shadow-md">
-                <i class="fa-solid fa-arrow-left text-lg"></i>
-                <span>Salir de Favoritos</span>
-            </button>
-        </div>
-
-        <!-- Mensajes de Estado / Alertas -->
-        <div id="statusMessage" class="hidden mb-6 p-4 rounded-2xl bg-slate-900 border-2 border-slate-800 text-base flex items-center justify-between text-slate-300 shadow-2xl">
-            <div class="flex items-center space-x-3">
-                <i id="statusIcon" class="fa-solid fa-circle-info text-pink-400 text-xl"></i>
-                <span id="statusText">Cargando contenido...</span>
-            </div>
-            <button onclick="closeStatus()" class="car-btn p-2 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-        </div>
-
-        <!-- Indicador de Carga -->
-        <div id="loadingState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-slate-900 p-8 rounded-3xl animate-pulse h-48"></div>
-            <div class="bg-slate-900 p-8 rounded-3xl animate-pulse h-48"></div>
-            <div class="bg-slate-900 p-8 rounded-3xl animate-pulse h-48"></div>
-        </div>
-
-        <!-- Grid de Tarjetas -->
-        <div id="contentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
-            <!-- Renderizado dinámico -->
-        </div>
-
-        <!-- Estado Vacío -->
-        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
-            <div class="w-24 h-24 rounded-full bg-slate-900 border-2 border-slate-800 flex items-center justify-center text-slate-500 text-4xl mb-4 shadow-inner">
-                <i class="fa-solid fa-compact-disc"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-slate-200">No se encontraron elementos</h3>
-            <p class="text-base text-slate-400 mt-2">Verifica tu conexión a internet o cambia de sección.</p>
-        </div>
-    </main>
-
-    <!-- Reproductor Inferior Fijo -->
-    <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t-4 border-pink-600 px-6 py-3 z-50 shadow-2xl">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            
-            <!-- Información de la Pista Actual -->
-            <div class="flex items-center space-x-4 min-w-0 flex-1">
-                <div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border-2 border-slate-700 shadow-xl">
-                    <img id="playerImg" src="https://placehold.co/150x150/1e293b/ec4899?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
-                    <div id="playerEqualizer" class="absolute inset-0 bg-pink-950/80 backdrop-blur-[2px] items-center justify-center hidden">
-                        <div class="flex space-x-1.5 items-end h-5">
-                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 60%; animation-delay: 0.1s;"></span>
-                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 100%; animation-delay: 0.3s;"></span>
-                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 40%; animation-delay: 0.2s;"></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="min-w-0">
-                    <h4 id="playerTitle" class="text-lg md:text-xl font-bold text-white truncate">Selecciona una reproducción</h4>
-                    <p id="playerCategory" class="text-sm text-pink-400 font-semibold truncate mt-0.5">Listo para reproducir</p>
-                </div>
-            </div>
-
-            <!-- Controles Centrales (Anterior, Play/Pause, Siguiente, Favorito) -->
-            <div class="flex items-center space-x-3 md:space-x-4">
-                <button onclick="playPrevious()" class="car-btn w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xl transition-all shadow-lg active:scale-95" title="Anterior">
-                    <i class="fa-solid fa-backward-step"></i>
-                </button>
-
-                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="car-btn w-16 h-16 md:w-18 md:h-18 rounded-2xl bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white flex items-center justify-center shadow-2xl shadow-pink-600/50 transition-transform active:scale-95">
-                    <i id="playPauseIcon" class="fa-solid fa-play text-2xl md:text-3xl ml-1"></i>
-                </button>
-
-                <button onclick="playNext()" class="car-btn w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xl transition-all shadow-lg active:scale-95" title="Siguiente">
-                    <i class="fa-solid fa-forward-step"></i>
-                </button>
-
-                <div id="spinnerLoader" class="hidden w-10 h-10 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-
-                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="car-btn w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-300 hover:text-pink-500 flex items-center justify-center text-2xl transition-all shadow-xl">
-                    <i class="fa-regular fa-heart"></i>
-                </button>
-            </div>
-
-            <!-- Control de Volumen -->
-            <div class="hidden lg:flex items-center space-x-4 w-52 justify-end">
-                <button onclick="toggleMute()" id="muteBtn" class="car-btn p-2 text-slate-300 hover:text-white">
-                    <i id="muteIcon" class="fa-solid fa-volume-high text-2xl"></i>
-                </button>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-32 accent-pink-500 bg-slate-800 rounded-lg h-3 cursor-pointer">
-            </div>
-
-        </div>
-    </footer>
-
-    <!-- Modal de Búsqueda Táctil -->
-    <div id="searchModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-6 hidden">
-        <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col pt-4">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl md:text-3xl font-black text-white" id="searchModalTitle">Buscar en Box Play</h3>
-                <button onclick="closeSearchModal()" class="car-btn px-6 py-3 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-300 font-bold text-lg">Cerrar</button>
-            </div>
-            <div class="relative w-full mb-6">
-                <i class="fa-solid fa-magnifying-glass absolute left-5 top-5 text-slate-400 text-xl"></i>
-                <input type="text" id="modalSearchInput" placeholder="Escribe para buscar..." class="w-full bg-slate-900 border-2 border-slate-700 text-xl rounded-2xl pl-14 pr-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
-            </div>
-            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-3 pb-12">
-                <!-- Resultados inyectados de forma segura -->
-            </div>
-        </div>
+  <!-- ENCABEZADO Y NAVEGACIÓN -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">V</div>
+      <div class="brand-title">VoxPlay <span>Auto</span></div>
     </div>
 
-    <!-- Elemento de Audio HTML5 -->
-    <audio id="audioStream" preload="none"></audio>
+    <div class="nav-tabs">
+      <button class="tab-btn active" id="tab-radio" onclick="switchSection('radio')">
+        <svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-.83-.51-1.57-1.24-1.85L10.2 2.18c-.7-.27-1.48-.27-2.18 0L3.24 6.15zM4 9h16v11H4V9zm8 3c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+        Radio
+      </button>
+      <button class="tab-btn" id="tab-tv" onclick="switchSection('tv')">
+        <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+        Televisión
+      </button>
+    </div>
 
-    <script>
-        const RADIO_JSON_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json';
-        const MUSIC_JSON_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/videoteca.json';
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Buscar emisora o canal..." oninput="filterItems()">
+    </div>
+  </header>
+
+  <!-- CONTENEDOR DE TARJETAS -->
+  <main id="contentArea">
+    <div class="status-msg" id="loadingMsg">
+      Cargando contenidos...
+    </div>
+    <div class="grid" id="cardsGrid" style="display: none;"></div>
+  </main>
+
+  <!-- REPRODUCTOR DE RADIO INFERIOR -->
+  <footer class="radio-player-bar" id="radioBar">
+    <div class="player-track-info">
+      <img id="playerLogo" class="player-logo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Logo">
+      <div class="player-texts">
+        <div class="player-name" id="playerTitle">Seleccione una emisora</div>
+        <div class="player-status" id="playerStatus">Listo para reproducir</div>
+      </div>
+    </div>
+
+    <div class="player-controls">
+      <button class="ctrl-btn" onclick="stopRadio()" title="Detener">
+        <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+      </button>
+      <button class="ctrl-btn play-btn" id="playPauseBtn" onclick="toggleRadioPlay()" title="Reproducir / Pausar">
+        <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="pauseIcon" style="display:none;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <!-- MODAL PARA VIDEO / TV -->
+  <div class="tv-modal" id="tvModal">
+    <div class="tv-header">
+      <div class="tv-title" id="tvChannelName">Canal de TV</div>
+      <button class="tv-close-btn" onclick="closeTvModal()">✕ Cerrar / Volver</button>
+    </div>
+    <div class="tv-video-container">
+      <video id="tvVideo" controls autoplay playsinline></video>
+    </div>
+  </div>
+
+  <audio id="radioAudio" preload="none"></audio>
+
+  <script>
+    const RADIO_URL = "https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json";
+    const TV_URL = "https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/listaoficial.m3u";
+
+    let currentSection = 'radio';
+    let radioList = [];
+    let tvList = [];
+    let activeCardIndex = -1;
+
+    const audioPlayer = document.getElementById('radioAudio');
+    const tvVideo = document.getElementById('tvVideo');
+    let hlsInstance = null;
+
+    // Inicializar
+    window.addEventListener('DOMContentLoaded', () => {
+      loadRadioData();
+      loadTvData();
+
+      // Eventos del reproductor de audio
+      audioPlayer.addEventListener('playing', () => updateRadioStatus('En vivo'));
+      audioPlayer.addEventListener('waiting', () => updateRadioStatus('Cargando buffer...'));
+      audioPlayer.addEventListener('error', () => updateRadioStatus('Error de transmisión'));
+      audioPlayer.addEventListener('pause', () => {
+        if (!audioPlayer.ended) updateRadioStatus('Pausado');
+      });
+    });
+
+    // Cambiar entre Radio y Televisión
+    function switchSection(section) {
+      currentSection = section;
+      document.getElementById('searchInput').value = '';
+      document.getElementById('tab-radio').classList.toggle('active', section === 'radio');
+      document.getElementById('tab-tv').classList.toggle('active', section === 'tv');
+      renderGrid();
+    }
+
+    // Cargar y procesar JSON de Radios
+    async function loadRadioData() {
+      try {
+        const res = await fetch(RADIO_URL);
+        const data = await res.json();
+        const rawItems = Array.isArray(data) ? data : (data.radios || data.emisoras || data.stations || Object.values(data));
         
-        let currentMode = 'radio'; // 'radio' | 'music'
-        let stations = [];
-        let musicItems = [];
-        let currentItem = null;
-        let searchQuery = '';
-        let favoritesOnly = false;
+        radioList = rawItems.map(item => ({
+          name: item.name || item.nombre || item.title || 'Emisora',
+          url: item.url || item.stream || item.link || item.src,
+          logo: item.logo || item.image || item.img || item.icon || '',
+          category: item.genre || item.genero || item.pais || 'Radio'
+        })).filter(item => item.url);
+
+        if (currentSection === 'radio') renderGrid();
+      } catch (err) {
+        console.error('Error cargando radios:', err);
+        if (currentSection === 'radio') showError('No se pudieron cargar las emisoras de radio.');
+      }
+    }
+
+    // Cargar y procesar M3U de Televisión
+    async function loadTvData() {
+      try {
+        const res = await fetch(TV_URL);
+        const text = await res.parseText ? await res.parseText() : await res.text();
+        tvList = parseM3U(text);
+        if (currentSection === 'tv') renderGrid();
+      } catch (err) {
+        console.error('Error cargando TV:', err);
+        if (currentSection === 'tv') showError('No se pudo cargar la lista de televisión.');
+      }
+    }
+
+    // Parser básico para listas M3U / IPTV
+    function parseM3U(m3uText) {
+      const lines = m3uText.split(/\r?\n/);
+      const items = [];
+      let currentInfo = null;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        if (line.startsWith('#EXTINF:')) {
+          const logoMatch = line.match(/tvg-logo="([^"]*)"/i) || line.match(/logo="([^"]*)"/i);
+          const groupMatch = line.match(/group-title="([^"]*)"/i);
+          const nameMatch = line.split(',')[1] || 'Canal de TV';
+
+          currentInfo = {
+            name: nameMatch.trim(),
+            logo: logoMatch ? logoMatch[1] : '',
+            category: groupMatch ? groupMatch[1].trim() : 'TV'
+          };
+        } else if (!line.startsWith('#') && currentInfo) {
+          currentInfo.url = line;
+          items.push(currentInfo);
+          currentInfo = null;
+        }
+      }
+      return items;
+    }
+
+    // Renderizar tarjetas según sección activa
+    function renderGrid() {
+      const grid = document.getElementById('cardsGrid');
+      const loading = document.getElementById('loadingMsg');
+      const filter = document.getElementById('searchInput').value.toLowerCase().trim();
+      const list = currentSection === 'radio' ? radioList : tvList;
+
+      if (!list || list.length === 0) {
+        loading.style.display = 'flex';
+        loading.innerHTML = `Cargando ${currentSection === 'radio' ? 'emisoras' : 'canales'}...`;
+        grid.style.display = 'none';
+        return;
+      }
+
+      loading.style.display = 'none';
+      grid.style.display = 'grid';
+      grid.innerHTML = '';
+
+      const filtered = list.filter(item => 
+        item.name.toLowerCase().includes(filter) || 
+        (item.category && item.category.toLowerCase().includes(filter))
+      );
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="status-msg" style="grid-column: 1/-1;">No se encontraron resultados para "${filter}".</div>`;
+        return;
+      }
+
+      filtered.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = `card ${activeCardIndex === index ? 'active' : ''}`;
         
-        // Listas en memoria para evitar inyecciones en onclick
-        let renderedGridItems = [];
-        let renderedSearchItems = [];
-
-        let radioFavorites = JSON.parse(localStorage.getItem('box_play_radio_favs') || '[]');
-        let musicFavorites = JSON.parse(localStorage.getItem('box_play_music_favs') || '[]');
-
-        // Manejador HLS
-        let hlsInstance = null;
-        let reconnectAttempts = 0;
-        const MAX_RECONNECT_ATTEMPTS = 3;
-        let statusTimeout = null;
-
-        const audio = document.getElementById('audioStream');
-        const contentGrid = document.getElementById('contentGrid');
-        const loadingState = document.getElementById('loadingState');
-        const emptyState = document.getElementById('emptyState');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const playPauseIcon = document.getElementById('playPauseIcon');
-        const spinnerLoader = document.getElementById('spinnerLoader');
-        const playerTitle = document.getElementById('playerTitle');
-        const playerCategory = document.getElementById('playerCategory');
-        const playerImg = document.getElementById('playerImg');
-        const playerEqualizer = document.getElementById('playerEqualizer');
-        const playerFavBtn = document.getElementById('playerFavBtn');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const muteBtn = document.getElementById('muteBtn');
-        const muteIcon = document.getElementById('muteIcon');
-        const favFilterBtn = document.getElementById('favFilterBtn');
-        const favTextCount = document.getElementById('favTextCount');
-        const searchModal = document.getElementById('searchModal');
-        const modalSearchInput = document.getElementById('modalSearchInput');
-        const searchResultsContainer = document.getElementById('searchResultsContainer');
-        const favoritesActiveBanner = document.getElementById('favoritesActiveBanner');
-        const tabRadioBtn = document.getElementById('tabRadioBtn');
-        const tabMusicBtn = document.getElementById('tabMusicBtn');
-        const headerTitle = document.getElementById('headerTitle');
-        const headerSubtitle = document.getElementById('headerSubtitle');
-        const modeBadge = document.getElementById('modeBadge');
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadAllData();
-            updateFavoritesBadge();
-
-            volumeSlider.addEventListener('input', (e) => {
-                audio.volume = parseFloat(e.target.value);
-                audio.muted = false;
-                updateVolumeIcon(audio.volume);
-            });
-
-            modalSearchInput.addEventListener('input', (e) => {
-                renderModalSearchResults(e.target.value.trim().toLowerCase());
-            });
-
-            audio.addEventListener('error', () => {
-                handlePlaybackError();
-            });
-
-            audio.addEventListener('playing', () => {
-                reconnectAttempts = 0;
-                setLoadingState(false);
-                setIsPlaying(true);
-            });
-
-            audio.addEventListener('waiting', () => {
-                setLoadingState(true);
-            });
-
-            setupMediaSessionHandlers();
-        });
-
-        async function loadAllData() {
-            loadingState.classList.remove('hidden');
-            contentGrid.classList.add('hidden');
-            emptyState.classList.add('hidden');
-            showStatus('Cargando contenido...', 'info');
-
-            const cacheBuster = `?_t=${Date.now()}`;
-
-            try {
-                const [radioRes, musicRes] = await Promise.all([
-                    fetch(RADIO_JSON_URL + cacheBuster).catch(() => null),
-                    fetch(MUSIC_JSON_URL + cacheBuster).catch(() => null)
-                ]);
-
-                if (radioRes && radioRes.ok) {
-                    const rData = await radioRes.json();
-                    stations = extractArrayFromJSON(rData);
-                }
-
-                if (musicRes && musicRes.ok) {
-                    const mData = await musicRes.json();
-                    musicItems = extractArrayFromJSON(mData);
-                }
-
-                if (!musicItems || musicItems.length === 0) {
-                    musicItems = [
-                        { name: "Vox Music Session 1", image: "https://placehold.co/200x200/1e293b/ec4899?text=VOX", url: "https://streams.ilovemusic.de/iloveradio1.mp3" },
-                        { name: "Vox Electronic Beats", image: "https://placehold.co/200x200/1e293b/ec4899?text=VOX", url: "https://streams.ilovemusic.de/iloveradio2.mp3" },
-                        { name: "Vox Chillout Lounge", image: "https://placehold.co/200x200/1e293b/ec4899?text=VOX", url: "https://s2.radio.co/s83716d729/listen" }
-                    ];
-                }
-
-                renderCurrentContent();
-                hideStatus();
-            } catch (error) {
-                console.error(error);
-                showStatus('No se pudo conectar con los servidores.', 'error');
-                loadingState.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-            }
-        }
-
-        function extractArrayFromJSON(data) {
-            if (Array.isArray(data)) return data;
-            if (data && typeof data === 'object') {
-                const commonKeys = ['radios', 'emisoras', 'items', 'musica', 'canciones', 'videoteca', 'series', 'movies'];
-                for (const k of commonKeys) {
-                    if (Array.isArray(data[k])) return data[k];
-                }
-                for (const key in data) {
-                    if (Array.isArray(data[key])) return data[key];
-                }
-                return Object.values(data).map(item => {
-                    if (typeof item === 'object' && item !== null) return item;
-                    return { name: String(item), url: String(item) };
-                });
-            }
-            return [];
-        }
-
-        function refreshCurrentContent() {
-            loadAllData();
-        }
-
-        function switchMode(mode) {
-            if (currentMode === mode) return;
-            currentMode = mode;
-            searchQuery = '';
-            
-            if (mode === 'radio') {
-                tabRadioBtn.className = "car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all bg-pink-600 text-white shadow-lg";
-                tabMusicBtn.className = "car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all text-slate-400 hover:text-white";
-                headerTitle.textContent = "Box Play Radio";
-                headerSubtitle.textContent = "Sistema de Radio Táctil Automotriz";
-                modeBadge.textContent = "EN VIVO";
-            } else {
-                tabMusicBtn.className = "car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all bg-pink-600 text-white shadow-lg";
-                tabRadioBtn.className = "car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all text-slate-400 hover:text-white";
-                headerTitle.textContent = "Vox Play Music";
-                headerSubtitle.textContent = "Videoteca y Stream Musical Automotriz";
-                modeBadge.textContent = "VIDEOS";
-            }
-
-            renderCurrentContent();
-            updateFavoritesBadge();
-        }
-
-        function toggleFavoritesFilter() {
-            favoritesOnly = !favoritesOnly;
-            if (favoritesOnly) {
-                favFilterBtn.classList.add('border-pink-500', 'bg-pink-950/60');
-                favoritesActiveBanner.classList.remove('hidden');
-                favoritesActiveBanner.classList.add('flex');
-            } else {
-                exitFavorites();
-            }
-            renderCurrentContent();
-        }
-
-        function exitFavorites() {
-            favoritesOnly = false;
-            favFilterBtn.classList.remove('border-pink-500', 'bg-pink-950/60');
-            favoritesActiveBanner.classList.add('hidden');
-            favoritesActiveBanner.classList.remove('flex');
-            renderCurrentContent();
-        }
-
-        function getActiveList() {
-            return currentMode === 'radio' ? stations : musicItems;
-        }
-
-        function getActiveFavorites() {
-            return currentMode === 'radio' ? radioFavorites : musicFavorites;
-        }
-
-        function getItemId(item) {
-            if (!item) return '';
-            return String(item.id || item.url || item.streamUrl || item.videoUrl || item.name || item.title || JSON.stringify(item));
-        }
-
-        function getItemName(item) {
-            if (!item) return 'Reproducción';
-            return item.name || item.title || item.nombre || item.titulo || item.label || 'Emisora';
-        }
-
-        function getItemImage(item) {
-            if (!item) return 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
-            return item.image || item.logo || item.img || item.poster || item.thumbnail || item.caratula || 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
-        }
-
-        function getItemUrl(item) {
-            if (!item) return '';
-            return item.url || item.streamUrl || item.videoUrl || item.enlace || item.audioUrl || item.link || '';
-        }
-
-        function getFilteredList() {
-            const list = getActiveList();
-            const favs = getActiveFavorites();
-
-            return list.filter(item => {
-                const name = getItemName(item).toLowerCase();
-                const matchesSearch = !searchQuery || name.includes(searchQuery);
-                const matchesFav = !favoritesOnly || favs.includes(getItemId(item));
-                return matchesSearch && matchesFav;
-            });
-        }
-
-        function renderCurrentContent() {
-            loadingState.classList.add('hidden');
-            
-            renderedGridItems = getFilteredList();
-            const favs = getActiveFavorites();
-
-            if (renderedGridItems.length === 0) {
-                contentGrid.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                return;
-            }
-
-            emptyState.classList.add('hidden');
-            contentGrid.classList.remove('hidden');
-
-            let html = '';
-            renderedGridItems.forEach((item, index) => {
-                const id = getItemId(item);
-                const name = getItemName(item);
-                const image = getItemImage(item);
-                const isFav = favs.includes(id);
-                const isCurrent = currentItem && getItemId(currentItem) === id;
-
-                html += `
-                    <div onclick="playByIndex(${index})" class="car-card p-5 rounded-3xl flex flex-col justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-2xl shadow-pink-500/30 ring-2 ring-pink-500/40' : ''}">
-                        <div class="flex items-start justify-end mb-2">
-                            <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="car-btn p-2 text-slate-400 hover:text-pink-500">
-                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-2xl"></i>
-                            </button>
-                        </div>
-
-                        <div class="flex items-center space-x-5 my-1">
-                            <div class="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border-2 border-slate-800 shadow-lg">
-                                <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/1e293b/ec4899?text=BOX'">
-                                ${isCurrent ? '<div class="absolute inset-0 bg-pink-600/60 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-2xl"></i></div>' : ''}
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <h3 class="text-lg md:text-xl font-bold text-white truncate">${escapeHtml(name)}</h3>
-                                <p class="text-xs text-slate-400 mt-1">${currentMode === 'radio' ? 'Toca para sintonizar' : 'Toca para reproducir'}</p>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-sm font-bold text-pink-400">
-                            <span>${isCurrent && !audio.paused ? '▶ Reproduciendo' : (currentMode === 'radio' ? '⚡ En Vivo' : '🎵 Multimedia')}</span>
-                            <i class="fa-solid fa-chevron-right text-slate-500 text-base"></i>
-                        </div>
-                    </div>
-                `;
-            });
-
-            contentGrid.innerHTML = html;
-        }
-
-        function playByIndex(index) {
-            const item = renderedGridItems[index];
-            if (item) playItem(item);
-        }
-
-        function playItem(item) {
-            const streamUrl = getItemUrl(item);
-            if (!streamUrl) {
-                showStatus('Enlace multimedia no disponible.', 'error');
-                return;
-            }
-
-            currentItem = item;
-            setLoadingState(true);
-            stopAndCleanupAudio();
-
-            updatePlayerInfo();
-            updateMediaSession(item);
-
-            const isHls = streamUrl.toLowerCase().includes('.m3u8');
-
-            if (isHls && Hls.isSupported()) {
-                hlsInstance = new Hls({
-                    enableWorker: true,
-                    lowLatencyMode: true,
-                    backBufferLength: 60
-                });
-                hlsInstance.loadSource(streamUrl);
-                hlsInstance.attachMedia(audio);
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                    startAudioPlayback();
-                });
-                hlsInstance.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) {
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                hlsInstance.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                hlsInstance.recoverMediaError();
-                                break;
-                            default:
-                                stopAndCleanupAudio();
-                                handlePlaybackError();
-                                break;
-                        }
-                    }
-                });
-            } else if (isHls && audio.canPlayType('application/vnd.apple.mpegurl')) {
-                audio.src = streamUrl;
-                startAudioPlayback();
-            } else {
-                audio.src = streamUrl;
-                startAudioPlayback();
-            }
-
-            renderCurrentContent();
-        }
-
-        function startAudioPlayback() {
-            audio.play().then(() => {
-                reconnectAttempts = 0;
-                setIsPlaying(true);
-                setLoadingState(false);
-            }).catch(err => {
-                console.warn("Error iniciando reproducción:", err);
-                setLoadingState(false);
-            });
-        }
-
-        function stopAndCleanupAudio() {
-            if (hlsInstance) {
-                hlsInstance.destroy();
-                hlsInstance = null;
-            }
-            audio.pause();
-            audio.removeAttribute('src');
-            audio.load();
-        }
-
-        function handlePlaybackError() {
-            if (currentItem && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                reconnectAttempts++;
-                showStatus(`Reconectando (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, 'warning');
-                setTimeout(() => {
-                    if (currentItem) playItem(currentItem);
-                }, 2000);
-            } else {
-                showStatus('Error al reproducir el flujo. Prueba otra estación.', 'error');
-                setLoadingState(false);
-                setIsPlaying(false);
-                reconnectAttempts = 0;
-            }
-        }
-
-        function togglePlayPause() {
-            if (!currentItem) return;
-            if (audio.paused) {
-                audio.play().then(() => setIsPlaying(true)).catch(() => handlePlaybackError());
-            } else {
-                audio.pause();
-                setIsPlaying(false);
-            }
-            renderCurrentContent();
-        }
-
-        function playNext() {
-            const list = getFilteredList();
-            if (!list.length) return;
-            const currentId = currentItem ? getItemId(currentItem) : '';
-            const idx = list.findIndex(i => getItemId(i) === currentId);
-            const nextIdx = (idx + 1) % list.length;
-            playItem(list[nextIdx]);
-        }
-
-        function playPrevious() {
-            const list = getFilteredList();
-            if (!list.length) return;
-            const currentId = currentItem ? getItemId(currentItem) : '';
-            const idx = list.findIndex(i => getItemId(i) === currentId);
-            const prevIdx = (idx - 1 + list.length) % list.length;
-            playItem(list[prevIdx]);
-        }
-
-        function setIsPlaying(isPlaying) {
-            if (isPlaying) {
-                playPauseIcon.className = "fa-solid fa-pause text-2xl md:text-3xl";
-                playerEqualizer.classList.remove('hidden');
-                playerEqualizer.classList.add('flex');
-            } else {
-                playPauseIcon.className = "fa-solid fa-play text-2xl md:text-3xl ml-1";
-                playerEqualizer.classList.add('hidden');
-                playerEqualizer.classList.remove('flex');
-            }
-        }
-
-        function setLoadingState(isLoading) {
-            if (isLoading) {
-                spinnerLoader.classList.remove('hidden');
-                playPauseBtn.classList.add('hidden');
-            } else {
-                spinnerLoader.classList.add('hidden');
-                playPauseBtn.classList.remove('hidden');
-            }
-        }
-
-        function updatePlayerInfo() {
-            if (!currentItem) return;
-            const name = getItemName(currentItem);
-            const image = getItemImage(currentItem);
-            
-            playerTitle.textContent = name;
-            playerCategory.textContent = currentMode === 'radio' ? 'En Vivo' : 'Vox Music';
-            playerImg.src = image;
-            playPauseBtn.disabled = false;
-
-            const id = getItemId(currentItem);
-            const favs = getActiveFavorites();
-            const isFav = favs.includes(id);
-            playerFavBtn.innerHTML = `<i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-2xl"></i>`;
-        }
-
-        function toggleFavoriteById(id) {
-            let favs = getActiveFavorites();
-            const index = favs.indexOf(id);
-            if (index > -1) {
-                favs.splice(index, 1);
-            } else {
-                favs.push(id);
-            }
-
-            if (currentMode === 'radio') {
-                radioFavorites = favs;
-                localStorage.setItem('box_play_radio_favs', JSON.stringify(radioFavorites));
-            } else {
-                musicFavorites = favs;
-                localStorage.setItem('box_play_music_favs', JSON.stringify(musicFavorites));
-            }
-
-            updateFavoritesBadge();
-            renderCurrentContent();
-            if (currentItem && getItemId(currentItem) === id) {
-                updatePlayerInfo();
-            }
-        }
-
-        function toggleFavoriteCurrent() {
-            if (!currentItem) return;
-            toggleFavoriteById(getItemId(currentItem));
-        }
-
-        function updateFavoritesBadge() {
-            const count = getActiveFavorites().length;
-            favTextCount.textContent = `Favoritas (${count})`;
-        }
-
-        function toggleMute() {
-            audio.muted = !audio.muted;
-            if (audio.muted) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-2xl text-pink-500";
-            } else {
-                updateVolumeIcon(audio.volume);
-            }
-        }
-
-        function updateVolumeIcon(vol) {
-            if (audio.muted || vol === 0) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-2xl";
-            } else if (vol < 0.5) {
-                muteIcon.className = "fa-solid fa-volume-low text-2xl";
-            } else {
-                muteIcon.className = "fa-solid fa-volume-high text-2xl";
-            }
-        }
-
-        function setupMediaSessionHandlers() {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.setActionHandler('play', () => {
-                    if (audio.paused) togglePlayPause();
-                });
-                navigator.mediaSession.setActionHandler('pause', () => {
-                    if (!audio.paused) togglePlayPause();
-                });
-                navigator.mediaSession.setActionHandler('previoustrack', () => {
-                    playPrevious();
-                });
-                navigator.mediaSession.setActionHandler('nexttrack', () => {
-                    playNext();
-                });
-            }
-        }
-
-        function updateMediaSession(item) {
-            if ('mediaSession' in navigator && item) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: getItemName(item),
-                    artist: currentMode === 'radio' ? 'Box Play Radio' : 'Vox Music',
-                    album: 'Box Play Media Suite',
-                    artwork: [
-                        { src: getItemImage(item), sizes: '192x192', type: 'image/png' },
-                        { src: getItemImage(item), sizes: '512x512', type: 'image/png' }
-                    ]
-                });
-            }
-        }
-
-        function openSearchModal() {
-            searchModal.classList.remove('hidden');
-            searchModalTitle.textContent = currentMode === 'radio' ? 'Buscar Emisora' : 'Buscar en Vox Music';
-            modalSearchInput.value = searchQuery;
-            renderModalSearchResults(searchQuery);
-            setTimeout(() => modalSearchInput.focus(), 100);
-        }
-
-        function closeSearchModal() {
-            searchModal.classList.add('hidden');
-            renderCurrentContent();
-        }
-
-        function renderModalSearchResults(query = '') {
-            const list = getActiveList();
-            renderedSearchItems = list.filter(item => getItemName(item).toLowerCase().includes(query));
-
-            if (renderedSearchItems.length === 0) {
-                searchResultsContainer.innerHTML = `<p class="text-center text-slate-500 py-16 text-lg">No se encontraron resultados</p>`;
-                return;
-            }
-
-            let html = '';
-            renderedSearchItems.forEach((item, index) => {
-                const name = getItemName(item);
-                const image = getItemImage(item);
-                
-                html += `
-                    <div onclick="playSearchIndex(${index})" class="car-card p-4 rounded-2xl flex items-center justify-between cursor-pointer">
-                        <div class="flex items-center space-x-4 min-w-0">
-                            <img src="${escapeHtml(image)}" class="w-16 h-16 rounded-xl object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
-                            <div class="min-w-0">
-                                <h4 class="text-lg font-bold text-white truncate">${escapeHtml(name)}</h4>
-                                <span class="text-xs text-pink-400 font-semibold">${currentMode === 'radio' ? 'En Vivo' : 'Vox Music'}</span>
-                            </div>
-                        </div>
-                        <span class="car-btn px-6 py-2.5 rounded-xl bg-pink-600 text-white font-bold text-base flex items-center justify-center flex-shrink-0">Reproducir</span>
-                    </div>
-                `;
-            });
-            searchResultsContainer.innerHTML = html;
-        }
-
-        function playSearchIndex(index) {
-            const item = renderedSearchItems[index];
-            if (item) {
-                playItem(item);
-                closeSearchModal();
-            }
-        }
-
-        function showStatus(text, type = 'info') {
-            const statusMsg = document.getElementById('statusMessage');
-            const statusText = document.getElementById('statusText');
-            const statusIcon = document.getElementById('statusIcon');
-            
-            statusText.textContent = text;
-            
-            if (type === 'error') {
-                statusIcon.className = "fa-solid fa-triangle-exclamation text-rose-500 text-xl";
-            } else if (type === 'warning') {
-                statusIcon.className = "fa-solid fa-circle-exclamation text-amber-400 text-xl";
-            } else {
-                statusIcon.className = "fa-solid fa-circle-info text-pink-400 text-xl";
-            }
-
-            statusMsg.classList.remove('hidden');
-
-            if (statusTimeout) clearTimeout(statusTimeout);
-            if (type !== 'info') {
-                statusTimeout = setTimeout(() => {
-                    hideStatus();
-                }, 5000);
-            }
-        }
-
-        function hideStatus() {
-            document.getElementById('statusMessage').classList.add('hidden');
-        }
-
-        function closeStatus() {
-            hideStatus();
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-        }
-
-        function escapeJsString(str) {
-            if (!str) return '';
-            return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        }
-    </script>
+        const fallbackIcon = currentSection === 'radio' ? '📻' : '📺';
+        const imgHtml = item.logo 
+          ? `<img src="${item.logo}" alt="${item.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'placeholder-icon\\'>${fallbackIcon}</span>'">`
+          : `<span class="placeholder-icon">${fallbackIcon}</span>`;
+
+        card.innerHTML = `
+          <div class="card-img-wrapper">${imgHtml}</div>
+          <div class="card-title">${item.name}</div>
+          <div class="card-tag">${item.category || currentSection.toUpperCase()}</div>
+        `;
+
+        card.onclick = () => {
+          if (currentSection === 'radio') {
+            playRadio(item, index);
+          } else {
+            playTv(item);
+          }
+        };
+
+        grid.appendChild(card);
+      });
+    }
+
+    // Filtrar búsqueda
+    function filterItems() {
+      renderGrid();
+    }
+
+    // Reproducción de Radio
+    function playRadio(item, index) {
+      activeCardIndex = index;
+      document.getElementById('playerTitle').textContent = item.name;
+      if (item.logo) document.getElementById('playerLogo').src = item.logo;
+      updateRadioStatus('Conectando...');
+
+      audioPlayer.src = item.url;
+      audioPlayer.play().then(() => {
+        setPlayIcon(true);
+      }).catch(err => {
+        console.error('Error al reproducir audio:', err);
+        updateRadioStatus('Error de conexión');
+        setPlayIcon(false);
+      });
+
+      renderGrid();
+    }
+
+    function toggleRadioPlay() {
+      if (!audioPlayer.src) return;
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        setPlayIcon(true);
+      } else {
+        audioPlayer.pause();
+        setPlayIcon(false);
+      }
+    }
+
+    function stopRadio() {
+      audioPlayer.pause();
+      audioPlayer.src = '';
+      setPlayIcon(false);
+      updateRadioStatus('Detenido');
+      activeCardIndex = -1;
+      renderGrid();
+    }
+
+    function updateRadioStatus(status) {
+      document.getElementById('playerStatus').textContent = status;
+    }
+
+    function setPlayIcon(isPlaying) {
+      document.getElementById('playIcon').style.display = isPlaying ? 'none' : 'block';
+      document.getElementById('pauseIcon').style.display = isPlaying ? 'block' : 'none';
+    }
+
+    // Reproducción de TV
+    function playTv(item) {
+      // Detener radio si estaba sonando
+      if (!audioPlayer.paused) audioPlayer.pause();
+
+      const modal = document.getElementById('tvModal');
+      document.getElementById('tvChannelName').textContent = item.name;
+      modal.classList.add('active');
+
+      if (Hls.isSupported() && item.url.includes('.m3u8')) {
+        if (hlsInstance) hlsInstance.destroy();
+        hlsInstance = new Hls();
+        hlsInstance.loadSource(item.url);
+        hlsInstance.attachMedia(tvVideo);
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => tvVideo.play());
+      } else {
+        tvVideo.src = item.url;
+        tvVideo.play();
+      }
+    }
+
+    function closeTvModal() {
+      const modal = document.getElementById('tvModal');
+      modal.classList.remove('active');
+      tvVideo.pause();
+      tvVideo.src = '';
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+    }
+
+    function showError(msg) {
+      const loading = document.getElementById('loadingMsg');
+      loading.style.display = 'flex';
+      loading.innerHTML = `
+        <div>${msg}</div>
+        <button onclick="location.reload()">Reintentar</button>
+      `;
+    }
+  </script>
 </body>
 </html>
