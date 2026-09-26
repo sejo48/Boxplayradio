@@ -14,7 +14,7 @@
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- HLS.js para streams de TV y Radio .m3u8 -->
+    <!-- HLS.js para reproducción de streams .m3u8 -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <script>
@@ -37,8 +37,8 @@
 
     <style>
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 14px;
+            height: 14px;
         }
         ::-webkit-scrollbar-track {
             background: #020617;
@@ -51,402 +51,373 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-
-        /* Tarjeta Cuadrada de Radio y TV */
-        .car-media-square {
-            aspect-ratio: 1 / 1;
-            position: relative;
-            overflow: hidden;
-            background: #090d1a;
-            border: 2px solid rgba(255, 255, 255, 0.12);
-            transition: transform 0.12s ease, border-color 0.12s ease;
+        .car-card {
+            background: rgba(15, 23, 42, 0.98);
+            border: 3px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.15s ease;
         }
-        .car-media-square:active {
-            transform: scale(0.96);
+        .car-card:active {
+            transform: scale(0.98);
+            background: rgba(30, 41, 59, 1);
             border-color: #db2777;
         }
-
-        /* Animación del Ecualizador en la Cabecera */
-        @keyframes soundWave {
-            0% { height: 15%; }
-            50% { height: 100%; }
-            100% { height: 25%; }
+        .car-btn {
+            min-height: 56px;
+            min-width: 56px;
         }
-        .bar-anim {
-            height: 20%;
-            transition: height 0.2s ease;
-        }
-        .visualizer-active .bar-1 { animation: soundWave 0.65s infinite ease-in-out alternate; }
-        .visualizer-active .bar-2 { animation: soundWave 0.45s infinite 0.1s ease-in-out alternate; }
-        .visualizer-active .bar-3 { animation: soundWave 0.75s infinite 0.25s ease-in-out alternate; }
-        .visualizer-active .bar-4 { animation: soundWave 0.5s infinite 0.15s ease-in-out alternate; }
-        .visualizer-active .bar-5 { animation: soundWave 0.85s infinite 0.3s ease-in-out alternate; }
-        .visualizer-active .bar-6 { animation: soundWave 0.4s infinite 0.05s ease-in-out alternate; }
-
-        /* Transiciones suaves */
-        #topHeader {
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        .car-tab-btn {
+            min-height: 52px;
         }
         #bottomPlayer {
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
         }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
 
-    <!-- Header Ultra-Compacto -->
-    <header id="topHeader" class="fixed top-0 left-0 right-0 h-12 bg-slate-900/98 backdrop-blur-md border-b-2 border-slate-800 px-4 flex items-center justify-between shadow-xl z-50">
-        
-        <!-- Logotipo y Título -->
-        <div class="flex items-center space-x-2.5 flex-shrink-0">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-md">
-                <i class="fa-solid fa-car text-white text-sm"></i>
+    <!-- Header Principal -->
+    <header class="bg-slate-900 border-b-4 border-slate-800 px-6 py-3 flex items-center justify-between shadow-2xl flex-shrink-0 z-30">
+        <div class="flex items-center space-x-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center shadow-xl shadow-pink-600/30 flex-shrink-0">
+                <i class="fa-solid fa-car text-white text-2xl"></i>
             </div>
-            <span class="text-base font-black tracking-tight text-white" id="appMainTitle">BoxPlay Radio</span>
-            <span id="modeBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-pink-600/30 text-pink-400 border border-pink-500/40 font-black uppercase">RADIO</span>
-        </div>
-
-        <!-- Ecualizador de Barras en Cabecera -->
-        <div id="headerVisualizer" class="flex items-center space-x-2 px-2.5 py-1 bg-slate-950/80 rounded-lg border border-slate-800 flex-shrink-0">
-            <i id="headerModeIcon" class="fa-solid fa-radio text-pink-500 text-xs"></i>
-            <div id="visualizerBars" class="flex items-end space-x-1 h-4 w-14">
-                <span class="w-1 bg-pink-500 rounded-full bar-anim bar-1"></span>
-                <span class="w-1 bg-pink-400 rounded-full bar-anim bar-2"></span>
-                <span class="w-1 bg-purple-400 rounded-full bar-anim bar-3"></span>
-                <span class="w-1 bg-pink-500 rounded-full bar-anim bar-4"></span>
-                <span class="w-1 bg-purple-500 rounded-full bar-anim bar-5"></span>
-                <span class="w-1 bg-pink-400 rounded-full bar-anim bar-6"></span>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-3">
+                    <span id="headerTitle">Box Play Radio</span> 
+                    <span id="modeBadge" class="text-xs px-2.5 py-0.5 rounded-lg bg-pink-600/30 text-pink-400 border border-pink-500/40 font-extrabold uppercase">EN VIVO</span>
+                </h1>
+                <p id="headerSubtitle" class="text-xs md:text-sm text-slate-400 font-medium">Sistema de Radio Táctil Automotriz</p>
             </div>
         </div>
 
-        <!-- Selector de Sección: Radio vs TV -->
-        <div class="flex items-center space-x-1.5 flex-shrink-0">
-            <div class="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800">
-                <button onclick="switchMode('radio')" id="tabRadioBtn" class="px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow">
-                    <i class="fa-solid fa-radio text-xs"></i>
+        <!-- Selector de Modo y Accesos Rápidos -->
+        <div class="flex items-center space-x-3">
+            <div class="flex bg-slate-950 p-1 rounded-2xl border-2 border-slate-800">
+                <button onclick="switchMode('radio')" id="tabRadioBtn" class="car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all bg-pink-600 text-white shadow-lg">
+                    <i class="fa-solid fa-radio text-lg"></i>
                     <span>Radio</span>
                 </button>
-                <button onclick="switchMode('tv')" id="tabTvBtn" class="px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-tv text-xs"></i>
-                    <span>TV</span>
+                <button onclick="switchMode('music')" id="tabMusicBtn" class="car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-music text-lg"></i>
+                    <span>Vox Music</span>
                 </button>
             </div>
 
-            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 flex items-center justify-center transition-all shadow" title="Favoritas">
-                <i class="fa-solid fa-heart text-pink-500 text-sm"></i>
+            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="car-btn px-5 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-2 text-base md:text-lg transition-all shadow-lg">
+                <i class="fa-solid fa-heart text-pink-500 text-xl"></i>
+                <span id="favTextCount" class="hidden xl:inline">Favoritas (0)</span>
             </button>
 
-            <button onclick="openSearchModal()" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-200 flex items-center justify-center transition-all shadow" title="Buscar">
-                <i class="fa-solid fa-magnifying-glass text-pink-400 text-sm"></i>
+            <button onclick="openSearchModal()" class="car-btn px-5 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-200 font-bold flex items-center justify-center space-x-2 text-base md:text-lg transition-all shadow-lg">
+                <i class="fa-solid fa-magnifying-glass text-pink-400 text-xl"></i>
+                <span class="hidden xl:inline">Buscar</span>
             </button>
 
-            <button onclick="toggleFullScreen()" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:text-pink-400 flex items-center justify-center transition-all shadow" title="Pantalla Completa">
-                <i id="fsIcon" class="fa-solid fa-expand text-sm"></i>
-            </button>
-
-            <button onclick="hideControls()" class="w-9 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all" title="Ocultar Menú">
-                <i class="fa-solid fa-chevron-up text-sm"></i>
+            <button onclick="refreshCurrentContent()" class="car-btn w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-200 hover:text-pink-400 flex items-center justify-center transition-all shadow-lg" title="Actualizar">
+                <i class="fa-solid fa-rotate text-xl"></i>
             </button>
         </div>
     </header>
 
-    <!-- Área de Cuadrícula de Tarjetas -->
-    <main id="mainContainer" class="flex-1 overflow-y-auto px-4 py-3 bg-slate-950 pt-14 pb-14" onclick="handleMainTap()">
+    <!-- Contenedor Principal -->
+    <main class="flex-1 overflow-y-auto p-6 bg-slate-950 pb-44">
         
-        <!-- Banner de Favoritos Activo -->
-        <div id="favoritesActiveBanner" class="hidden mb-3 p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/50 items-center justify-between shadow-lg">
-            <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-heart text-pink-500 text-sm"></i>
-                <span class="text-xs font-bold text-white">Mostrando Favoritos Guardados</span>
+        <!-- Banner de Filtro de Favoritos Activo -->
+        <div id="favoritesActiveBanner" class="hidden mb-6 p-4 rounded-2xl bg-pink-950/40 border-2 border-pink-500/50 items-center justify-between shadow-lg">
+            <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 rounded-xl bg-pink-600 flex items-center justify-center text-white text-lg">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">Mostrando Mis Favoritos</h3>
+                    <p class="text-xs text-pink-300">Tus estaciones y canciones guardadas</p>
+                </div>
             </div>
-            <button onclick="exitFavorites()" class="px-3 py-1 rounded-lg bg-slate-900 border border-pink-500 text-pink-400 hover:bg-pink-600 hover:text-white font-bold text-[11px] transition-all">
-                Ver Todo
+            <button onclick="exitFavorites()" class="car-btn px-5 py-2.5 rounded-xl bg-slate-900 border-2 border-pink-500 text-pink-400 hover:bg-pink-600 hover:text-white font-bold text-base flex items-center space-x-2 transition-all shadow-md">
+                <i class="fa-solid fa-arrow-left text-lg"></i>
+                <span>Salir de Favoritos</span>
             </button>
         </div>
 
-        <!-- Mensajes de Notificación -->
-        <div id="statusMessage" class="hidden mb-3 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between text-slate-300 shadow-xl">
-            <div class="flex items-center space-x-2">
-                <i id="statusIcon" class="fa-solid fa-circle-info text-pink-400"></i>
-                <span id="statusText">Cargando canales y emisoras...</span>
+        <!-- Mensajes de Estado / Alertas -->
+        <div id="statusMessage" class="hidden mb-6 p-4 rounded-2xl bg-slate-900 border-2 border-slate-800 text-base flex items-center justify-between text-slate-300 shadow-2xl">
+            <div class="flex items-center space-x-3">
+                <i id="statusIcon" class="fa-solid fa-circle-info text-pink-400 text-xl"></i>
+                <span id="statusText">Cargando contenido...</span>
             </div>
-            <button onclick="closeStatus()" class="p-1 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-sm"></i>
+            <button onclick="closeStatus()" class="car-btn p-2 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
             </button>
         </div>
 
-        <!-- Skeletons de Carga -->
-        <div id="loadingState" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
-            <div class="bg-slate-900 rounded-xl animate-pulse aspect-square"></div>
+        <!-- Indicador de Carga -->
+        <div id="loadingState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-900 p-8 rounded-3xl animate-pulse h-48"></div>
+            <div class="bg-slate-900 p-8 rounded-3xl animate-pulse h-48"></div>
+            <div class="bg-slate-900 p-8 rounded-3xl animate-pulse h-48"></div>
         </div>
 
-        <!-- Contenedor Dinámico de Tarjetas Cuadradas -->
-        <div id="contentGrid" class="hidden">
+        <!-- Grid de Tarjetas -->
+        <div id="contentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- Renderizado dinámico -->
         </div>
 
         <!-- Estado Vacío -->
-        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-12 text-center">
-            <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-2xl mb-2">
-                <i class="fa-solid fa-tv"></i>
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-24 h-24 rounded-full bg-slate-900 border-2 border-slate-800 flex items-center justify-center text-slate-500 text-4xl mb-4 shadow-inner">
+                <i class="fa-solid fa-compact-disc"></i>
             </div>
-            <h3 class="text-base font-bold text-slate-200">No se encontraron elementos</h3>
-            <p class="text-xs text-slate-400 mt-1">Verifica tu conexión o cambia de sección.</p>
+            <h3 class="text-2xl font-bold text-slate-200">No se encontraron elementos</h3>
+            <p class="text-base text-slate-400 mt-2">Verifica tu conexión a internet o cambia de sección.</p>
         </div>
     </main>
 
-    <!-- Botón Flotante Discreto -->
-    <button id="playerHandleBtn" onclick="showControlsWithTimeout(5)" class="fixed bottom-2.5 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md border border-pink-500/70 text-white px-4 py-1.5 rounded-full shadow-2xl flex items-center space-x-2.5 z-40 transition-all duration-300 transform translate-y-16 opacity-0 pointer-events-none active:scale-95">
-        <i class="fa-solid fa-waveform text-pink-400 text-sm animate-pulse"></i>
-        <span id="handleTitle" class="text-xs font-bold text-white truncate max-w-[180px]">BoxPlay</span>
-        <i class="fa-solid fa-bars text-pink-400 text-xs ml-1"></i>
-    </button>
-
-    <!-- Reproductor Inferior de Radio (Se oculta a los 5 segundos) -->
-    <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-slate-900/98 backdrop-blur-md border-t-2 border-pink-600 px-4 py-2 z-50 shadow-2xl translate-y-full">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+    <!-- Reproductor Inferior Fijo -->
+    <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t-4 border-pink-600 px-6 py-3 z-50 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
             
-            <div class="flex items-center space-x-2.5 min-w-0 flex-1">
-                <div class="relative w-11 h-11 rounded-lg overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 shadow">
+            <!-- Información de la Pista Actual -->
+            <div class="flex items-center space-x-4 min-w-0 flex-1">
+                <div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border-2 border-slate-700 shadow-xl">
                     <img id="playerImg" src="https://placehold.co/150x150/1e293b/ec4899?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
+                    <div id="playerEqualizer" class="absolute inset-0 bg-pink-950/80 backdrop-blur-[2px] items-center justify-center hidden">
+                        <div class="flex space-x-1.5 items-end h-5">
+                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 60%; animation-delay: 0.1s;"></span>
+                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 100%; animation-delay: 0.3s;"></span>
+                            <span class="w-1.5 bg-pink-400 rounded-full animate-bounce" style="height: 40%; animation-delay: 0.2s;"></span>
+                        </div>
+                    </div>
                 </div>
                 <div class="min-w-0">
-                    <h4 id="playerTitle" class="text-sm font-bold text-white truncate">Selecciona una emisora</h4>
-                    <p id="playerCategory" class="text-[11px] text-pink-400 font-semibold truncate">Listo</p>
+                    <h4 id="playerTitle" class="text-lg md:text-xl font-bold text-white truncate">Selecciona una reproducción</h4>
+                    <p id="playerCategory" class="text-sm text-pink-400 font-semibold truncate mt-0.5">Listo para reproducir</p>
                 </div>
             </div>
 
-            <!-- Controles Centrales -->
-            <div class="flex items-center space-x-2">
-                <button onclick="playPrevious()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-base transition-all active:scale-95" title="Anterior">
+            <!-- Controles Centrales (Anterior, Play/Pause, Siguiente, Favorito) -->
+            <div class="flex items-center space-x-3 md:space-x-4">
+                <button onclick="playPrevious()" class="car-btn w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xl transition-all shadow-lg active:scale-95" title="Anterior">
                     <i class="fa-solid fa-backward-step"></i>
                 </button>
 
-                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="w-12 h-12 rounded-xl bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white flex items-center justify-center shadow-lg shadow-pink-600/40 transition-transform active:scale-95">
-                    <i id="playPauseIcon" class="fa-solid fa-play text-xl ml-0.5"></i>
+                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="car-btn w-16 h-16 md:w-18 md:h-18 rounded-2xl bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white flex items-center justify-center shadow-2xl shadow-pink-600/50 transition-transform active:scale-95">
+                    <i id="playPauseIcon" class="fa-solid fa-play text-2xl md:text-3xl ml-1"></i>
                 </button>
 
-                <button onclick="playNext()" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-base transition-all active:scale-95" title="Siguiente">
+                <button onclick="playNext()" class="car-btn w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xl transition-all shadow-lg active:scale-95" title="Siguiente">
                     <i class="fa-solid fa-forward-step"></i>
                 </button>
 
-                <div id="spinnerLoader" class="hidden w-8 h-8 border-3 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                <div id="spinnerLoader" class="hidden w-10 h-10 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
 
-                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 hover:border-pink-500 text-slate-300 hover:text-pink-500 flex items-center justify-center text-lg transition-all">
+                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="car-btn w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-pink-500 text-slate-300 hover:text-pink-500 flex items-center justify-center text-2xl transition-all shadow-xl">
                     <i class="fa-regular fa-heart"></i>
-                </button>
-
-                <button onclick="hideControls()" class="w-9 h-9 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-all" title="Ocultar">
-                    <i class="fa-solid fa-chevron-down"></i>
                 </button>
             </div>
 
-            <!-- Volumen -->
-            <div class="hidden sm:flex items-center space-x-2 w-36 justify-end">
-                <button onclick="toggleMute()" id="muteBtn" class="p-1 text-slate-300 hover:text-white">
-                    <i id="muteIcon" class="fa-solid fa-volume-high text-base"></i>
+            <!-- Control de Volumen -->
+            <div class="hidden lg:flex items-center space-x-4 w-52 justify-end">
+                <button onclick="toggleMute()" id="muteBtn" class="car-btn p-2 text-slate-300 hover:text-white">
+                    <i id="muteIcon" class="fa-solid fa-volume-high text-2xl"></i>
                 </button>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-24 accent-pink-500 bg-slate-800 rounded-lg h-2 cursor-pointer">
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-32 accent-pink-500 bg-slate-800 rounded-lg h-3 cursor-pointer">
             </div>
 
         </div>
     </footer>
 
-    <!-- Visor de Televisión en Vivo (Video Player) -->
-    <div id="tvPlayerModal" class="fixed inset-0 bg-black z-50 flex flex-col hidden">
-        <div class="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/90 via-black/50 to-transparent z-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3 min-w-0">
-                <img id="tvModalLogo" src="" class="w-9 h-9 rounded-lg object-contain bg-slate-900 border border-slate-800">
-                <div class="min-w-0">
-                    <h3 id="tvModalTitle" class="text-sm md:text-base font-black text-white truncate drop-shadow">Canal</h3>
-                    <span id="tvModalGroup" class="text-[10px] text-pink-400 font-bold uppercase drop-shadow">En Vivo</span>
-                </div>
+    <!-- Modal de Búsqueda Táctil -->
+    <div id="searchModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-6 hidden">
+        <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col pt-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl md:text-3xl font-black text-white" id="searchModalTitle">Buscar en Box Play</h3>
+                <button onclick="closeSearchModal()" class="car-btn px-6 py-3 rounded-2xl bg-slate-800 border-2 border-slate-700 text-slate-300 font-bold text-lg">Cerrar</button>
             </div>
-
-            <div class="flex items-center space-x-2">
-                <button onclick="playPrevious()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-700 text-white flex items-center justify-center text-base" title="Canal Anterior">
-                    <i class="fa-solid fa-backward-step"></i>
-                </button>
-                <button onclick="playNext()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-700 text-white flex items-center justify-center text-base" title="Canal Siguiente">
-                    <i class="fa-solid fa-forward-step"></i>
-                </button>
-                <button onclick="toggleTvFullScreen()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-700 text-white flex items-center justify-center text-base" title="Pantalla Completa">
-                    <i class="fa-solid fa-expand"></i>
-                </button>
-                <button onclick="closeTvPlayer()" class="px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                    <span>Cerrar TV</span>
-                </button>
+            <div class="relative w-full mb-6">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-5 text-slate-400 text-xl"></i>
+                <input type="text" id="modalSearchInput" placeholder="Escribe para buscar..." class="w-full bg-slate-900 border-2 border-slate-700 text-xl rounded-2xl pl-14 pr-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
             </div>
-        </div>
-
-        <div class="flex-1 w-full h-full flex items-center justify-center bg-black relative">
-            <video id="tvVideo" class="w-full h-full object-contain" playsinline controls autoplay></video>
-            <div id="tvLoadingSpinner" class="hidden absolute inset-0 bg-black/60 flex items-center justify-center">
-                <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-3 pb-12">
+                <!-- Resultados inyectados de forma segura -->
             </div>
         </div>
     </div>
 
-    <!-- Modal de Búsqueda -->
-    <div id="searchModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex flex-col p-4 hidden">
-        <div class="max-w-3xl mx-auto w-full flex-1 flex flex-col">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-base md:text-lg font-black text-white" id="searchModalTitle">Buscar</h3>
-                <button onclick="closeSearchModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs">Cerrar</button>
-            </div>
-            <div class="relative w-full mb-3">
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-base"></i>
-                <input type="text" id="modalSearchInput" placeholder="Escribe para buscar..." class="w-full bg-slate-900 border border-slate-700 text-sm md:text-base rounded-xl pl-10 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 transition-all shadow-inner">
-            </div>
-            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-2 pb-6">
-            </div>
-        </div>
-    </div>
-
-    <!-- Audio Element -->
+    <!-- Elemento de Audio HTML5 -->
     <audio id="audioStream" preload="none"></audio>
 
     <script>
-        // URLs oficiales de tu repositorio
         const RADIO_JSON_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json';
-        const TV_M3U_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/listaoficial.m3u';
-
-        // Canales y emisoras de respaldo garantizadas (por si se abre con file:// sin internet o con CORS)
-        const FALLBACK_RADIOS = [
-            { title: "Radio Sinfonola 90.3 FM", group: "Nacionales", genre: "Clásicos y Recuerdos", logo: "https://static.mytuner.mobi/media/tvos_radios/415/radio-sinfonola.79d5c3e6.png", url: "https://live.turadio.stream:7006/;" },
-            { title: "Best FM 103.5", group: "Nacionales", genre: "Classic Hits 80-90s", logo: "https://placehold.co/300x300/3b82f6/ffffff?text=Best+FM", url: "https://live.turadio.stream:7004/stream?nocache=596&type=http" },
-            { title: "Radio Disney 101.1 FM", group: "Nacionales", genre: "Pop Juvenil", logo: "https://static.mytuner.mobi/media/tvos_radios/652/radio-disney-costa-rica.d297c76c.jpg", url: "https://26673.live.streamtheworld.com/DISNEY_CRI_SJ_ADP/HLS/031b1ae7-b742-4bf3-8001-31b8478440ef/0/playlist.m3u8" },
-            { title: "Los 40 104.3 FM", group: "Nacionales", genre: "Pop / Urbano", logo: "https://placehold.co/300x300/14b8a6/000000?text=Los40", url: "https://icecasthd.teletica.com/los40" },
-            { title: "Radio Bolero 97.7", group: "Nacionales", genre: "Romántica", logo: "https://static2.mytuner.mobi/media/tvos_radios/368/radio-bolero-spain.6e20e2e3.jpg", url: "https://romanticafm.radioca.st/;" }
-        ];
-
-        const FALLBACK_TV = [
-            { title: "Telered", group: "Noticias Local", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc0CFBLpTdVRLyxhsV8Hq3wfIeJAPWiC2TQOhBNoFV893ShXipE0MWXG9nhjQnTPIsMtK&usqp=CAU", url: "https://k20.usastreams.com:8081/telered/index.m3u8" },
-            { title: "Canal 8", group: "Multimedios CR", logo: "https://pbs.twimg.com/profile_images/1510311834800246787/sfWgWmqk_400x400.jpg", url: "https://mdstrm.com/live-stream-playlist/5a7b1e63a8da282c34d65445/master.m3u8" },
-            { title: "Tele Sistema", group: "Entretenimiento", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9YKvejKbdJWBUfmO0c32tKTO1QKQXXu2s4A&s", url: "https://k20.usastreams.com:8081/telesistema/tracks-v1a1/mono.m3u8" },
-            { title: "TDTV", group: "Canal Turrialba", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIolIQw2AJvIdVjUFVAwAxLgPALnvBMWGyFw&s", url: "https://cloudvideo.servers10.com:8081/8230/tracks-v1a1/mono.m3u8" },
-            { title: "Retro TV", group: "Canal Retro", logo: "https://play-lh.googleusercontent.com/zLkTnFdGGq5-cuY0DBvsCoiRUToWFA8rcm_Z3ieUr7rwgmzyojRXIfqMXt9dm4ocjs", url: "https://stream.enlineatv.net/hls/retrotv/1_2/index.m3u8?tkn=3610870340" }
-        ];
-
-        // Manejo Seguro de Almacenamiento Local (Protegido contra bloqueo file://)
-        function safeGetStorage(key, defaultVal = []) {
-            try {
-                if (typeof window !== 'undefined' && window.localStorage) {
-                    const val = localStorage.getItem(key);
-                    return val ? JSON.parse(val) : defaultVal;
-                }
-            } catch (e) {
-                console.warn('Almacenamiento restringido:', e);
-            }
-            return defaultVal;
-        }
-
-        function safeSetStorage(key, val) {
-            try {
-                if (typeof window !== 'undefined' && window.localStorage) {
-                    localStorage.setItem(key, JSON.stringify(val));
-                }
-            } catch (e) {
-                console.warn('Almacenamiento restringido:', e);
-            }
-        }
-
-        let currentMode = 'radio';
+        const MUSIC_JSON_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/videoteca.json';
+        
+        let currentMode = 'radio'; // 'radio' | 'music'
         let stations = [];
-        let tvChannels = [];
-        let currentRadioItem = null;
-        let currentTvItem = null;
+        let musicItems = [];
+        let currentItem = null;
         let searchQuery = '';
         let favoritesOnly = false;
+        
+        // Listas en memoria para evitar inyecciones en onclick
         let renderedGridItems = [];
         let renderedSearchItems = [];
 
-        let radioFavorites = safeGetStorage('box_play_radio_favs', []);
-        let tvFavorites = safeGetStorage('box_play_tv_favs', []);
+        let radioFavorites = JSON.parse(localStorage.getItem('box_play_radio_favs') || '[]');
+        let musicFavorites = JSON.parse(localStorage.getItem('box_play_music_favs') || '[]');
 
-        let radioHls = null;
-        let tvHls = null;
+        // Manejador HLS
+        let hlsInstance = null;
         let reconnectAttempts = 0;
         const MAX_RECONNECT_ATTEMPTS = 3;
         let statusTimeout = null;
-        let controlsHideTimer = null;
-        const AUTO_HIDE_SECONDS = 5;
 
-        // Referencias del DOM
-        let audio, tvVideo, tvPlayerModal, tvLoadingSpinner, tvModalLogo, tvModalTitle, tvModalGroup;
-        let mainContainer, contentGrid, loadingState, emptyState, playPauseBtn, playPauseIcon, spinnerLoader;
-        let playerTitle, playerCategory, playerImg, playerFavBtn, volumeSlider, muteBtn, muteIcon;
-        let favFilterBtn, searchModal, modalSearchInput, searchResultsContainer, favoritesActiveBanner;
-        let tabRadioBtn, tabTvBtn, modeBadge, appMainTitle, headerModeIcon, topHeader, bottomPlayer, playerHandleBtn, handleTitle, visualizerBars;
+        const audio = document.getElementById('audioStream');
+        const contentGrid = document.getElementById('contentGrid');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const spinnerLoader = document.getElementById('spinnerLoader');
+        const playerTitle = document.getElementById('playerTitle');
+        const playerCategory = document.getElementById('playerCategory');
+        const playerImg = document.getElementById('playerImg');
+        const playerEqualizer = document.getElementById('playerEqualizer');
+        const playerFavBtn = document.getElementById('playerFavBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const muteBtn = document.getElementById('muteBtn');
+        const muteIcon = document.getElementById('muteIcon');
+        const favFilterBtn = document.getElementById('favFilterBtn');
+        const favTextCount = document.getElementById('favTextCount');
+        const searchModal = document.getElementById('searchModal');
+        const modalSearchInput = document.getElementById('modalSearchInput');
+        const searchResultsContainer = document.getElementById('searchResultsContainer');
+        const favoritesActiveBanner = document.getElementById('favoritesActiveBanner');
+        const tabRadioBtn = document.getElementById('tabRadioBtn');
+        const tabMusicBtn = document.getElementById('tabMusicBtn');
+        const headerTitle = document.getElementById('headerTitle');
+        const headerSubtitle = document.getElementById('headerSubtitle');
+        const modeBadge = document.getElementById('modeBadge');
 
-        // Registro de funciones en window para garantizar disponibilidad en onclick
-        window.switchMode = function(mode) {
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAllData();
+            updateFavoritesBadge();
+
+            volumeSlider.addEventListener('input', (e) => {
+                audio.volume = parseFloat(e.target.value);
+                audio.muted = false;
+                updateVolumeIcon(audio.volume);
+            });
+
+            modalSearchInput.addEventListener('input', (e) => {
+                renderModalSearchResults(e.target.value.trim().toLowerCase());
+            });
+
+            audio.addEventListener('error', () => {
+                handlePlaybackError();
+            });
+
+            audio.addEventListener('playing', () => {
+                reconnectAttempts = 0;
+                setLoadingState(false);
+                setIsPlaying(true);
+            });
+
+            audio.addEventListener('waiting', () => {
+                setLoadingState(true);
+            });
+
+            setupMediaSessionHandlers();
+        });
+
+        async function loadAllData() {
+            loadingState.classList.remove('hidden');
+            contentGrid.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            showStatus('Cargando contenido...', 'info');
+
+            const cacheBuster = `?_t=${Date.now()}`;
+
+            try {
+                const [radioRes, musicRes] = await Promise.all([
+                    fetch(RADIO_JSON_URL + cacheBuster).catch(() => null),
+                    fetch(MUSIC_JSON_URL + cacheBuster).catch(() => null)
+                ]);
+
+                if (radioRes && radioRes.ok) {
+                    const rData = await radioRes.json();
+                    stations = extractArrayFromJSON(rData);
+                }
+
+                if (musicRes && musicRes.ok) {
+                    const mData = await musicRes.json();
+                    musicItems = extractArrayFromJSON(mData);
+                }
+
+                if (!musicItems || musicItems.length === 0) {
+                    musicItems = [
+                        { name: "Vox Music Session 1", image: "https://placehold.co/200x200/1e293b/ec4899?text=VOX", url: "https://streams.ilovemusic.de/iloveradio1.mp3" },
+                        { name: "Vox Electronic Beats", image: "https://placehold.co/200x200/1e293b/ec4899?text=VOX", url: "https://streams.ilovemusic.de/iloveradio2.mp3" },
+                        { name: "Vox Chillout Lounge", image: "https://placehold.co/200x200/1e293b/ec4899?text=VOX", url: "https://s2.radio.co/s83716d729/listen" }
+                    ];
+                }
+
+                renderCurrentContent();
+                hideStatus();
+            } catch (error) {
+                console.error(error);
+                showStatus('No se pudo conectar con los servidores.', 'error');
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            }
+        }
+
+        function extractArrayFromJSON(data) {
+            if (Array.isArray(data)) return data;
+            if (data && typeof data === 'object') {
+                const commonKeys = ['radios', 'emisoras', 'items', 'musica', 'canciones', 'videoteca', 'series', 'movies'];
+                for (const k of commonKeys) {
+                    if (Array.isArray(data[k])) return data[k];
+                }
+                for (const key in data) {
+                    if (Array.isArray(data[key])) return data[key];
+                }
+                return Object.values(data).map(item => {
+                    if (typeof item === 'object' && item !== null) return item;
+                    return { name: String(item), url: String(item) };
+                });
+            }
+            return [];
+        }
+
+        function refreshCurrentContent() {
+            loadAllData();
+        }
+
+        function switchMode(mode) {
             if (currentMode === mode) return;
             currentMode = mode;
             searchQuery = '';
             
             if (mode === 'radio') {
-                tabRadioBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow";
-                tabTvBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white";
-                modeBadge.textContent = "RADIO";
-                headerModeIcon.className = "fa-solid fa-radio text-pink-500 text-xs";
-                appMainTitle.textContent = "BoxPlay Radio";
+                tabRadioBtn.className = "car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all bg-pink-600 text-white shadow-lg";
+                tabMusicBtn.className = "car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all text-slate-400 hover:text-white";
+                headerTitle.textContent = "Box Play Radio";
+                headerSubtitle.textContent = "Sistema de Radio Táctil Automotriz";
+                modeBadge.textContent = "EN VIVO";
             } else {
-                tabTvBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all bg-pink-600 text-white shadow";
-                tabRadioBtn.className = "px-3 py-1 rounded-md font-bold text-xs flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white";
-                modeBadge.textContent = "TV EN VIVO";
-                headerModeIcon.className = "fa-solid fa-tv text-pink-500 text-xs";
-                appMainTitle.textContent = "BoxPlay TV";
-                bottomPlayer.classList.add('translate-y-full');
+                tabMusicBtn.className = "car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all bg-pink-600 text-white shadow-lg";
+                tabRadioBtn.className = "car-tab-btn px-5 rounded-xl font-bold text-base md:text-lg flex items-center space-x-2 transition-all text-slate-400 hover:text-white";
+                headerTitle.textContent = "Vox Play Music";
+                headerSubtitle.textContent = "Videoteca y Stream Musical Automotriz";
+                modeBadge.textContent = "VIDEOS";
             }
 
             renderCurrentContent();
             updateFavoritesBadge();
-            keepControlsAlive();
-        };
+        }
 
-        window.handleMainTap = function() {
-            if (bottomPlayer && bottomPlayer.classList.contains('translate-y-full')) {
-                showControlsWithTimeout(AUTO_HIDE_SECONDS);
-            }
-        };
-
-        window.showControlsWithTimeout = function(seconds = AUTO_HIDE_SECONDS) {
-            if (!topHeader) return;
-            topHeader.classList.remove('-translate-y-full');
-            if (currentMode === 'radio') {
-                bottomPlayer.classList.remove('translate-y-full');
-            }
-            mainContainer.classList.remove('pt-2', 'pb-4');
-            mainContainer.classList.add('pt-14', 'pb-14');
-
-            playerHandleBtn.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
-            playerHandleBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-
-            keepControlsAlive(seconds);
-        };
-
-        window.hideControls = function() {
-            if (!topHeader) return;
-            topHeader.classList.add('-translate-y-full');
-            bottomPlayer.classList.add('translate-y-full');
-            mainContainer.classList.remove('pt-14', 'pb-14');
-            mainContainer.classList.add('pt-2', 'pb-4');
-
-            if (controlsHideTimer) clearTimeout(controlsHideTimer);
-
-            if ((currentMode === 'radio' && currentRadioItem) || (currentMode === 'tv' && currentTvItem)) {
-                playerHandleBtn.classList.remove('translate-y-16', 'opacity-0', 'pointer-events-none');
-                playerHandleBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-            }
-        };
-
-        window.toggleFavoritesFilter = function() {
+        function toggleFavoritesFilter() {
             favoritesOnly = !favoritesOnly;
             if (favoritesOnly) {
                 favFilterBtn.classList.add('border-pink-500', 'bg-pink-950/60');
@@ -456,284 +427,42 @@
                 exitFavorites();
             }
             renderCurrentContent();
-            keepControlsAlive();
-        };
+        }
 
-        window.exitFavorites = function() {
+        function exitFavorites() {
             favoritesOnly = false;
             favFilterBtn.classList.remove('border-pink-500', 'bg-pink-950/60');
             favoritesActiveBanner.classList.add('hidden');
             favoritesActiveBanner.classList.remove('flex');
             renderCurrentContent();
-        };
-
-        window.openSearchModal = function() {
-            searchModal.classList.remove('hidden');
-            document.getElementById('searchModalTitle').textContent = currentMode === 'radio' ? 'Buscar Emisora' : 'Buscar Canal de TV';
-            modalSearchInput.value = searchQuery;
-            renderModalSearchResults(searchQuery);
-            setTimeout(() => modalSearchInput.focus(), 100);
-        };
-
-        window.closeSearchModal = function() {
-            searchModal.classList.add('hidden');
-            renderCurrentContent();
-        };
-
-        window.toggleFullScreen = function() {
-            const fsIcon = document.getElementById('fsIcon');
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().then(() => {
-                    fsIcon.className = "fa-solid fa-compress text-sm text-pink-400";
-                }).catch(() => {});
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().then(() => {
-                        fsIcon.className = "fa-solid fa-expand text-sm";
-                    }).catch(() => {});
-                }
-            }
-        };
-
-        window.toggleTvFullScreen = function() {
-            if (!document.fullscreenElement) {
-                tvPlayerModal.requestFullscreen().catch(() => {});
-            } else {
-                document.exitFullscreen().catch(() => {});
-            }
-        };
-
-        window.closeTvPlayer = function() {
-            stopTv();
-            tvPlayerModal.classList.add('hidden');
-            visualizerBars.classList.remove('visualizer-active');
-            renderCurrentContent();
-        };
-
-        window.handleCardClick = function(index) {
-            const item = renderedGridItems[index];
-            if (!item) return;
-
-            if (currentMode === 'radio') {
-                playRadio(item);
-                showControlsWithTimeout(AUTO_HIDE_SECONDS);
-            } else {
-                playTvChannel(item);
-            }
-        };
-
-        window.toggleFavoriteById = function(id) {
-            let favs = getActiveFavorites();
-            const index = favs.indexOf(id);
-            if (index > -1) {
-                favs.splice(index, 1);
-            } else {
-                favs.push(id);
-            }
-
-            if (currentMode === 'radio') {
-                radioFavorites = favs;
-                safeSetStorage('box_play_radio_favs', radioFavorites);
-            } else {
-                tvFavorites = favs;
-                safeSetStorage('box_play_tv_favs', tvFavorites);
-            }
-
-            updateFavoritesBadge();
-            renderCurrentContent();
-            if (currentMode === 'radio') updatePlayerInfo();
-        };
-
-        window.toggleFavoriteCurrent = function() {
-            if (currentMode === 'radio' && currentRadioItem) {
-                keepControlsAlive();
-                toggleFavoriteById(getItemId(currentRadioItem));
-            }
-        };
-
-        window.togglePlayPause = function() {
-            if (currentMode === 'radio' && currentRadioItem) {
-                keepControlsAlive();
-                if (audio.paused) {
-                    audio.play().then(() => setIsPlaying(true)).catch(() => handleAudioError());
-                } else {
-                    audio.pause();
-                    setIsPlaying(false);
-                }
-                renderCurrentContent();
-            }
-        };
-
-        window.playNext = function() {
-            const list = getFilteredList();
-            if (!list.length) return;
-
-            if (currentMode === 'radio') {
-                keepControlsAlive();
-                const idx = list.findIndex(i => i.url === (currentRadioItem ? currentRadioItem.url : ''));
-                const nextIdx = (idx + 1) % list.length;
-                playRadio(list[nextIdx]);
-            } else if (currentMode === 'tv') {
-                const idx = list.findIndex(i => i.url === (currentTvItem ? currentTvItem.url : ''));
-                const nextIdx = (idx + 1) % list.length;
-                playTvChannel(list[nextIdx]);
-            }
-        };
-
-        window.playPrevious = function() {
-            const list = getFilteredList();
-            if (!list.length) return;
-
-            if (currentMode === 'radio') {
-                keepControlsAlive();
-                const idx = list.findIndex(i => i.url === (currentRadioItem ? currentRadioItem.url : ''));
-                const prevIdx = (idx - 1 + list.length) % list.length;
-                playRadio(list[prevIdx]);
-            } else if (currentMode === 'tv') {
-                const idx = list.findIndex(i => i.url === (currentTvItem ? currentTvItem.url : ''));
-                const prevIdx = (idx - 1 + list.length) % list.length;
-                playTvChannel(list[prevIdx]);
-            }
-        };
-
-        window.toggleMute = function() {
-            keepControlsAlive();
-            audio.muted = !audio.muted;
-            if (audio.muted) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-base text-pink-500";
-            } else {
-                updateVolumeIcon(audio.volume);
-            }
-        };
-
-        window.closeStatus = function() {
-            document.getElementById('statusMessage').classList.add('hidden');
-        };
-
-        window.playSearchIndex = function(index) {
-            const item = renderedSearchItems[index];
-            if (item) {
-                closeSearchModal();
-                if (currentMode === 'radio') {
-                    playRadio(item);
-                    showControlsWithTimeout(AUTO_HIDE_SECONDS);
-                } else {
-                    playTvChannel(item);
-                }
-            }
-        };
-
-        function keepControlsAlive(seconds = AUTO_HIDE_SECONDS) {
-            if (controlsHideTimer) clearTimeout(controlsHideTimer);
-            controlsHideTimer = setTimeout(() => {
-                hideControls();
-            }, seconds * 1000);
-        }
-
-        // Lector / Parser de Lista M3U
-        function parseM3U(m3uText) {
-            if (!m3uText) return [];
-            const lines = m3uText.split(/\r?\n/);
-            const list = [];
-            let current = null;
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-
-                if (line.startsWith('#EXTINF:')) {
-                    current = {};
-                    const nameMatch = line.match(/tvg-name="([^"]+)"/i);
-                    const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
-                    const groupMatch = line.match(/group-title="([^"]+)"/i);
-                    
-                    const commaIdx = line.lastIndexOf(',');
-                    let displayName = '';
-                    if (commaIdx !== -1) {
-                        displayName = line.substring(commaIdx + 1).trim();
-                    }
-
-                    current.title = displayName || (nameMatch ? nameMatch : 'Canal TV');
-                    current.logo = logoMatch ? logoMatch : 'https://placehold.co/300x300/1e293b/ec4899?text=TV';
-                    current.group = groupMatch ? groupMatch.replace(/\.$/, '') : 'En Vivo';
-                } else if (!line.startsWith('#') && current) {
-                    current.url = line;
-                    list.push(current);
-                    current = null;
-                }
-            }
-            return list;
-        }
-
-        async function loadAllData() {
-            loadingState.classList.remove('hidden');
-            contentGrid.classList.add('hidden');
-            emptyState.classList.add('hidden');
-            showStatus('Cargando señales...', 'info');
-
-            const cacheBuster = `?_t=${Date.now()}`;
-
-            try {
-                const [radioRes, tvRes] = await Promise.all([
-                    fetch(RADIO_JSON_URL + cacheBuster).catch(() => null),
-                    fetch(TV_M3U_URL + cacheBuster).catch(() => null)
-                ]);
-
-                if (radioRes && radioRes.ok) {
-                    const rData = await radioRes.json();
-                    stations = Array.isArray(rData) ? rData : (rData.radios || []);
-                }
-                if (!stations || stations.length === 0) {
-                    stations = FALLBACK_RADIOS;
-                }
-
-                if (tvRes && tvRes.ok) {
-                    const tvText = await tvRes.text();
-                    tvChannels = parseM3U(tvText);
-                }
-                if (!tvChannels || tvChannels.length === 0) {
-                    tvChannels = FALLBACK_TV;
-                }
-
-                renderCurrentContent();
-                hideStatus();
-                keepControlsAlive(AUTO_HIDE_SECONDS);
-            } catch (error) {
-                console.warn(error);
-                stations = FALLBACK_RADIOS;
-                tvChannels = FALLBACK_TV;
-                renderCurrentContent();
-                hideStatus();
-                keepControlsAlive(AUTO_HIDE_SECONDS);
-            }
         }
 
         function getActiveList() {
-            return currentMode === 'radio' ? stations : tvChannels;
+            return currentMode === 'radio' ? stations : musicItems;
         }
 
         function getActiveFavorites() {
-            return currentMode === 'radio' ? radioFavorites : tvFavorites;
+            return currentMode === 'radio' ? radioFavorites : musicFavorites;
         }
 
         function getItemId(item) {
             if (!item) return '';
-            return String(item.url || item.title || JSON.stringify(item));
+            return String(item.id || item.url || item.streamUrl || item.videoUrl || item.name || item.title || JSON.stringify(item));
         }
 
         function getItemName(item) {
-            if (!item) return 'Emisión';
-            return item.title || item.name || 'Emisión';
-        }
-
-        function getItemSubtitle(item) {
-            if (!item) return '';
-            return item.group || item.genre || 'En Vivo';
+            if (!item) return 'Reproducción';
+            return item.name || item.title || item.nombre || item.titulo || item.label || 'Emisora';
         }
 
         function getItemImage(item) {
-            if (!item) return 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
-            return item.logo || item.image || 'https://placehold.co/300x300/1e293b/ec4899?text=BOX';
+            if (!item) return 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
+            return item.image || item.logo || item.img || item.poster || item.thumbnail || item.caratula || 'https://placehold.co/200x200/1e293b/ec4899?text=BOX';
+        }
+
+        function getItemUrl(item) {
+            if (!item) return '';
+            return item.url || item.streamUrl || item.videoUrl || item.enlace || item.audioUrl || item.link || '';
         }
 
         function getFilteredList() {
@@ -741,8 +470,8 @@
             const favs = getActiveFavorites();
 
             return list.filter(item => {
-                const titleStr = (getItemName(item) + ' ' + getItemSubtitle(item)).toLowerCase();
-                const matchesSearch = !searchQuery || titleStr.includes(searchQuery);
+                const name = getItemName(item).toLowerCase();
+                const matchesSearch = !searchQuery || name.includes(searchQuery);
                 const matchesFav = !favoritesOnly || favs.includes(getItemId(item));
                 return matchesSearch && matchesFav;
             });
@@ -750,6 +479,7 @@
 
         function renderCurrentContent() {
             loadingState.classList.add('hidden');
+            
             renderedGridItems = getFilteredList();
             const favs = getActiveFavorites();
 
@@ -762,46 +492,36 @@
             emptyState.classList.add('hidden');
             contentGrid.classList.remove('hidden');
 
-            contentGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3";
-
             let html = '';
             renderedGridItems.forEach((item, index) => {
                 const id = getItemId(item);
                 const name = getItemName(item);
-                const subtitle = getItemSubtitle(item);
                 const image = getItemImage(item);
                 const isFav = favs.includes(id);
-                
-                const isCurrent = (currentMode === 'radio' && currentRadioItem && getItemId(currentRadioItem) === id) ||
-                                  (currentMode === 'tv' && currentTvItem && getItemId(currentTvItem) === id);
+                const isCurrent = currentItem && getItemId(currentItem) === id;
 
                 html += `
-                    <div onclick="handleCardClick(${index})" class="car-media-square rounded-2xl relative overflow-hidden cursor-pointer group ${isCurrent ? 'border-2 border-pink-500 shadow-2xl shadow-pink-500/40 ring-2 ring-pink-500/50' : 'border-2 border-slate-800/80 hover:border-slate-700'}">
-                        
-                        <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="absolute inset-0 w-full h-full object-cover bg-slate-950 transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/300x300/1e293b/ec4899?text=${currentMode === 'radio' ? 'RADIO' : 'TV'}'">
-
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/30"></div>
-
-                        ${isCurrent ? `
-                            <div class="absolute inset-0 bg-pink-950/40 backdrop-blur-[1px] flex items-center justify-center">
-                                <div class="w-11 h-11 rounded-full bg-pink-600/90 text-white flex items-center justify-center shadow-lg shadow-pink-600/50 animate-pulse">
-                                    <i class="fa-solid ${currentMode === 'radio' ? 'fa-volume-high' : 'fa-play'} text-lg"></i>
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <div class="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
-                            <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${isCurrent ? 'bg-pink-600 text-white' : 'bg-slate-950/80 text-pink-400 border border-pink-500/40'} shadow-md backdrop-blur-sm">
-                                ${currentMode === 'radio' ? 'RADIO' : 'TV'}
-                            </span>
-                            <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="w-7 h-7 rounded-full bg-slate-950/70 border border-slate-700/60 text-slate-300 hover:text-pink-500 flex items-center justify-center backdrop-blur-sm shadow-md transition-colors">
-                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular text-white'} fa-heart text-xs"></i>
+                    <div onclick="playByIndex(${index})" class="car-card p-5 rounded-3xl flex flex-col justify-between cursor-pointer relative overflow-hidden ${isCurrent ? 'border-pink-500 bg-slate-900 shadow-2xl shadow-pink-500/30 ring-2 ring-pink-500/40' : ''}">
+                        <div class="flex items-start justify-end mb-2">
+                            <button onclick="event.stopPropagation(); toggleFavoriteById('${escapeJsString(id)}')" class="car-btn p-2 text-slate-400 hover:text-pink-500">
+                                <i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-2xl"></i>
                             </button>
                         </div>
 
-                        <div class="absolute bottom-2 left-2 right-2 text-left z-10">
-                            <h3 class="text-xs md:text-sm font-black text-white truncate drop-shadow-md leading-tight">${escapeHtml(name)}</h3>
-                            <p class="text-[10px] text-pink-300 font-bold truncate mt-0.5 drop-shadow">${escapeHtml(subtitle)}</p>
+                        <div class="flex items-center space-x-5 my-1">
+                            <div class="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border-2 border-slate-800 shadow-lg">
+                                <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/1e293b/ec4899?text=BOX'">
+                                ${isCurrent ? '<div class="absolute inset-0 bg-pink-600/60 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-2xl"></i></div>' : ''}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-lg md:text-xl font-bold text-white truncate">${escapeHtml(name)}</h3>
+                                <p class="text-xs text-slate-400 mt-1">${currentMode === 'radio' ? 'Toca para sintonizar' : 'Toca para reproducir'}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-sm font-bold text-pink-400">
+                            <span>${isCurrent && !audio.paused ? '▶ Reproduciendo' : (currentMode === 'radio' ? '⚡ En Vivo' : '🎵 Multimedia')}</span>
+                            <i class="fa-solid fa-chevron-right text-slate-500 text-base"></i>
                         </div>
                     </div>
                 `;
@@ -810,33 +530,57 @@
             contentGrid.innerHTML = html;
         }
 
-        function playRadio(station) {
-            stopTv();
-            currentRadioItem = station;
-            setLoadingState(true);
-            stopAndCleanupAudio();
-            updatePlayerInfo();
+        function playByIndex(index) {
+            const item = renderedGridItems[index];
+            if (item) playItem(item);
+        }
 
-            const streamUrl = station.url;
+        function playItem(item) {
+            const streamUrl = getItemUrl(item);
             if (!streamUrl) {
-                showStatus('Flujo no disponible.', 'error');
-                setLoadingState(false);
+                showStatus('Enlace multimedia no disponible.', 'error');
                 return;
             }
+
+            currentItem = item;
+            setLoadingState(true);
+            stopAndCleanupAudio();
+
+            updatePlayerInfo();
+            updateMediaSession(item);
 
             const isHls = streamUrl.toLowerCase().includes('.m3u8');
 
             if (isHls && Hls.isSupported()) {
-                radioHls = new Hls({ enableWorker: true, lowLatencyMode: true });
-                radioHls.loadSource(streamUrl);
-                radioHls.attachMedia(audio);
-                radioHls.on(Hls.Events.MANIFEST_PARSED, () => startAudioPlayback());
-                radioHls.on(Hls.Events.ERROR, (e, data) => {
+                hlsInstance = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 60
+                });
+                hlsInstance.loadSource(streamUrl);
+                hlsInstance.attachMedia(audio);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                    startAudioPlayback();
+                });
+                hlsInstance.on(Hls.Events.ERROR, (event, data) => {
                     if (data.fatal) {
-                        stopAndCleanupAudio();
-                        handleAudioError();
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                hlsInstance.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hlsInstance.recoverMediaError();
+                                break;
+                            default:
+                                stopAndCleanupAudio();
+                                handlePlaybackError();
+                                break;
+                        }
                     }
                 });
+            } else if (isHls && audio.canPlayType('application/vnd.apple.mpegurl')) {
+                audio.src = streamUrl;
+                startAudioPlayback();
             } else {
                 audio.src = streamUrl;
                 startAudioPlayback();
@@ -845,99 +589,80 @@
             renderCurrentContent();
         }
 
-        function playTvChannel(channel) {
-            stopAndCleanupAudio();
-            setIsPlaying(false);
-
-            currentTvItem = channel;
-            tvModalLogo.src = channel.logo || 'https://placehold.co/150x150/1e293b/ec4899?text=TV';
-            tvModalTitle.textContent = channel.title;
-            tvModalGroup.textContent = channel.group || 'En Vivo';
-
-            tvLoadingSpinner.classList.remove('hidden');
-            tvPlayerModal.classList.remove('hidden');
-
-            const streamUrl = channel.url;
-
-            if (tvHls) {
-                tvHls.destroy();
-                tvHls = null;
-            }
-
-            const isHls = streamUrl.toLowerCase().includes('.m3u8') || streamUrl.includes('tracks-v1a1');
-
-            if (isHls && Hls.isSupported()) {
-                tvHls = new Hls({ enableWorker: true, lowLatencyMode: true });
-                tvHls.loadSource(streamUrl);
-                tvHls.attachMedia(tvVideo);
-                tvHls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    tvVideo.play().catch(() => {});
-                });
-                tvHls.on(Hls.Events.ERROR, (e, data) => {
-                    if (data.fatal) {
-                        showStatus('Error al cargar la señal de TV.', 'error');
-                        tvLoadingSpinner.classList.add('hidden');
-                    }
-                });
-            } else {
-                tvVideo.src = streamUrl;
-                tvVideo.play().catch(() => {});
-            }
-
-            handleTitle.textContent = channel.title;
-            renderCurrentContent();
-        }
-
-        function stopTv() {
-            if (tvHls) {
-                tvHls.destroy();
-                tvHls = null;
-            }
-            tvVideo.pause();
-            tvVideo.removeAttribute('src');
-            tvVideo.load();
-        }
-
         function startAudioPlayback() {
             audio.play().then(() => {
                 reconnectAttempts = 0;
                 setIsPlaying(true);
                 setLoadingState(false);
-            }).catch(() => setLoadingState(false));
+            }).catch(err => {
+                console.warn("Error iniciando reproducción:", err);
+                setLoadingState(false);
+            });
         }
 
         function stopAndCleanupAudio() {
-            if (radioHls) {
-                radioHls.destroy();
-                radioHls = null;
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
             }
             audio.pause();
             audio.removeAttribute('src');
             audio.load();
         }
 
-        function handleAudioError() {
-            if (currentRadioItem && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        function handlePlaybackError() {
+            if (currentItem && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                 reconnectAttempts++;
                 showStatus(`Reconectando (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, 'warning');
                 setTimeout(() => {
-                    if (currentRadioItem) playRadio(currentRadioItem);
+                    if (currentItem) playItem(currentItem);
                 }, 2000);
             } else {
-                showStatus('Error al reproducir emisora.', 'error');
+                showStatus('Error al reproducir el flujo. Prueba otra estación.', 'error');
                 setLoadingState(false);
                 setIsPlaying(false);
                 reconnectAttempts = 0;
             }
         }
 
+        function togglePlayPause() {
+            if (!currentItem) return;
+            if (audio.paused) {
+                audio.play().then(() => setIsPlaying(true)).catch(() => handlePlaybackError());
+            } else {
+                audio.pause();
+                setIsPlaying(false);
+            }
+            renderCurrentContent();
+        }
+
+        function playNext() {
+            const list = getFilteredList();
+            if (!list.length) return;
+            const currentId = currentItem ? getItemId(currentItem) : '';
+            const idx = list.findIndex(i => getItemId(i) === currentId);
+            const nextIdx = (idx + 1) % list.length;
+            playItem(list[nextIdx]);
+        }
+
+        function playPrevious() {
+            const list = getFilteredList();
+            if (!list.length) return;
+            const currentId = currentItem ? getItemId(currentItem) : '';
+            const idx = list.findIndex(i => getItemId(i) === currentId);
+            const prevIdx = (idx - 1 + list.length) % list.length;
+            playItem(list[prevIdx]);
+        }
+
         function setIsPlaying(isPlaying) {
             if (isPlaying) {
-                playPauseIcon.className = "fa-solid fa-pause text-lg";
-                visualizerBars.classList.add('visualizer-active');
+                playPauseIcon.className = "fa-solid fa-pause text-2xl md:text-3xl";
+                playerEqualizer.classList.remove('hidden');
+                playerEqualizer.classList.add('flex');
             } else {
-                playPauseIcon.className = "fa-solid fa-play text-lg ml-0.5";
-                visualizerBars.classList.remove('visualizer-active');
+                playPauseIcon.className = "fa-solid fa-play text-2xl md:text-3xl ml-1";
+                playerEqualizer.classList.add('hidden');
+                playerEqualizer.classList.remove('flex');
             }
         }
 
@@ -952,109 +677,187 @@
         }
 
         function updatePlayerInfo() {
-            if (!currentRadioItem) return;
-
-            playerTitle.textContent = currentRadioItem.title || 'Emisora';
-            playerCategory.textContent = currentRadioItem.genre || 'Radio en Vivo';
-            playerImg.src = currentRadioItem.logo || 'https://placehold.co/300x300/1e293b/ec4899?text=RADIO';
-
-            handleTitle.textContent = currentRadioItem.title;
-
+            if (!currentItem) return;
+            const name = getItemName(currentItem);
+            const image = getItemImage(currentItem);
+            
+            playerTitle.textContent = name;
+            playerCategory.textContent = currentMode === 'radio' ? 'En Vivo' : 'Vox Music';
+            playerImg.src = image;
             playPauseBtn.disabled = false;
-            const id = getItemId(currentRadioItem);
+
+            const id = getItemId(currentItem);
             const favs = getActiveFavorites();
-            playerFavBtn.innerHTML = `<i class="${favs.includes(id) ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-base"></i>`;
+            const isFav = favs.includes(id);
+            playerFavBtn.innerHTML = `<i class="${isFav ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-2xl"></i>`;
+        }
+
+        function toggleFavoriteById(id) {
+            let favs = getActiveFavorites();
+            const index = favs.indexOf(id);
+            if (index > -1) {
+                favs.splice(index, 1);
+            } else {
+                favs.push(id);
+            }
+
+            if (currentMode === 'radio') {
+                radioFavorites = favs;
+                localStorage.setItem('box_play_radio_favs', JSON.stringify(radioFavorites));
+            } else {
+                musicFavorites = favs;
+                localStorage.setItem('box_play_music_favs', JSON.stringify(musicFavorites));
+            }
+
+            updateFavoritesBadge();
+            renderCurrentContent();
+            if (currentItem && getItemId(currentItem) === id) {
+                updatePlayerInfo();
+            }
+        }
+
+        function toggleFavoriteCurrent() {
+            if (!currentItem) return;
+            toggleFavoriteById(getItemId(currentItem));
         }
 
         function updateFavoritesBadge() {
             const count = getActiveFavorites().length;
-            favFilterBtn.title = `Favoritas (${count})`;
+            favTextCount.textContent = `Favoritas (${count})`;
+        }
+
+        function toggleMute() {
+            audio.muted = !audio.muted;
+            if (audio.muted) {
+                muteIcon.className = "fa-solid fa-volume-xmark text-2xl text-pink-500";
+            } else {
+                updateVolumeIcon(audio.volume);
+            }
         }
 
         function updateVolumeIcon(vol) {
             if (audio.muted || vol === 0) {
-                muteIcon.className = "fa-solid fa-volume-xmark text-base";
+                muteIcon.className = "fa-solid fa-volume-xmark text-2xl";
             } else if (vol < 0.5) {
-                muteIcon.className = "fa-solid fa-volume-low text-base";
+                muteIcon.className = "fa-solid fa-volume-low text-2xl";
             } else {
-                muteIcon.className = "fa-solid fa-volume-high text-base";
+                muteIcon.className = "fa-solid fa-volume-high text-2xl";
             }
         }
 
         function setupMediaSessionHandlers() {
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.setActionHandler('play', () => {
-                    if (currentMode === 'radio' && audio.paused) togglePlayPause();
+                    if (audio.paused) togglePlayPause();
                 });
                 navigator.mediaSession.setActionHandler('pause', () => {
-                    if (currentMode === 'radio' && !audio.paused) togglePlayPause();
+                    if (!audio.paused) togglePlayPause();
                 });
-                navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
-                navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    playPrevious();
+                });
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    playNext();
+                });
             }
+        }
+
+        function updateMediaSession(item) {
+            if ('mediaSession' in navigator && item) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: getItemName(item),
+                    artist: currentMode === 'radio' ? 'Box Play Radio' : 'Vox Music',
+                    album: 'Box Play Media Suite',
+                    artwork: [
+                        { src: getItemImage(item), sizes: '192x192', type: 'image/png' },
+                        { src: getItemImage(item), sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+            }
+        }
+
+        function openSearchModal() {
+            searchModal.classList.remove('hidden');
+            searchModalTitle.textContent = currentMode === 'radio' ? 'Buscar Emisora' : 'Buscar en Vox Music';
+            modalSearchInput.value = searchQuery;
+            renderModalSearchResults(searchQuery);
+            setTimeout(() => modalSearchInput.focus(), 100);
+        }
+
+        function closeSearchModal() {
+            searchModal.classList.add('hidden');
+            renderCurrentContent();
         }
 
         function renderModalSearchResults(query = '') {
             const list = getActiveList();
-            renderedSearchItems = list.filter(item => {
-                const text = (getItemName(item) + ' ' + getItemSubtitle(item)).toLowerCase();
-                return text.includes(query);
-            });
+            renderedSearchItems = list.filter(item => getItemName(item).toLowerCase().includes(query));
 
             if (renderedSearchItems.length === 0) {
-                searchResultsContainer.innerHTML = `<p class="text-center text-slate-500 py-8 text-sm">No se encontraron resultados</p>`;
+                searchResultsContainer.innerHTML = `<p class="text-center text-slate-500 py-16 text-lg">No se encontraron resultados</p>`;
                 return;
             }
 
             let html = '';
             renderedSearchItems.forEach((item, index) => {
                 const name = getItemName(item);
-                const subtitle = getItemSubtitle(item);
                 const image = getItemImage(item);
                 
                 html += `
-                    <div onclick="playSearchIndex(${index})" class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between cursor-pointer">
-                        <div class="flex items-center space-x-3 min-w-0">
-                            <img src="${escapeHtml(image)}" class="w-11 h-11 rounded-lg object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
+                    <div onclick="playSearchIndex(${index})" class="car-card p-4 rounded-2xl flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-4 min-w-0">
+                            <img src="${escapeHtml(image)}" class="w-16 h-16 rounded-xl object-cover bg-slate-950 border border-slate-800 flex-shrink-0" onerror="this.src='https://placehold.co/150x150/1e293b/ec4899?text=BOX'">
                             <div class="min-w-0">
-                                <h4 class="text-xs font-bold text-white truncate">${escapeHtml(name)}</h4>
-                                <span class="text-[10px] text-pink-400 font-semibold">${escapeHtml(subtitle)}</span>
+                                <h4 class="text-lg font-bold text-white truncate">${escapeHtml(name)}</h4>
+                                <span class="text-xs text-pink-400 font-semibold">${currentMode === 'radio' ? 'En Vivo' : 'Vox Music'}</span>
                             </div>
                         </div>
-                        <span class="px-3 py-1 rounded-lg bg-pink-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
-                            ${currentMode === 'radio' ? 'Sintonizar' : 'Ver Canal'}
-                        </span>
+                        <span class="car-btn px-6 py-2.5 rounded-xl bg-pink-600 text-white font-bold text-base flex items-center justify-center flex-shrink-0">Reproducir</span>
                     </div>
                 `;
             });
             searchResultsContainer.innerHTML = html;
         }
 
+        function playSearchIndex(index) {
+            const item = renderedSearchItems[index];
+            if (item) {
+                playItem(item);
+                closeSearchModal();
+            }
+        }
+
         function showStatus(text, type = 'info') {
             const statusMsg = document.getElementById('statusMessage');
             const statusText = document.getElementById('statusText');
             const statusIcon = document.getElementById('statusIcon');
-            if (!statusMsg) return;
             
             statusText.textContent = text;
+            
             if (type === 'error') {
-                statusIcon.className = "fa-solid fa-triangle-exclamation text-rose-500 text-sm";
+                statusIcon.className = "fa-solid fa-triangle-exclamation text-rose-500 text-xl";
             } else if (type === 'warning') {
-                statusIcon.className = "fa-solid fa-circle-exclamation text-amber-400 text-sm";
+                statusIcon.className = "fa-solid fa-circle-exclamation text-amber-400 text-xl";
             } else {
-                statusIcon.className = "fa-solid fa-circle-info text-pink-400 text-sm";
+                statusIcon.className = "fa-solid fa-circle-info text-pink-400 text-xl";
             }
 
             statusMsg.classList.remove('hidden');
+
             if (statusTimeout) clearTimeout(statusTimeout);
             if (type !== 'info') {
-                statusTimeout = setTimeout(() => hideStatus(), 3500);
+                statusTimeout = setTimeout(() => {
+                    hideStatus();
+                }, 5000);
             }
         }
 
         function hideStatus() {
-            const msg = document.getElementById('statusMessage');
-            if (msg) msg.classList.add('hidden');
+            document.getElementById('statusMessage').classList.add('hidden');
+        }
+
+        function closeStatus() {
+            hideStatus();
         }
 
         function escapeHtml(str) {
@@ -1066,86 +869,6 @@
             if (!str) return '';
             return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         }
-
-        // Inicialización de elementos del DOM al cargar la página
-        window.addEventListener('DOMContentLoaded', () => {
-            audio = document.getElementById('audioStream');
-            tvVideo = document.getElementById('tvVideo');
-            tvPlayerModal = document.getElementById('tvPlayerModal');
-            tvLoadingSpinner = document.getElementById('tvLoadingSpinner');
-            tvModalLogo = document.getElementById('tvModalLogo');
-            tvModalTitle = document.getElementById('tvModalTitle');
-            tvModalGroup = document.getElementById('tvModalGroup');
-
-            mainContainer = document.getElementById('mainContainer');
-            contentGrid = document.getElementById('contentGrid');
-            loadingState = document.getElementById('loadingState');
-            emptyState = document.getElementById('emptyState');
-            playPauseBtn = document.getElementById('playPauseBtn');
-            playPauseIcon = document.getElementById('playPauseIcon');
-            spinnerLoader = document.getElementById('spinnerLoader');
-            playerTitle = document.getElementById('playerTitle');
-            playerCategory = document.getElementById('playerCategory');
-            playerImg = document.getElementById('playerImg');
-            playerFavBtn = document.getElementById('playerFavBtn');
-            volumeSlider = document.getElementById('volumeSlider');
-            muteBtn = document.getElementById('muteBtn');
-            muteIcon = document.getElementById('muteIcon');
-            favFilterBtn = document.getElementById('favFilterBtn');
-            searchModal = document.getElementById('searchModal');
-            modalSearchInput = document.getElementById('modalSearchInput');
-            searchResultsContainer = document.getElementById('searchResultsContainer');
-            favoritesActiveBanner = document.getElementById('favoritesActiveBanner');
-            tabRadioBtn = document.getElementById('tabRadioBtn');
-            tabTvBtn = document.getElementById('tabTvBtn');
-            modeBadge = document.getElementById('modeBadge');
-            appMainTitle = document.getElementById('appMainTitle');
-            headerModeIcon = document.getElementById('headerModeIcon');
-            
-            topHeader = document.getElementById('topHeader');
-            bottomPlayer = document.getElementById('bottomPlayer');
-            playerHandleBtn = document.getElementById('playerHandleBtn');
-            handleTitle = document.getElementById('handleTitle');
-            visualizerBars = document.getElementById('visualizerBars');
-
-            loadAllData();
-            updateFavoritesBadge();
-
-            volumeSlider.addEventListener('input', (e) => {
-                audio.volume = parseFloat(e.target.value);
-                audio.muted = false;
-                updateVolumeIcon(audio.volume);
-                keepControlsAlive();
-            });
-
-            modalSearchInput.addEventListener('input', (e) => {
-                renderModalSearchResults(e.target.value.trim().toLowerCase());
-            });
-
-            audio.addEventListener('error', () => handleAudioError());
-
-            audio.addEventListener('playing', () => {
-                reconnectAttempts = 0;
-                setLoadingState(false);
-                setIsPlaying(true);
-            });
-
-            audio.addEventListener('waiting', () => setLoadingState(true));
-
-            tvVideo.addEventListener('waiting', () => tvLoadingSpinner.classList.remove('hidden'));
-            tvVideo.addEventListener('playing', () => {
-                tvLoadingSpinner.classList.add('hidden');
-                visualizerBars.classList.add('visualizer-active');
-            });
-            tvVideo.addEventListener('pause', () => {
-                visualizerBars.classList.remove('visualizer-active');
-            });
-
-            topHeader.addEventListener('pointerdown', () => keepControlsAlive());
-            bottomPlayer.addEventListener('pointerdown', () => keepControlsAlive());
-
-            setupMediaSessionHandlers();
-        });
     </script>
 </body>
 </html>
