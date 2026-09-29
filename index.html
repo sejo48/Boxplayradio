@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>VoxPlay Auto</title>
+  <title>Box Play Radio</title>
   <!-- HLS.js para reproducción de video IPTV en vivo -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
@@ -15,6 +15,8 @@
       --accent-radio-glow: rgba(0, 210, 255, 0.4);
       --accent-tv: #ff385c;
       --accent-tv-glow: rgba(255, 56, 92, 0.4);
+      --accent-fav: #ffc107;
+      --accent-fav-glow: rgba(255, 193, 7, 0.5);
       --text-primary: #ffffff;
       --text-secondary: #8c96a8;
       --border-color: rgba(255, 255, 255, 0.1);
@@ -77,6 +79,7 @@
       font-size: 19px;
       font-weight: 800;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
     .brand-title span {
@@ -138,6 +141,44 @@
       fill: var(--accent-tv);
     }
 
+    /* BOTÓN FAVORITOS EN CABECERA */
+    .fav-filter-btn {
+      height: 46px;
+      padding: 0 14px;
+      border-radius: 10px;
+      background: var(--bg-surface-elevated);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .fav-filter-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .fav-filter-btn.active {
+      color: var(--accent-fav);
+      border-color: var(--accent-fav);
+      box-shadow: 0 0 12px var(--accent-fav-glow);
+      background: #2a2410;
+    }
+
+    .fav-filter-btn:active {
+      transform: scale(0.95);
+    }
+
+    .fav-filter-btn.hidden {
+      display: none;
+    }
+
     .search-box {
       display: flex;
       align-items: center;
@@ -146,7 +187,7 @@
       border-radius: 10px;
       padding: 0 12px;
       height: 46px;
-      width: 210px;
+      width: 190px;
     }
 
     .search-box input {
@@ -209,6 +250,48 @@
       border-color: var(--accent-radio);
       background: linear-gradient(180deg, rgba(0, 210, 255, 0.15) 0%, var(--bg-surface) 100%);
       box-shadow: 0 0 14px var(--accent-radio-glow);
+    }
+
+    .card.is-favorite {
+      border-color: var(--accent-fav);
+    }
+
+    /* BOTÓN ESTRELLA DE FAVORITO */
+    .card-fav-btn {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 6;
+      transition: all 0.15s ease;
+    }
+
+    .card-fav-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-secondary);
+      transition: fill 0.15s ease;
+    }
+
+    .card-fav-btn:active {
+      transform: scale(0.85);
+    }
+
+    .card-fav-btn.is-fav {
+      background: rgba(255, 193, 7, 0.18);
+      border-color: var(--accent-fav);
+    }
+
+    .card-fav-btn.is-fav svg {
+      fill: var(--accent-fav);
     }
 
     .card-img-wrapper {
@@ -484,6 +567,40 @@
       gap: 18px;
     }
 
+    /* BOTÓN FAVORITO EN BARRA DE REPRODUCCIÓN */
+    .player-fav-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: #283244;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .player-fav-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--text-secondary);
+    }
+
+    .player-fav-btn.is-fav {
+      background: #2a2410;
+      box-shadow: 0 0 12px var(--accent-fav-glow);
+    }
+
+    .player-fav-btn.is-fav svg {
+      fill: var(--accent-fav);
+    }
+
+    .player-fav-btn:active {
+      transform: scale(0.92);
+    }
+
     .ctrl-btn {
       width: 56px;
       height: 56px;
@@ -612,6 +729,14 @@
       color: var(--text-primary);
       border: 1px solid var(--border-color);
     }
+
+    /* RESPONSIVE: OCULTAR FAV EN PANTALLAS MUY PEQUEÑAS */
+    @media (max-width: 900px) {
+      .brand-title { display: none; }
+      .search-box { width: 130px; }
+      .fav-filter-btn span { display: none; }
+      .fav-filter-btn { padding: 0 12px; }
+    }
   </style>
 </head>
 <body>
@@ -619,8 +744,8 @@
   <!-- ENCABEZADO -->
   <header>
     <div class="brand">
-      <div class="brand-logo">V</div>
-      <div class="brand-title">VoxPlay <span>Auto</span></div>
+      <div class="brand-logo">B</div>
+      <div class="brand-title">Box Play <span>Radio</span></div>
     </div>
 
     <!-- NAVEGACIÓN PRINCIPAL -->
@@ -635,6 +760,12 @@
         TELEVISIÓN
       </button>
     </div>
+
+    <!-- FILTRO DE FAVORITOS (solo visible en radio) -->
+    <button class="fav-filter-btn" id="favFilterBtn" onclick="toggleFavFilter()" title="Mostrar solo favoritos">
+      <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      <span>Favoritos</span>
+    </button>
 
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="Buscar..." oninput="filterItems()">
@@ -670,7 +801,7 @@
     Ver emisoras
   </button>
 
-  <!-- BARRA DE REPRODUCCIÓN (SE OCULTA EN MODO CONDUCCIÓN Y EN TELEVISIÓN) -->
+  <!-- BARRA DE REPRODUCCIÓN -->
   <footer class="radio-player-bar" id="radioBar">
     <div class="player-track-info">
       <div class="player-logo-container">
@@ -691,6 +822,9 @@
     </div>
 
     <div class="player-controls">
+      <button class="player-fav-btn" id="playerFavBtn" onclick="toggleFavoriteCurrent()" title="Añadir/Quitar de favoritos">
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </button>
       <button class="ctrl-btn" onclick="stopRadio()" title="Detener">
         <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
       </button>
@@ -712,7 +846,7 @@
     </div>
   </div>
 
-  <!-- INPUT OCULTO PARA CARGAR ARCHIVO M3U LOCAL DESDE USB / DISPOSITIVO -->
+  <!-- INPUT OCULTO PARA CARGAR ARCHIVO M3U LOCAL -->
   <input type="file" id="localM3uInput" accept=".m3u,.m3u8,.txt" style="display:none;" onchange="handleLocalM3uFile(event)">
 
   <audio id="radioAudio" preload="none"></audio>
@@ -720,6 +854,14 @@
   <script>
     const RADIO_URL = "https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json";
     const TV_URL = "https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/listaoficial.m3u";
+
+    // ================== CLAVES DE PERSISTENCIA ==================
+    const LS_KEYS = {
+      favorites: 'boxplay_favorites',
+      lastRadio: 'boxplay_last_radio',
+      lastSection: 'boxplay_last_section',
+      favFilter: 'boxplay_fav_filter'
+    };
 
     let currentSection = 'radio';
     let radioList = [];
@@ -732,19 +874,115 @@
     let hideTimer = null;
     let areCardsHidden = false;
 
+    // ---- FAVORITOS (Set de URLs únicas) ----
+    let favorites = new Set();
+    let showOnlyFavorites = false;
+
     const audioPlayer = document.getElementById('radioAudio');
     const tvVideo = document.getElementById('tvVideo');
     const radioBar = document.getElementById('radioBar');
     let hlsInstance = null;
 
+    // ================== UTILIDADES DE PERSISTENCIA ==================
+    function loadFavoritesFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_KEYS.favorites);
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) favorites = new Set(arr);
+        }
+      } catch (e) {
+        console.warn('No se pudieron cargar favoritos:', e);
+      }
+    }
+
+    function saveFavoritesToStorage() {
+      try {
+        localStorage.setItem(LS_KEYS.favorites, JSON.stringify([...favorites]));
+      } catch (e) {
+        console.warn('No se pudieron guardar favoritos:', e);
+      }
+    }
+
+    function saveLastRadio(item) {
+      try {
+        if (!item) {
+          localStorage.removeItem(LS_KEYS.lastRadio);
+          return;
+        }
+        localStorage.setItem(LS_KEYS.lastRadio, JSON.stringify({
+          name: item.name,
+          url: item.url,
+          logo: item.logo || '',
+          category: item.category || 'Radio'
+        }));
+      } catch (e) { /* silencioso */ }
+    }
+
+    function loadLastRadio() {
+      try {
+        const raw = localStorage.getItem(LS_KEYS.lastRadio);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+
+    function saveLastSection(section) {
+      try { localStorage.setItem(LS_KEYS.lastSection, section); } catch (e) {}
+    }
+
+    function loadLastSection() {
+      try {
+        const s = localStorage.getItem(LS_KEYS.lastSection);
+        return (s === 'radio' || s === 'tv') ? s : 'radio';
+      } catch (e) { return 'radio'; }
+    }
+
+    function saveFavFilter(val) {
+      try { localStorage.setItem(LS_KEYS.favFilter, val ? '1' : '0'); } catch (e) {}
+    }
+
+    function loadFavFilter() {
+      try { return localStorage.getItem(LS_KEYS.favFilter) === '1'; } catch (e) { return false; }
+    }
+
+    // ================== ARRANQUE ==================
     window.addEventListener('DOMContentLoaded', () => {
-      loadRadioData();
+      // Cargar estado persistido ANTES de pintar nada
+      loadFavoritesFromStorage();
+      showOnlyFavorites = loadFavFilter();
+      currentSection = loadLastSection();
+
+      // Ajustar UI inicial según sección persistida
+      document.getElementById('tab-radio').classList.toggle('active', currentSection === 'radio');
+      document.getElementById('tab-tv').classList.toggle('active', currentSection === 'tv');
+      document.getElementById('favFilterBtn').classList.toggle('active', showOnlyFavorites);
+      document.getElementById('favFilterBtn').classList.toggle('hidden', currentSection === 'tv');
+
+      if (currentSection === 'tv') {
+        document.body.classList.add('tv-mode');
+        radioBar.style.display = 'none';
+      }
+
+      loadRadioData().then(() => {
+        // Restaurar última emisora si existe (sin autoplay — requiere gesto del usuario)
+        const last = loadLastRadio();
+        if (last && last.url) {
+          currentRadio = last;
+          document.getElementById('playerTitle').textContent = last.name || 'Emisora';
+          if (last.logo) document.getElementById('playerLogo').src = last.logo;
+          updateRadioUI('LISTO PARA REPRODUCIR');
+          updatePlayerFavBtn();
+          renderGrid();
+        }
+      });
+
       loadTvData();
 
       audioPlayer.addEventListener('playing', () => {
         isRadioPlaying = true;
         updateRadioUI('EN VIVO');
         startAutoHideTimer();
+        updatePlayerFavBtn();
       });
 
       audioPlayer.addEventListener('waiting', () => {
@@ -776,6 +1014,41 @@
       }
     }
 
+    // ================== FAVORITOS: LÓGICA ==================
+    function toggleFavorite(item) {
+      if (!item || !item.url) return;
+      if (favorites.has(item.url)) {
+        favorites.delete(item.url);
+      } else {
+        favorites.add(item.url);
+      }
+      saveFavoritesToStorage();
+      renderGrid();
+      updatePlayerFavBtn();
+    }
+
+    function toggleFavoriteCurrent() {
+      if (!currentRadio) return;
+      toggleFavorite(currentRadio);
+    }
+
+    function updatePlayerFavBtn() {
+      const btn = document.getElementById('playerFavBtn');
+      if (!currentRadio || !currentRadio.url) {
+        btn.classList.remove('is-fav');
+        return;
+      }
+      btn.classList.toggle('is-fav', favorites.has(currentRadio.url));
+    }
+
+    function toggleFavFilter() {
+      showOnlyFavorites = !showOnlyFavorites;
+      saveFavFilter(showOnlyFavorites);
+      document.getElementById('favFilterBtn').classList.toggle('active', showOnlyFavorites);
+      renderGrid();
+    }
+
+    // ================== TIMER AUTOHIDE ==================
     function startAutoHideTimer() {
       clearTimeout(hideTimer);
       if (currentSection !== 'radio' || !isRadioPlaying) return;
@@ -820,20 +1093,21 @@
 
     function switchSection(section) {
       currentSection = section;
+      saveLastSection(section);
       restoreCards();
       document.getElementById('searchInput').value = '';
       document.getElementById('tab-radio').classList.toggle('active', section === 'radio');
       document.getElementById('tab-tv').classList.toggle('active', section === 'tv');
+      document.getElementById('favFilterBtn').classList.toggle('hidden', section === 'tv');
 
       if (section === 'tv') {
         document.body.classList.add('tv-mode');
-        radioBar.style.display = 'none'; // Ocultar barra en TV
+        radioBar.style.display = 'none';
         if (!audioPlayer.paused) {
           audioPlayer.pause();
           isRadioPlaying = false;
           updateRadioUI('PAUSADO');
         }
-        // Si no se han cargado los canales, intentar de nuevo
         if (tvList.length === 0 && !tvIsLoading) {
           loadTvData();
         }
@@ -845,12 +1119,13 @@
       renderGrid();
     }
 
+    // ================== CARGA DE DATOS ==================
     async function loadRadioData() {
       try {
         const res = await fetch(RADIO_URL);
         const data = await res.json();
         const rawItems = Array.isArray(data) ? data : (data.radios || data.emisoras || data.stations || Object.values(data));
-        
+
         radioList = rawItems.map(item => ({
           name: item.name || item.nombre || item.title || 'Emisora',
           url: item.url || item.stream || item.link || item.src,
@@ -864,7 +1139,6 @@
       }
     }
 
-    // CARGA DE TV CON DIAGNÓSTICO
     async function loadTvData() {
       tvIsLoading = true;
       tvError = null;
@@ -876,16 +1150,10 @@
 
       try {
         const res = await fetch(TV_URL);
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         const text = await res.text();
         tvList = parseM3U(text);
-
-        if (tvList.length === 0) {
-          throw new Error('La lista se descargó pero no se encontraron canales con formato #EXTINF.');
-        }
-
+        if (tvList.length === 0) throw new Error('La lista se descargó pero no se encontraron canales.');
         console.log(`Canales de TV cargados: ${tvList.length}`);
       } catch (err) {
         console.error('Error cargando TV:', err);
@@ -896,7 +1164,6 @@
       }
     }
 
-    // LECTURA DE ARCHIVO M3U LOCAL (USB / DISPOSITIVO)
     function triggerLocalM3u() {
       document.getElementById('localM3uInput').click();
     }
@@ -904,21 +1171,17 @@
     function handleLocalM3uFile(e) {
       const file = e.target.files.at(0);
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(evt) {
-        const content = evt.target.result;
-        tvList = parseM3U(content);
+        tvList = parseM3U(evt.target.result);
         tvError = null;
         if (currentSection === 'tv') renderGrid();
       };
       reader.readAsText(file);
     }
 
-    // PARSER M3U OPTIMIZADO
     function parseM3U(m3uText) {
       if (!m3uText || typeof m3uText !== 'string') return [];
-      
       const clean = m3uText.replace(/^\uFEFF/, '');
       const lines = clean.split(/\r?\n/);
       const items = [];
@@ -931,17 +1194,14 @@
         if (line.toUpperCase().startsWith('#EXTINF')) {
           const logoMatch = /(?:tvg-logo|logo)="([^"]*)"/i.exec(line);
           const logo = logoMatch ? logoMatch.at(1).trim() : '';
-
           const groupMatch = /group-title="([^"]*)"/i.exec(line);
           const category = groupMatch ? groupMatch.at(1).trim() : 'TV';
-
           const commaIndex = line.indexOf(',');
           let name = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : '';
           if (!name) {
             const tvgNameMatch = /tvg-name="([^"]*)"/i.exec(line);
             name = tvgNameMatch ? tvgNameMatch.at(1).trim() : 'Canal';
           }
-
           currentInfo = { name, logo, category };
         } else if (!line.startsWith('#') && currentInfo) {
           currentInfo.url = line;
@@ -952,13 +1212,13 @@
       return items;
     }
 
+    // ================== RENDER ==================
     function renderGrid() {
       const grid = document.getElementById('cardsGrid');
       const loading = document.getElementById('loadingMsg');
       const filter = document.getElementById('searchInput').value.toLowerCase().trim();
       const list = currentSection === 'radio' ? radioList : tvList;
 
-      // Si hubo un error en TV
       if (currentSection === 'tv' && tvError && tvList.length === 0) {
         loading.style.display = 'flex';
         loading.innerHTML = `
@@ -984,28 +1244,45 @@
       grid.style.display = 'grid';
       grid.innerHTML = '';
 
-      const filtered = list.filter(item => 
-        item.name.toLowerCase().includes(filter) || 
+      let filtered = list.filter(item =>
+        item.name.toLowerCase().includes(filter) ||
         (item.category && item.category.toLowerCase().includes(filter))
       );
 
+      // Filtro de favoritos solo aplica en radio
+      if (currentSection === 'radio' && showOnlyFavorites) {
+        filtered = filtered.filter(item => favorites.has(item.url));
+      }
+
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="status-msg" style="grid-column: 1/-1;">Sin resultados para "${filter}".</div>`;
+        const msg = (currentSection === 'radio' && showOnlyFavorites && !filter)
+          ? 'Aún no tienes emisoras favoritas. Toca la ⭐ en una tarjeta para añadirla.'
+          : `Sin resultados para "${filter}".`;
+        grid.innerHTML = `<div class="status-msg" style="grid-column: 1/-1;">${msg}</div>`;
         return;
       }
 
       filtered.forEach((item) => {
         const isCurrentRadioPlaying = (currentSection === 'radio' && currentRadio && currentRadio.url === item.url && isRadioPlaying);
-        
+        const isFav = favorites.has(item.url);
+        const isRadio = currentSection === 'radio';
+
         const card = document.createElement('div');
-        card.className = `card ${isCurrentRadioPlaying ? 'is-playing' : ''}`;
-        
-        const fallbackIcon = currentSection === 'radio' ? '📻' : '📺';
-        const imgHtml = item.logo 
+        card.className = `card ${isCurrentRadioPlaying ? 'is-playing' : ''} ${(isRadio && isFav) ? 'is-favorite' : ''}`;
+
+        const fallbackIcon = isRadio ? '📻' : '📺';
+        const imgHtml = item.logo
           ? `<img src="${item.logo}" alt="${item.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'placeholder-icon\\'>${fallbackIcon}</span>'">`
           : `<span class="placeholder-icon">${fallbackIcon}</span>`;
 
+        const favBtnHtml = isRadio
+          ? `<button class="card-fav-btn ${isFav ? 'is-fav' : ''}" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+               <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+             </button>`
+          : '';
+
         card.innerHTML = `
+          ${favBtnHtml}
           <div class="card-equalizer-badge">
             <span class="eq-bar"></span>
             <span class="eq-bar"></span>
@@ -1017,27 +1294,35 @@
           <div class="card-tag">${item.category || currentSection.toUpperCase()}</div>
         `;
 
+        // Click en la tarjeta = reproducir
         card.onclick = () => {
-          if (currentSection === 'radio') {
-            playRadio(item);
-          } else {
-            playTv(item);
-          }
+          if (isRadio) playRadio(item);
+          else playTv(item);
         };
+
+        // Click en la estrella = alternar favorito (detener propagación)
+        if (isRadio) {
+          const favBtn = card.querySelector('.card-fav-btn');
+          favBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            toggleFavorite(item);
+          });
+        }
 
         grid.appendChild(card);
       });
     }
 
-    function filterItems() {
-      renderGrid();
-    }
+    function filterItems() { renderGrid(); }
 
+    // ================== RADIO ==================
     function playRadio(item) {
       currentRadio = item;
+      saveLastRadio(item);           // Persistir última emisora
       document.getElementById('playerTitle').textContent = item.name;
       if (item.logo) document.getElementById('playerLogo').src = item.logo;
       updateRadioUI('CONECTANDO...');
+      updatePlayerFavBtn();
 
       audioPlayer.src = item.url;
       audioPlayer.play().catch(err => {
@@ -1051,11 +1336,8 @@
 
     function toggleRadioPlay() {
       if (!audioPlayer.src) return;
-      if (audioPlayer.paused) {
-        audioPlayer.play();
-      } else {
-        audioPlayer.pause();
-      }
+      if (audioPlayer.paused) audioPlayer.play();
+      else audioPlayer.pause();
     }
 
     function stopRadio() {
@@ -1064,9 +1346,12 @@
       audioPlayer.src = '';
       currentRadio = null;
       isRadioPlaying = false;
+      saveLastRadio(null);           // Limpiar última emisora
       document.getElementById('playerTitle').textContent = 'Seleccione una emisora';
+      document.getElementById('playerLogo').src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>";
       restoreCards();
       updateRadioUI('DETENIDO');
+      updatePlayerFavBtn();
       renderGrid();
     }
 
@@ -1078,6 +1363,7 @@
       renderGrid();
     }
 
+    // ================== TV ==================
     function playTv(item) {
       clearTimeout(hideTimer);
       if (!audioPlayer.paused) {
