@@ -1,1544 +1,677 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Box Play Radio</title>
-  <!-- HLS.js para reproducción de video IPTV en vivo -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <style>
-    :root {
-      --bg-main: #0a0d12;
-      --bg-surface: #141922;
-      --bg-surface-elevated: #1e2533;
-      --accent-radio: #00d2ff;
-      --accent-radio-glow: rgba(0, 210, 255, 0.4);
-      --accent-tv: #ff385c;
-      --accent-tv-glow: rgba(255, 56, 92, 0.4);
-      --accent-fav: #ffc107;
-      --accent-fav-glow: rgba(255, 193, 7, 0.5);
-      --text-primary: #ffffff;
-      --text-secondary: #8c96a8;
-      --border-color: rgba(255, 255, 255, 0.1);
-      --card-radius: 12px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background-color: var(--bg-main);
-      color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ENCABEZADO */
-    header {
-      background: var(--bg-surface);
-      height: 76px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      border-bottom: 2px solid var(--border-color);
-      flex-shrink: 0;
-      gap: 16px;
-      z-index: 20;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-logo {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, var(--accent-radio), #0066ff);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 20px;
-      color: #0a0d12;
-    }
-
-    .brand-title {
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-    }
-
-    .brand-title span {
-      color: var(--accent-radio);
-    }
-
-    /* BOTONES PRINCIPALES SEPARADOS */
-    .nav-tabs {
-      display: flex;
-      align-items: center;
-      gap: 26px;
-    }
-
-    .tab-btn {
-      width: 160px;
-      height: 56px;
-      border-radius: 12px;
-      border: 2px solid var(--border-color);
-      background: var(--bg-surface-elevated);
-      color: var(--text-secondary);
-      font-size: 17px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-      transition: all 0.15s ease;
-    }
-
-    .tab-btn svg {
-      width: 24px;
-      height: 24px;
-      fill: currentColor;
-    }
-
-    .tab-btn:active {
-      transform: scale(0.95);
-    }
-
-    .tab-btn#tab-radio.active {
-      color: #ffffff;
-      background: #112638;
-      border-color: var(--accent-radio);
-      box-shadow: 0 0 16px var(--accent-radio-glow);
-    }
-    .tab-btn#tab-radio.active svg {
-      fill: var(--accent-radio);
-    }
-
-    .tab-btn#tab-tv.active {
-      color: #ffffff;
-      background: #33151c;
-      border-color: var(--accent-tv);
-      box-shadow: 0 0 16px var(--accent-tv-glow);
-    }
-    .tab-btn#tab-tv.active svg {
-      fill: var(--accent-tv);
-    }
-
-    /* BOTÓN FAVORITOS EN CABECERA */
-    .fav-filter-btn {
-      height: 46px;
-      padding: 0 14px;
-      border-radius: 10px;
-      background: var(--bg-surface-elevated);
-      border: 1.5px solid var(--border-color);
-      color: var(--text-secondary);
-      font-size: 14px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .fav-filter-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-    }
-
-    .fav-filter-btn.active {
-      color: var(--accent-fav);
-      border-color: var(--accent-fav);
-      box-shadow: 0 0 12px var(--accent-fav-glow);
-      background: #2a2410;
-    }
-
-    .fav-filter-btn:active {
-      transform: scale(0.95);
-    }
-
-    .fav-filter-btn.hidden {
-      display: none;
-    }
-
-    .search-box {
-      display: flex;
-      align-items: center;
-      background: var(--bg-surface-elevated);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 0 12px;
-      height: 46px;
-      width: 190px;
-    }
-
-    .search-box input {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #fff;
-      font-size: 15px;
-      width: 100%;
-    }
-
-    /* CONTENEDOR PRINCIPAL */
-    main {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #scrollArea {
-      height: 100%;
-      overflow-y: auto;
-      padding: 14px 16px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* CUADRÍCULA DE TARJETAS */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-      gap: 12px;
-      padding-bottom: 96px;
-    }
-
-    body.tv-mode .grid {
-      padding-bottom: 24px;
-    }
-
-    .card {
-      position: relative;
-      background: var(--bg-surface);
-      border: 1.5px solid var(--border-color);
-      border-radius: var(--card-radius);
-      padding: 10px 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      cursor: pointer;
-      min-height: 130px;
-      justify-content: space-between;
-      transition: all 0.15s ease;
-    }
-
-    .card:active {
-      transform: scale(0.95);
-      background: var(--bg-surface-elevated);
-    }
-
-    .card.is-playing {
-      border-color: var(--accent-radio);
-      background: linear-gradient(180deg, rgba(0, 210, 255, 0.15) 0%, var(--bg-surface) 100%);
-      box-shadow: 0 0 14px var(--accent-radio-glow);
-    }
-
-    .card.is-favorite {
-      border-color: var(--accent-fav);
-    }
-
-    /* BOTÓN ESTRELLA DE FAVORITO */
-    .card-fav-btn {
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.55);
-      border: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 6;
-      transition: all 0.15s ease;
-    }
-
-    .card-fav-btn svg {
-      width: 16px;
-      height: 16px;
-      fill: var(--text-secondary);
-      transition: fill 0.15s ease;
-    }
-
-    .card-fav-btn:active {
-      transform: scale(0.85);
-    }
-
-    .card-fav-btn.is-fav {
-      background: rgba(255, 193, 7, 0.18);
-      border-color: var(--accent-fav);
-    }
-
-    .card-fav-btn.is-fav svg {
-      fill: var(--accent-fav);
-    }
-
-    .card-img-wrapper {
-      position: relative;
-      width: 58px;
-      height: 58px;
-      border-radius: 10px;
-      background: #0d1117;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      margin-bottom: 6px;
-    }
-
-    .card-img-wrapper img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 4px;
-    }
-
-    .card-img-wrapper .placeholder-icon {
-      font-size: 26px;
-      color: var(--text-secondary);
-    }
-
-    .card-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-primary);
-      line-height: 1.2;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-bottom: 4px;
-    }
-
-    .card-tag {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      color: var(--text-secondary);
-      background: rgba(255, 255, 255, 0.06);
-      padding: 2px 7px;
-      border-radius: 5px;
-    }
-
-    .card-equalizer-badge {
-      display: none;
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      background: rgba(0, 0, 0, 0.85);
-      border: 1px solid var(--accent-radio);
-      border-radius: 6px;
-      padding: 3px 5px;
-      align-items: flex-end;
-      gap: 2.5px;
-      height: 18px;
-      z-index: 5;
-    }
-
-    .card.is-playing .card-equalizer-badge {
-      display: flex;
-    }
-
-    .eq-bar {
-      width: 2.5px;
-      background: var(--accent-radio);
-      border-radius: 2px;
-      animation: eqBounce 0.8s ease-in-out infinite alternate;
-    }
-
-    .eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
-    .eq-bar:nth-child(2) { height: 100%; animation-delay: 0.35s; }
-    .eq-bar:nth-child(3) { height: 65%; animation-delay: 0.2s; }
-    .eq-bar:nth-child(4) { height: 85%; animation-delay: 0.45s; }
-
-    @keyframes eqBounce {
-      0% { height: 25%; }
-      100% { height: 100%; }
-    }
-
-    /* ============================================================
-       PANTALLA LIMPIA DE CONDUCCIÓN — ESTILO HEAD-UNIT PREMIUM
-       ============================================================ */
-    .driving-view {
-      position: absolute;
-      inset: 0;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      text-align: center;
-      background:
-        radial-gradient(circle at 50% 35%, #1c2e44 0%, #0d1520 45%, var(--bg-main) 100%);
-      z-index: 10;
-      overflow: hidden;
-    }
-
-    .driving-view.active {
-      display: flex;
-    }
-
-    /* Halo luminoso de fondo */
-    .driving-view::before {
-      content: '';
-      position: absolute;
-      width: 720px;
-      height: 720px;
-      border-radius: 50%;
-      background: radial-gradient(circle, var(--accent-radio-glow) 0%, transparent 65%);
-      filter: blur(30px);
-      opacity: 0.55;
-      animation: haloPulse 4s ease-in-out infinite alternate;
-      pointer-events: none;
-    }
-
-    @keyframes haloPulse {
-      0%   { transform: scale(0.92); opacity: 0.35; }
-      100% { transform: scale(1.08); opacity: 0.65; }
-    }
-
-    /* Contenedor central (carátula + info) */
-    .driving-content {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 2;
-    }
-
-    /* ---- LOGO GRANDE ESTILO CARÁTULA ---- */
-    .driving-logo-box {
-      width: clamp(220px, 42vw, 380px);
-      height: clamp(220px, 42vw, 380px);
-      border-radius: 32px;
-      background: #0d1117;
-      border: 3px solid rgba(0, 210, 255, 0.55);
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.06),
-        0 0 45px var(--accent-radio-glow),
-        0 25px 60px rgba(0, 0, 0, 0.75),
-        inset 0 0 40px rgba(0, 210, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      margin-bottom: 28px;
-      position: relative;
-      animation: logoGlow 3s ease-in-out infinite alternate;
-    }
-
-    @keyframes logoGlow {
-      0%   { box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 0 30px var(--accent-radio-glow), 0 20px 50px rgba(0,0,0,0.75), inset 0 0 30px rgba(0,210,255,0.06); }
-      100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.10), 0 0 60px var(--accent-radio-glow), 0 25px 70px rgba(0,0,0,0.85), inset 0 0 50px rgba(0,210,255,0.12); }
-    }
-
-    .driving-logo-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 22px;
-    }
-
-    /* ---- BADGE "EN VIVO" ---- */
-    .driving-live-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
-      background: rgba(255, 56, 92, 0.15);
-      border: 1.5px solid var(--accent-tv);
-      border-radius: 999px;
-      color: #ff5c7a;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 18px;
-      box-shadow: 0 0 18px rgba(255, 56, 92, 0.35);
-    }
-
-    .driving-live-badge .live-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--accent-tv);
-      box-shadow: 0 0 10px var(--accent-tv);
-      animation: livePulse 1.2s ease-in-out infinite;
-    }
-
-    @keyframes livePulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: 0.4; transform: scale(0.75); }
-    }
-
-    /* ---- NOMBRE DE LA EMISORA ---- */
-    .driving-station-name {
-      font-size: clamp(32px, 5.5vw, 64px);
-      font-weight: 900;
-      letter-spacing: -1px;
-      line-height: 1.05;
-      color: #ffffff;
-      max-width: 92vw;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 22px;
-      text-shadow:
-        0 0 25px rgba(0, 210, 255, 0.45),
-        0 4px 20px rgba(0, 0, 0, 0.9);
-      background: linear-gradient(180deg, #ffffff 0%, #b8dcf0 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* ---- SUBTÍTULO (categoría / género) ---- */
-    .driving-subtitle {
-      font-size: clamp(14px, 1.6vw, 20px);
-      font-weight: 700;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--accent-radio);
-      opacity: 0.85;
-      margin-bottom: 40px;
-      text-shadow: 0 0 15px var(--accent-radio-glow);
-    }
-
-    /* ---- ECUALIZADOR GRANDE Y MODERNO ---- */
-    .driving-eq {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 9px;
-      height: 90px;
-      padding: 0 10px;
-    }
-
-    .driving-eq .eq-bar {
-      width: 10px;
-      border-radius: 6px;
-      background: linear-gradient(180deg, var(--accent-radio) 0%, #0066ff 100%);
-      box-shadow: 0 0 14px var(--accent-radio-glow);
-      animation: drivingEqBounce 0.85s ease-in-out infinite alternate;
-    }
-
-    .driving-eq .eq-bar:nth-child(1) { animation-delay: 0.05s; }
-    .driving-eq .eq-bar:nth-child(2) { animation-delay: 0.30s; }
-    .driving-eq .eq-bar:nth-child(3) { animation-delay: 0.15s; }
-    .driving-eq .eq-bar:nth-child(4) { animation-delay: 0.45s; }
-    .driving-eq .eq-bar:nth-child(5) { animation-delay: 0.20s; }
-    .driving-eq .eq-bar:nth-child(6) { animation-delay: 0.55s; }
-    .driving-eq .eq-bar:nth-child(7) { animation-delay: 0.10s; }
-
-    @keyframes drivingEqBounce {
-      0%   { height: 15%; opacity: 0.7; }
-      100% { height: 100%; opacity: 1; }
-    }
-
-    /* ---- RESPONSIVE ---- */
-    @media (max-height: 700px) {
-      .driving-logo-box { width: clamp(160px, 34vw, 240px); height: clamp(160px, 34vw, 240px); margin-bottom: 18px; }
-      .driving-station-name { margin-bottom: 14px; }
-      .driving-subtitle { margin-bottom: 24px; }
-      .driving-eq { height: 60px; }
-    }
-
-    /* BOTÓN FLOTANTE INFERIOR */
-    .floating-cards-btn {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg-surface-elevated);
-      border: 1.5px solid var(--accent-radio);
-      color: #ffffff;
-      height: 44px;
-      padding: 0 22px;
-      border-radius: 22px;
-      display: none;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7), 0 0 12px var(--accent-radio-glow);
-      z-index: 60;
-      transition: transform 0.15s ease, background 0.15s ease;
-    }
-
-    .floating-cards-btn.visible {
-      display: flex;
-    }
-
-    .floating-cards-btn:active {
-      transform: translateX(-50%) scale(0.93);
-      background: #112638;
-    }
-
-    .floating-cards-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: var(--accent-radio);
-    }
-
-    /* BARRA INFERIOR DE RADIO */
-    .radio-player-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 84px;
-      background: var(--bg-surface-elevated);
-      border-top: 2px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      z-index: 50;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
-    }
-
-    .player-track-info {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      max-width: 48%;
-    }
-
-    .player-logo-container {
-      width: 54px;
-      height: 54px;
-      flex-shrink: 0;
-    }
-
-    .player-logo {
-      width: 100%;
-      height: 100%;
-      border-radius: 10px;
-      background: #0d1117;
-      object-fit: contain;
-      padding: 3px;
-      border: 1px solid var(--border-color);
-    }
-
-    .player-texts {
-      overflow: hidden;
-    }
-
-    .player-name {
-      font-size: 17px;
-      font-weight: 800;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .player-status-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 3px;
-    }
-
-    .player-status {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--accent-radio);
-      text-transform: uppercase;
-    }
-
-    .bar-equalizer {
-      display: none;
-      align-items: flex-end;
-      gap: 2.5px;
-      height: 14px;
-      width: 16px;
-    }
-
-    .bar-equalizer.active {
-      display: flex;
-    }
-
-    .player-controls {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-
-    /* BOTÓN FAVORITO EN BARRA DE REPRODUCCIÓN */
-    .player-fav-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: none;
-      background: #283244;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .player-fav-btn svg {
-      width: 24px;
-      height: 24px;
-      fill: var(--text-secondary);
-    }
-
-    .player-fav-btn.is-fav {
-      background: #2a2410;
-      box-shadow: 0 0 12px var(--accent-fav-glow);
-    }
-
-    .player-fav-btn.is-fav svg {
-      fill: var(--accent-fav);
-    }
-
-    .player-fav-btn:active {
-      transform: scale(0.92);
-    }
-
-    .ctrl-btn {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      border: none;
-      background: #283244;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .ctrl-btn:active {
-      transform: scale(0.92);
-    }
-
-    .ctrl-btn.play-btn {
-      background: var(--accent-radio);
-      color: #0a0d12;
-      width: 62px;
-      height: 62px;
-      box-shadow: 0 0 14px var(--accent-radio-glow);
-    }
-
-    .ctrl-btn svg {
-      width: 28px;
-      height: 28px;
-      fill: currentColor;
-    }
-
-    /* REPRODUCTOR MODAL DE TELEVISIÓN */
-    .tv-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #000;
-      display: none;
-      flex-direction: column;
-      z-index: 100;
-    }
-
-    .tv-modal.active {
-      display: flex;
-    }
-
-    .tv-header {
-      height: 60px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      z-index: 10;
-    }
-
-    .tv-title {
-      font-size: 19px;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    .tv-close-btn {
-      background: rgba(255, 255, 255, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 800;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .tv-video-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #000;
-    }
-
-    video {
-      width: 100%;
-      height: 100%;
-      max-height: 100vh;
-      object-fit: contain;
-    }
-
-    /* MENSAJES Y OPCIONES DE CARGA */
-    .status-msg {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-      color: var(--text-secondary);
-      font-size: 16px;
-      gap: 16px;
-      text-align: center;
-    }
-
-    .btn-action {
-      padding: 12px 24px;
-      background: var(--accent-radio);
-      border: none;
-      color: #0a0d12;
-      font-weight: 800;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .btn-tv-action {
-      background: var(--accent-tv);
-      color: #ffffff;
-    }
-
-    .btn-secondary {
-      background: var(--bg-surface-elevated);
-      color: var(--text-primary);
-      border: 1px solid var(--border-color);
-    }
-
-    /* RESPONSIVE: OCULTAR FAV EN PANTALLAS MUY PEQUEÑAS */
-    @media (max-width: 900px) {
-      .brand-title { display: none; }
-      .search-box { width: 130px; }
-      .fav-filter-btn span { display: none; }
-      .fav-filter-btn { padding: 0 12px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Box Play Radio - Car Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- HLS.js for Live Streams -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 14px; height: 14px; }
+        ::-webkit-scrollbar-track { background: #07090e; }
+        ::-webkit-scrollbar-thumb { background: #00d2ff; border-radius: 9999px; }
+        * { -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        .car-card {
+            background: rgba(18, 25, 38, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.15s ease;
+        }
+        .car-card:active {
+            transform: scale(0.97);
+            background: rgba(30, 41, 59, 1);
+            border-color: #00d2ff;
+        }
+        .car-btn { min-height: 56px; min-width: 56px; }
+        
+        #drivingOverlay {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-[#07090e] text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
 
-  <!-- ENCABEZADO -->
-  <header>
-    <div class="brand">
-      <div class="brand-logo">B</div>
-      <div class="brand-title">Box Play <span>Radio</span></div>
-    </div>
-
-    <!-- NAVEGACIÓN PRINCIPAL -->
-    <div class="nav-tabs">
-      <button class="tab-btn active" id="tab-radio" onclick="switchSection('radio')">
-        <svg viewBox="0 0 24 24"><path d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-.83-.51-1.57-1.24-1.85L10.2 2.18c-.7-.27-1.48-.27-2.18 0L3.24 6.15zM4 9h16v11H4V9zm8 3c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-        RADIO
-      </button>
-
-      <button class="tab-btn" id="tab-tv" onclick="switchSection('tv')">
-        <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
-        TELEVISIÓN
-      </button>
-    </div>
-
-    <!-- FILTRO DE FAVORITOS (solo visible en radio) -->
-    <button class="fav-filter-btn" id="favFilterBtn" onclick="toggleFavFilter()" title="Mostrar solo favoritos">
-      <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-      <span>Favoritos</span>
-    </button>
-
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Buscar..." oninput="filterItems()">
-    </div>
-  </header>
-
-  <!-- CONTENIDO -->
-  <main>
-    <div id="scrollArea">
-      <div class="status-msg" id="loadingMsg">Cargando...</div>
-      <div class="grid" id="cardsGrid" style="display: none;"></div>
-    </div>
-
-    <!-- PANTALLA LIMPIA DE CONDUCCIÓN -->
-    <div class="driving-view" id="drivingView" onclick="restoreCards()">
-      <div class="driving-content">
-        <div class="driving-live-badge" id="drivingLiveBadge">
-          <span class="live-dot"></span> EN VIVO
+    <header id="mainHeader" class="bg-[#101622] border-b-2 border-slate-800/80 px-6 py-3.5 flex items-center justify-between shadow-2xl flex-shrink-0 z-30">
+        <div class="flex items-center space-x-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-car text-slate-950 text-2xl font-black"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2.5">
+                    Box Play <span class="text-cyan-400">Radio</span>
+                </h1>
+                <p class="text-xs text-slate-400 font-medium">Automotive Touch Head-Unit</p>
+            </div>
         </div>
 
-        <div class="driving-logo-box">
-          <img id="drivingLogo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Station">
+        <div class="flex items-center space-x-3">
+            <button onclick="switchSection('radio')" id="tabRadio" class="px-6 py-3 rounded-xl bg-cyan-950/60 border-2 border-cyan-500 text-cyan-300 font-extrabold text-base flex items-center space-x-2 shadow-lg transition-all">
+                <i class="fa-solid fa-radio text-lg"></i>
+                <span>Radio</span>
+            </button>
+            <button onclick="switchSection('tv')" id="tabTv" class="px-6 py-3 rounded-xl bg-slate-900 border-2 border-slate-800 text-slate-400 font-extrabold text-base flex items-center space-x-2 hover:border-slate-700 transition-all">
+                <i class="fa-solid fa-tv text-lg"></i>
+                <span>Televisión</span>
+            </button>
         </div>
 
-        <div class="driving-station-name" id="drivingTitle">Emisora en Vivo</div>
-        <div class="driving-subtitle" id="drivingSubtitle">RADIO</div>
+        <div class="flex items-center space-x-4">
+            <!-- 12-Hour Digital Clock Display in Header -->
+            <div class="hidden lg:flex flex-col items-end px-4 py-1.5 rounded-xl bg-slate-900 border border-slate-800 shadow-inner">
+                <span id="digitalClock" class="text-xl font-black text-cyan-400 tracking-wider">00:00:00 AM</span>
+                <span id="digitalDate" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Cargando...</span>
+            </div>
 
-        <div class="driving-eq">
-          <span class="eq-bar"></span>
-          <span class="eq-bar"></span>
-          <span class="eq-bar"></span>
-          <span class="eq-bar"></span>
-          <span class="eq-bar"></span>
-          <span class="eq-bar"></span>
-          <span class="eq-bar"></span>
+            <button onclick="toggleFavoritesFilter()" id="favFilterBtn" class="car-btn px-5 rounded-xl bg-slate-900 border-2 border-slate-800 text-slate-300 font-bold flex items-center justify-center space-x-2 text-base transition-all shadow-md">
+                <i class="fa-solid fa-heart text-amber-400 text-lg"></i>
+                <span id="favTextCount" class="hidden xl:inline">Favoritos (0)</span>
+            </button>
+            <button onclick="openSearchModal()" class="car-btn px-5 rounded-xl bg-slate-900 border-2 border-slate-800 text-slate-300 font-bold flex items-center justify-center space-x-2 text-base transition-all shadow-md">
+                <i class="fa-solid fa-magnifying-glass text-cyan-400 text-lg"></i>
+                <span class="hidden xl:inline">Buscar</span>
+            </button>
+            <button onclick="refreshData()" class="car-btn w-14 h-14 rounded-xl bg-slate-900 border-2 border-slate-800 text-slate-300 hover:text-cyan-400 flex items-center justify-center transition-all shadow-md" title="Actualizar">
+                <i class="fa-solid fa-rotate text-lg"></i>
+            </button>
         </div>
-      </div>
-    </div>
-  </main>
+    </header>
 
-  <!-- BOTÓN FLOTANTE INFERIOR -->
-  <button class="floating-cards-btn" id="restoreBtn" onclick="restoreCards()">
-    <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
-    Ver emisoras
-  </button>
-
-  <!-- BARRA DE REPRODUCCIÓN -->
-  <footer class="radio-player-bar" id="radioBar">
-    <div class="player-track-info">
-      <div class="player-logo-container">
-        <img id="playerLogo" class="player-logo" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" alt="Logo">
-      </div>
-      <div class="player-texts">
-        <div class="player-name" id="playerTitle">Seleccione una emisora</div>
-        <div class="player-status-row">
-          <div class="bar-equalizer" id="barEqualizer">
-            <span class="eq-bar"></span>
-            <span class="eq-bar"></span>
-            <span class="eq-bar"></span>
-            <span class="eq-bar"></span>
-          </div>
-          <span class="player-status" id="playerStatus">Listo</span>
+    <main class="flex-1 overflow-y-auto p-6 bg-[#07090e] pb-36 relative">
+        <div id="statusMessage" class="hidden mb-6 p-5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between text-slate-300 text-sm shadow-xl">
+            <span id="statusText">Cargando...</span>
+            <button onclick="closeStatus()" class="p-2 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
-      </div>
+
+        <div id="favActiveBanner" class="hidden mb-6 p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 flex items-center justify-between shadow-xl">
+            <div class="flex items-center space-x-3 text-amber-300 font-bold">
+                <i class="fa-solid fa-star text-amber-400 text-xl"></i>
+                <span>Mostrando solo emisoras favoritas</span>
+            </div>
+            <button onclick="toggleFavoritesFilter()" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm shadow-md transition-all">
+                Salir de Favoritos
+            </button>
+        </div>
+
+        <div id="loadingState" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-40"></div>
+            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-40"></div>
+            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-40"></div>
+            <div class="bg-slate-900 p-6 rounded-2xl animate-pulse h-40"></div>
+        </div>
+
+        <div id="stationsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 hidden"></div>
+
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-24 text-center">
+            <div class="w-24 h-24 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-3xl mb-4 shadow-inner">
+                <i class="fa-solid fa-radio"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-200">No se encontraron elementos</h3>
+            <p class="text-sm text-slate-400 mt-1">Verifica tu conexión o el término de búsqueda.</p>
+        </div>
+    </main>
+
+    <div id="drivingOverlay" class="absolute inset-0 bg-[#07090e]/98 backdrop-blur-xl z-40 flex flex-col p-6 opacity-0 pointer-events-none">
+        <div class="flex items-center justify-between mb-2">
+            <button onclick="exitDrivingMode()" class="px-6 py-3 rounded-2xl bg-slate-900/90 border border-slate-700 text-cyan-400 font-extrabold text-base flex items-center space-x-3 shadow-2xl active:scale-95 transition-all">
+                <i class="fa-solid fa-grid text-xl"></i>
+                <span>Ver Emisoras</span>
+            </button>
+
+            <!-- 12-Hour Digital Clock Display in Driving Mode -->
+            <div class="flex items-center space-x-3 px-5 py-2 rounded-2xl bg-slate-900 border border-cyan-500/30 shadow-lg">
+                <i class="fa-regular fa-clock text-cyan-400 text-lg"></i>
+                <span id="drivingClock" class="text-xl font-black text-white tracking-wider">00:00:00 AM</span>
+            </div>
+
+            <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-400 text-xs font-black tracking-widest uppercase shadow-lg shadow-rose-500/20">
+                <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                <span>En Vivo en el Auto</span>
+            </div>
+        </div>
+
+        <!-- Split Screen Layout: Left Huge Cover Art, Right Equalizer & Info -->
+        <div class="flex-1 flex flex-col md:flex-row items-center justify-center gap-12 max-w-6xl mx-auto w-full">
+            
+            <!-- Left Side: Massive Cover Art / Logo -->
+            <div class="flex flex-col items-center flex-shrink-0">
+                <div class="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl bg-slate-900 border-3 border-cyan-500/50 shadow-2xl shadow-cyan-500/30 flex items-center justify-center overflow-hidden p-8">
+                    <img id="drivingImg" src="https://placehold.co/300x300/101622/00d2ff?text=BOX" alt="Logo" class="w-full h-full object-contain rounded-2xl" onerror="this.src='https://placehold.co/300x300/101622/00d2ff?text=BOX'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-cyan-950/40 to-transparent pointer-events-none"></div>
+                </div>
+            </div>
+
+            <!-- Right Side: Station Name & Equalizer -->
+            <div class="flex flex-col items-center md:items-start text-center md:text-left flex-1 min-w-0">
+                <p class="text-sm font-extrabold text-cyan-400 tracking-widest uppercase mb-2">Box Play Radio</p>
+                <h2 id="drivingTitle" class="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-6 line-clamp-2 drop-shadow-md">Selecciona una emisora</h2>
+
+                <div class="flex items-end space-x-3 h-20 w-full max-w-xs bg-slate-900/60 p-4 rounded-2xl border border-slate-800 shadow-inner">
+                    <span class="flex-1 bg-cyan-400 rounded-full animate-pulse" style="height: 40%; animation-duration: 0.6s;"></span>
+                    <span class="flex-1 bg-cyan-400 rounded-full animate-pulse" style="height: 100%; animation-duration: 0.4s;"></span>
+                    <span class="flex-1 bg-cyan-400 rounded-full animate-pulse" style="height: 70%; animation-duration: 0.7s;"></span>
+                    <span class="flex-1 bg-cyan-400 rounded-full animate-pulse" style="height: 90%; animation-duration: 0.5s;"></span>
+                    <span class="flex-1 bg-cyan-400 rounded-full animate-pulse" style="height: 55%; animation-duration: 0.8s;"></span>
+                    <span class="flex-1 bg-cyan-400 rounded-full animate-pulse" style="height: 80%; animation-duration: 0.5s;"></span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="player-controls">
-      <button class="player-fav-btn" id="playerFavBtn" onclick="toggleFavoriteCurrent()" title="Añadir/Quitar de favoritos">
-        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-      </button>
-      <button class="ctrl-btn" onclick="stopRadio()" title="Detener">
-        <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
-      </button>
-      <button class="ctrl-btn play-btn" id="playPauseBtn" onclick="toggleRadioPlay()" title="Reproducir / Pausar">
-        <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        <svg id="pauseIcon" style="display:none;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-      </button>
+    <footer id="bottomPlayer" class="fixed bottom-0 left-0 right-0 bg-[#101622] border-t-2 border-cyan-500/50 px-6 py-3.5 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-6">
+            
+            <div class="flex items-center space-x-4 min-w-0 flex-1 cursor-pointer" onclick="enterDrivingMode()">
+                <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700 shadow-md">
+                    <img id="playerImg" src="https://placehold.co/150x150/101622/00d2ff?text=BOX" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/101622/00d2ff?text=BOX'">
+                    <div id="playerEqualizer" class="absolute inset-0 bg-cyan-950/80 backdrop-blur-sm items-center justify-center hidden">
+                        <div class="flex space-x-1 items-end h-4">
+                            <span class="w-1 bg-cyan-400 rounded-full animate-bounce" style="height: 60%; animation-delay: 0.1s;"></span>
+                            <span class="w-1 bg-cyan-400 rounded-full animate-bounce" style="height: 100%; animation-delay: 0.3s;"></span>
+                            <span class="w-1 bg-cyan-400 rounded-full animate-bounce" style="height: 40%; animation-delay: 0.2s;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="min-w-0">
+                    <h4 id="playerTitle" class="text-base font-extrabold text-white truncate">Selecciona una emisora</h4>
+                    <p id="playerCategory" class="text-xs text-cyan-400 font-bold truncate mt-0.5">Toca para modo conducción</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button onclick="toggleFavoriteCurrent()" id="playerFavBtn" class="car-btn w-14 h-14 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-500 text-slate-300 hover:text-amber-400 flex items-center justify-center text-xl transition-all shadow-md">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+                
+                <button onclick="togglePlayPause()" id="playPauseBtn" disabled class="car-btn w-16 h-16 rounded-2xl bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-900 disabled:text-slate-600 text-slate-950 flex items-center justify-center shadow-lg shadow-cyan-500/30 transition-transform active:scale-95 font-black">
+                    <i id="playPauseIcon" class="fa-solid fa-play text-xl ml-0.5"></i>
+                </button>
+
+                <div id="spinnerLoader" class="hidden w-8 h-8 border-3 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-3 w-48 justify-end">
+                <button onclick="toggleMute()" id="muteBtn" class="car-btn p-2 text-slate-300 hover:text-white">
+                    <i id="muteIcon" class="fa-solid fa-volume-high text-xl"></i>
+                </button>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" class="w-28 accent-cyan-400 bg-slate-900 rounded-lg h-3 cursor-pointer">
+            </div>
+
+        </div>
+    </footer>
+
+    <div id="searchModal" class="fixed inset-0 bg-[#07090e]/98 backdrop-blur-xl z-50 flex flex-col p-6 hidden">
+        <div class="max-w-2xl mx-auto w-full flex-1 flex flex-col pt-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-black text-white">Buscar Emisora o Canal</h3>
+                <button onclick="closeSearchModal()" class="px-6 py-3 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 font-bold text-sm">Cerrar</button>
+            </div>
+            <div class="relative w-full mb-6">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-5 text-slate-400 text-lg"></i>
+                <input type="text" id="modalSearchInput" placeholder="Escribe el nombre..." class="w-full bg-slate-900 border border-slate-700 text-lg rounded-xl pl-14 pr-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all shadow-inner">
+            </div>
+            <div id="searchResultsContainer" class="flex-1 overflow-y-auto space-y-3 pb-16"></div>
+        </div>
     </div>
-  </footer>
 
-  <!-- REPRODUCTOR DE TV MODAL -->
-  <div class="tv-modal" id="tvModal">
-    <div class="tv-header">
-      <div class="tv-title" id="tvChannelName">Canal de TV</div>
-      <button class="tv-close-btn" onclick="closeTvModal()">✕ SALIR</button>
+    <div id="tvModal" class="fixed inset-0 bg-black z-50 flex flex-col hidden">
+        <div class="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/90 to-transparent flex items-center justify-between px-6 z-10">
+            <div id="tvChannelName" class="text-lg font-extrabold text-white">Canal de TV</div>
+            <button onclick="closeTvModal()" class="px-5 py-2.5 rounded-xl bg-rose-600 text-white font-black text-sm shadow-lg">✕ CERRAR</button>
+        </div>
+        <div class="flex-1 flex items-center justify-center bg-black">
+            <video id="tvVideo" controls autoplay playsinline class="w-full h-full max-h-screen object-contain"></video>
+        </div>
     </div>
-    <div class="tv-video-container">
-      <video id="tvVideo" controls autoplay playsinline></video>
-    </div>
-  </div>
 
-  <!-- INPUT OCULTO PARA CARGAR ARCHIVO M3U LOCAL -->
-  <input type="file" id="localM3uInput" accept=".m3u,.m3u8,.txt" style="display:none;" onchange="handleLocalM3uFile(event)">
-
-  <audio id="radioAudio" preload="none"></audio>
-
-  <script>
-    const RADIO_URL = "https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json";
-    const TV_URL = "https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/listaoficial.m3u";
-
-    // ================== CLAVES DE PERSISTENCIA ==================
-    const LS_KEYS = {
-      favorites: 'boxplay_favorites',
-      lastRadio: 'boxplay_last_radio',
-      lastSection: 'boxplay_last_section',
-      favFilter: 'boxplay_fav_filter'
-    };
-
-    let currentSection = 'radio';
-    let radioList = [];
-    let tvList = [];
-    let tvError = null;
-    let tvIsLoading = false;
-
-    let currentRadio = null;
-    let isRadioPlaying = false;
-    let hideTimer = null;
-    let areCardsHidden = false;
-
-    // ---- FAVORITOS (Set de URLs únicas) ----
-    let favorites = new Set();
-    let showOnlyFavorites = false;
-
-    const audioPlayer = document.getElementById('radioAudio');
-    const tvVideo = document.getElementById('tvVideo');
-    const radioBar = document.getElementById('radioBar');
-    let hlsInstance = null;
-
-    // ================== UTILIDADES DE PERSISTENCIA ==================
-    function loadFavoritesFromStorage() {
-      try {
-        const raw = localStorage.getItem(LS_KEYS.favorites);
-        if (raw) {
-          const arr = JSON.parse(raw);
-          if (Array.isArray(arr)) favorites = new Set(arr);
-        }
-      } catch (e) {
-        console.warn('No se pudieron cargar favoritos:', e);
-      }
-    }
-
-    function saveFavoritesToStorage() {
-      try {
-        localStorage.setItem(LS_KEYS.favorites, JSON.stringify([...favorites]));
-      } catch (e) {
-        console.warn('No se pudieron guardar favoritos:', e);
-      }
-    }
-
-    function saveLastRadio(item) {
-      try {
-        if (!item) {
-          localStorage.removeItem(LS_KEYS.lastRadio);
-          return;
-        }
-        localStorage.setItem(LS_KEYS.lastRadio, JSON.stringify({
-          name: item.name,
-          url: item.url,
-          logo: item.logo || '',
-          category: item.category || 'Radio'
-        }));
-      } catch (e) { /* silencioso */ }
-    }
-
-    function loadLastRadio() {
-      try {
-        const raw = localStorage.getItem(LS_KEYS.lastRadio);
-        return raw ? JSON.parse(raw) : null;
-      } catch (e) { return null; }
-    }
-
-    function saveLastSection(section) {
-      try { localStorage.setItem(LS_KEYS.lastSection, section); } catch (e) {}
-    }
-
-    function loadLastSection() {
-      try {
-        const s = localStorage.getItem(LS_KEYS.lastSection);
-        return (s === 'radio' || s === 'tv') ? s : 'radio';
-      } catch (e) { return 'radio'; }
-    }
-
-    function saveFavFilter(val) {
-      try { localStorage.setItem(LS_KEYS.favFilter, val ? '1' : '0'); } catch (e) {}
-    }
-
-    function loadFavFilter() {
-      try { return localStorage.getItem(LS_KEYS.favFilter) === '1'; } catch (e) { return false; }
-    }
-
-    // ================== ARRANQUE ==================
-    window.addEventListener('DOMContentLoaded', () => {
-      // Cargar estado persistido ANTES de pintar nada
-      loadFavoritesFromStorage();
-      showOnlyFavorites = loadFavFilter();
-      currentSection = loadLastSection();
-
-      // Ajustar UI inicial según sección persistida
-      document.getElementById('tab-radio').classList.toggle('active', currentSection === 'radio');
-      document.getElementById('tab-tv').classList.toggle('active', currentSection === 'tv');
-      document.getElementById('favFilterBtn').classList.toggle('active', showOnlyFavorites);
-      document.getElementById('favFilterBtn').classList.toggle('hidden', currentSection === 'tv');
-
-      if (currentSection === 'tv') {
-        document.body.classList.add('tv-mode');
-        radioBar.style.display = 'none';
-      }
-
-      loadRadioData().then(() => {
-        // Restaurar última emisora si existe (sin autoplay — requiere gesto del usuario)
-        const last = loadLastRadio();
-        if (last && last.url) {
-          currentRadio = last;
-          document.getElementById('playerTitle').textContent = last.name || 'Emisora';
-          if (last.logo) document.getElementById('playerLogo').src = last.logo;
-          updateRadioUI('LISTO PARA REPRODUCIR');
-          updatePlayerFavBtn();
-          renderGrid();
-        }
-      });
-
-      loadTvData();
-
-      audioPlayer.addEventListener('playing', () => {
-        isRadioPlaying = true;
-        updateRadioUI('EN VIVO');
-        startAutoHideTimer();
-        updatePlayerFavBtn();
-      });
-
-      audioPlayer.addEventListener('waiting', () => {
-        updateRadioUI('SINTONIZANDO...');
-      });
-
-      audioPlayer.addEventListener('pause', () => {
-        isRadioPlaying = false;
-        clearTimeout(hideTimer);
-        if (audioPlayer.currentTime > 0 && !audioPlayer.ended) {
-          updateRadioUI('PAUSADO');
-        }
-      });
-
-      audioPlayer.addEventListener('error', () => {
-        isRadioPlaying = false;
-        clearTimeout(hideTimer);
-        restoreCards();
-        updateRadioUI('ERROR DE TRANSMISIÓN');
-      });
-
-      document.getElementById('scrollArea').addEventListener('touchstart', resetTimerOnInteraction);
-      document.getElementById('scrollArea').addEventListener('mousedown', resetTimerOnInteraction);
-    });
-
-    function resetTimerOnInteraction() {
-      if (isRadioPlaying && !areCardsHidden) {
-        startAutoHideTimer();
-      }
-    }
-
-    // ================== FAVORITOS: LÓGICA ==================
-    function toggleFavorite(item) {
-      if (!item || !item.url) return;
-      if (favorites.has(item.url)) {
-        favorites.delete(item.url);
-      } else {
-        favorites.add(item.url);
-      }
-      saveFavoritesToStorage();
-      renderGrid();
-      updatePlayerFavBtn();
-    }
-
-    function toggleFavoriteCurrent() {
-      if (!currentRadio) return;
-      toggleFavorite(currentRadio);
-    }
-
-    function updatePlayerFavBtn() {
-      const btn = document.getElementById('playerFavBtn');
-      if (!currentRadio || !currentRadio.url) {
-        btn.classList.remove('is-fav');
-        return;
-      }
-      btn.classList.toggle('is-fav', favorites.has(currentRadio.url));
-    }
-
-    function toggleFavFilter() {
-      showOnlyFavorites = !showOnlyFavorites;
-      saveFavFilter(showOnlyFavorites);
-      document.getElementById('favFilterBtn').classList.toggle('active', showOnlyFavorites);
-      renderGrid();
-    }
-
-    // ================== TIMER AUTOHIDE ==================
-    function startAutoHideTimer() {
-      clearTimeout(hideTimer);
-      if (currentSection !== 'radio' || !isRadioPlaying) return;
-
-      hideTimer = setTimeout(() => {
-        if (isRadioPlaying && currentSection === 'radio') {
-          hideCards();
-        }
-      }, 5000);
-    }
-
-    function hideCards() {
-      areCardsHidden = true;
-      document.getElementById('scrollArea').style.display = 'none';
-      document.getElementById('drivingView').classList.add('active');
-      document.getElementById('restoreBtn').classList.add('visible');
-      radioBar.style.display = 'none';
-
-      if (currentRadio) {
-        document.getElementById('drivingTitle').textContent = currentRadio.name;
-        if (currentRadio.logo) {
-          document.getElementById('drivingLogo').src = currentRadio.logo;
-        } else {
-          document.getElementById('drivingLogo').src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>";
-        }
-        // Subtítulo: muestra la categoría o "RADIO" por defecto
-        const subtitle = document.getElementById('drivingSubtitle');
-        if (subtitle) {
-          subtitle.textContent = (currentRadio.category || 'RADIO').toString().toUpperCase();
-        }
-      }
-    }
-
-    function restoreCards() {
-      areCardsHidden = false;
-      clearTimeout(hideTimer);
-      document.getElementById('scrollArea').style.display = 'block';
-      document.getElementById('drivingView').classList.remove('active');
-      document.getElementById('restoreBtn').classList.remove('visible');
-
-      if (currentSection === 'radio') {
-        radioBar.style.display = 'flex';
-      }
-
-      if (isRadioPlaying && currentSection === 'radio') {
-        startAutoHideTimer();
-      }
-    }
-
-    function switchSection(section) {
-      currentSection = section;
-      saveLastSection(section);
-      restoreCards();
-      document.getElementById('searchInput').value = '';
-      document.getElementById('tab-radio').classList.toggle('active', section === 'radio');
-      document.getElementById('tab-tv').classList.toggle('active', section === 'tv');
-      document.getElementById('favFilterBtn').classList.toggle('hidden', section === 'tv');
-
-      if (section === 'tv') {
-        document.body.classList.add('tv-mode');
-        radioBar.style.display = 'none';
-        if (!audioPlayer.paused) {
-          audioPlayer.pause();
-          isRadioPlaying = false;
-          updateRadioUI('PAUSADO');
-        }
-        if (tvList.length === 0 && !tvIsLoading) {
-          loadTvData();
-        }
-      } else {
-        document.body.classList.remove('tv-mode');
-        radioBar.style.display = areCardsHidden ? 'none' : 'flex';
-      }
-
-      renderGrid();
-    }
-
-    // ================== CARGA DE DATOS ==================
-    async function loadRadioData() {
-      try {
-        const res = await fetch(RADIO_URL);
-        const data = await res.json();
-        const rawItems = Array.isArray(data) ? data : (data.radios || data.emisoras || data.stations || Object.values(data));
-
-        radioList = rawItems.map(item => ({
-          name: item.name || item.nombre || item.title || 'Emisora',
-          url: item.url || item.stream || item.link || item.src,
-          logo: item.logo || item.image || item.img || item.icon || '',
-          category: item.genre || item.genero || item.pais || 'Radio'
-        })).filter(item => item.url);
-
-        if (currentSection === 'radio') renderGrid();
-      } catch (err) {
-        console.error('Error cargando radios:', err);
-      }
-    }
-
-    async function loadTvData() {
-      tvIsLoading = true;
-      tvError = null;
-      if (currentSection === 'tv') {
-        document.getElementById('loadingMsg').style.display = 'flex';
-        document.getElementById('loadingMsg').innerHTML = 'Conectando con lista oficial M3U...';
-        document.getElementById('cardsGrid').style.display = 'none';
-      }
-
-      try {
-        const res = await fetch(TV_URL);
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        const text = await res.text();
-        tvList = parseM3U(text);
-        if (tvList.length === 0) throw new Error('La lista se descargó pero no se encontraron canales.');
-        console.log(`Canales de TV cargados: ${tvList.length}`);
-      } catch (err) {
-        console.error('Error cargando TV:', err);
-        tvError = err.message;
-      } finally {
-        tvIsLoading = false;
-        if (currentSection === 'tv') renderGrid();
-      }
-    }
-
-    function triggerLocalM3u() {
-      document.getElementById('localM3uInput').click();
-    }
-
-    function handleLocalM3uFile(e) {
-      const file = e.target.files.at(0);
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        tvList = parseM3U(evt.target.result);
-        tvError = null;
-        if (currentSection === 'tv') renderGrid();
-      };
-      reader.readAsText(file);
-    }
-
-    function parseM3U(m3uText) {
-      if (!m3uText || typeof m3uText !== 'string') return [];
-      const clean = m3uText.replace(/^\uFEFF/, '');
-      const lines = clean.split(/\r?\n/);
-      const items = [];
-      let currentInfo = null;
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines.at(i).trim();
-        if (!line) continue;
-
-        if (line.toUpperCase().startsWith('#EXTINF')) {
-          const logoMatch = /(?:tvg-logo|logo)="([^"]*)"/i.exec(line);
-          const logo = logoMatch ? logoMatch.at(1).trim() : '';
-          const groupMatch = /group-title="([^"]*)"/i.exec(line);
-          const category = groupMatch ? groupMatch.at(1).trim() : 'TV';
-          const commaIndex = line.indexOf(',');
-          let name = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : '';
-          if (!name) {
-            const tvgNameMatch = /tvg-name="([^"]*)"/i.exec(line);
-            name = tvgNameMatch ? tvgNameMatch.at(1).trim() : 'Canal';
-          }
-          currentInfo = { name, logo, category };
-        } else if (!line.startsWith('#') && currentInfo) {
-          currentInfo.url = line;
-          items.push(currentInfo);
-          currentInfo = null;
-        }
-      }
-      return items;
-    }
-
-    // ================== RENDER ==================
-    function renderGrid() {
-      const grid = document.getElementById('cardsGrid');
-      const loading = document.getElementById('loadingMsg');
-      const filter = document.getElementById('searchInput').value.toLowerCase().trim();
-      const list = currentSection === 'radio' ? radioList : tvList;
-
-      if (currentSection === 'tv' && tvError && tvList.length === 0) {
-        loading.style.display = 'flex';
-        loading.innerHTML = `
-          <div style="color: var(--accent-tv); font-weight: bold; font-size: 18px;">No se pudo descargar la lista de TV</div>
-          <div style="font-size: 14px; max-width: 90%; color: var(--text-secondary);">${tvError}</div>
-          <div style="display: flex; gap: 12px; margin-top: 8px;">
-            <button class="btn-action btn-tv-action" onclick="loadTvData()">Reintentar conexión</button>
-            <button class="btn-action btn-secondary" onclick="triggerLocalM3u()">Cargar M3U desde USB</button>
-          </div>
-        `;
-        grid.style.display = 'none';
-        return;
-      }
-
-      if (!list || list.length === 0) {
-        loading.style.display = 'flex';
-        loading.innerHTML = `Cargando ${currentSection === 'radio' ? 'emisoras' : 'canales'}...`;
-        grid.style.display = 'none';
-        return;
-      }
-
-      loading.style.display = 'none';
-      grid.style.display = 'grid';
-      grid.innerHTML = '';
-
-      let filtered = list.filter(item =>
-        item.name.toLowerCase().includes(filter) ||
-        (item.category && item.category.toLowerCase().includes(filter))
-      );
-
-      // Filtro de favoritos solo aplica en radio
-      if (currentSection === 'radio' && showOnlyFavorites) {
-        filtered = filtered.filter(item => favorites.has(item.url));
-      }
-
-      if (filtered.length === 0) {
-        const msg = (currentSection === 'radio' && showOnlyFavorites && !filter)
-          ? 'Aún no tienes emisoras favoritas. Toca la ⭐ en una tarjeta para añadirla.'
-          : `Sin resultados para "${filter}".`;
-        grid.innerHTML = `<div class="status-msg" style="grid-column: 1/-1;">${msg}</div>`;
-        return;
-      }
-
-      filtered.forEach((item) => {
-        const isCurrentRadioPlaying = (currentSection === 'radio' && currentRadio && currentRadio.url === item.url && isRadioPlaying);
-        const isFav = favorites.has(item.url);
-        const isRadio = currentSection === 'radio';
-
-        const card = document.createElement('div');
-        card.className = `card ${isCurrentRadioPlaying ? 'is-playing' : ''} ${(isRadio && isFav) ? 'is-favorite' : ''}`;
-
-        const fallbackIcon = isRadio ? '📻' : '📺';
-        const imgHtml = item.logo
-          ? `<img src="${item.logo}" alt="${item.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'placeholder-icon\\'>${fallbackIcon}</span>'">`
-          : `<span class="placeholder-icon">${fallbackIcon}</span>`;
-
-        const favBtnHtml = isRadio
-          ? `<button class="card-fav-btn ${isFav ? 'is-fav' : ''}" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
-               <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-             </button>`
-          : '';
-
-        card.innerHTML = `
-          ${favBtnHtml}
-          <div class="card-equalizer-badge">
-            <span class="eq-bar"></span>
-            <span class="eq-bar"></span>
-            <span class="eq-bar"></span>
-            <span class="eq-bar"></span>
-          </div>
-          <div class="card-img-wrapper">${imgHtml}</div>
-          <div class="card-title">${item.name}</div>
-          <div class="card-tag">${item.category || currentSection.toUpperCase()}</div>
-        `;
-
-        // Click en la tarjeta = reproducir
-        card.onclick = () => {
-          if (isRadio) playRadio(item);
-          else playTv(item);
-        };
-
-        // Click en la estrella = alternar favorito (detener propagación)
-        if (isRadio) {
-          const favBtn = card.querySelector('.card-fav-btn');
-          favBtn.addEventListener('click', (ev) => {
-            ev.stopPropagation();
-            toggleFavorite(item);
-          });
-        }
-
-        grid.appendChild(card);
-      });
-    }
-
-    function filterItems() { renderGrid(); }
-
-    // ================== RADIO ==================
-    function playRadio(item) {
-      currentRadio = item;
-      saveLastRadio(item);           // Persistir última emisora
-      document.getElementById('playerTitle').textContent = item.name;
-      if (item.logo) document.getElementById('playerLogo').src = item.logo;
-      updateRadioUI('CONECTANDO...');
-      updatePlayerFavBtn();
-
-      audioPlayer.src = item.url;
-      audioPlayer.play().catch(err => {
-        console.error('Error al reproducir audio:', err);
-        updateRadioUI('ERROR AL CONECTAR');
-      });
-
-      renderGrid();
-      startAutoHideTimer();
-    }
-
-    function toggleRadioPlay() {
-      if (!audioPlayer.src) return;
-      if (audioPlayer.paused) audioPlayer.play();
-      else audioPlayer.pause();
-    }
-
-    function stopRadio() {
-      clearTimeout(hideTimer);
-      audioPlayer.pause();
-      audioPlayer.src = '';
-      currentRadio = null;
-      isRadioPlaying = false;
-      saveLastRadio(null);           // Limpiar última emisora
-      document.getElementById('playerTitle').textContent = 'Seleccione una emisora';
-      document.getElementById('playerLogo').src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>";
-      restoreCards();
-      updateRadioUI('DETENIDO');
-      updatePlayerFavBtn();
-      renderGrid();
-    }
-
-    function updateRadioUI(statusText) {
-      document.getElementById('playerStatus').textContent = statusText;
-      document.getElementById('playIcon').style.display = isRadioPlaying ? 'none' : 'block';
-      document.getElementById('pauseIcon').style.display = isRadioPlaying ? 'block' : 'none';
-      document.getElementById('barEqualizer').classList.toggle('active', isRadioPlaying);
-      renderGrid();
-    }
-
-    // ================== TV ==================
-    function playTv(item) {
-      clearTimeout(hideTimer);
-      if (!audioPlayer.paused) {
-        audioPlayer.pause();
-        isRadioPlaying = false;
-        updateRadioUI('PAUSADO');
-      }
-
-      const modal = document.getElementById('tvModal');
-      document.getElementById('tvChannelName').textContent = item.name;
-      modal.classList.add('active');
-
-      if (Hls.isSupported() && (item.url.includes('.m3u8') || item.url.includes('m3u'))) {
-        if (hlsInstance) hlsInstance.destroy();
-        hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
-        hlsInstance.loadSource(item.url);
-        hlsInstance.attachMedia(tvVideo);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-          tvVideo.play().catch(e => console.log('Autoplay bloqueado:', e));
+    <audio id="audioStream" preload="none"></audio>
+
+    <script>
+        const RADIO_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json';
+        const TV_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/listaoficial.m3u';
+
+        let currentSection = 'radio';
+        let stations = [];
+        let tvList = [];
+        let currentItem = null;
+        let favorites = JSON.parse(localStorage.getItem('box_play_favs') || '[]');
+        let favoritesOnly = false;
+        let searchQuery = '';
+        let hlsInstance = null;
+
+        const audio = document.getElementById('audioStream');
+        const tvVideo = document.getElementById('tvVideo');
+        const drivingOverlay = document.getElementById('drivingOverlay');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            updateFavoritesBadge();
+            startDigitalClock();
+
+            document.getElementById('volumeSlider').addEventListener('input', (e) => {
+                audio.volume = e.target.value;
+                updateVolumeIcon(audio.volume);
+            });
+
+            document.getElementById('modalSearchInput').addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                renderModalSearchResults();
+            });
+
+            audio.addEventListener('error', () => {
+                showStatus('Error de conexión con el flujo de audio.', 'error');
+                setLoadingState(false);
+                setIsPlaying(false);
+            });
+
+            audio.addEventListener('playing', () => {
+                setLoadingState(false);
+                setIsPlaying(true);
+            });
+
+            audio.addEventListener('waiting', () => {
+                setLoadingState(true);
+            });
         });
-      } else {
-        tvVideo.src = item.url;
-        tvVideo.play().catch(e => console.log('Autoplay bloqueado:', e));
-      }
-    }
 
-    function closeTvModal() {
-      const modal = document.getElementById('tvModal');
-      modal.classList.remove('active');
-      tvVideo.pause();
-      tvVideo.src = '';
-      if (hlsInstance) {
-        hlsInstance.destroy();
-        hlsInstance = null;
-      }
-    }
-  </script>
+        // 12-Hour Digital Clock Updater for Car Dashboard & Driving Mode
+        function startDigitalClock() {
+            function updateClock() {
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                const formattedHours = String(hours).padStart(2, '0');
+
+                const timeString = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
+                
+                const clockEl = document.getElementById('digitalClock');
+                if (clockEl) clockEl.textContent = timeString;
+
+                const drivingClockEl = document.getElementById('drivingClock');
+                if (drivingClockEl) drivingClockEl.textContent = timeString;
+
+                const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+                const dateEl = document.getElementById('digitalDate');
+                if (dateEl) dateEl.textContent = now.toLocaleDateString('es-ES', options);
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        async function fetchData() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('stationsGrid').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            if (currentSection === 'radio') {
+                try {
+                    const res = await fetch(RADIO_URL);
+                    const data = await res.json();
+                    if (Array.isArray(data)) stations = data;
+                    else if (data.radios) stations = data.radios;
+                    else if (data.stations) stations = data.stations;
+                    else stations = Object.values(data).find(v => Array.isArray(v)) || [];
+                    renderGrid();
+                } catch (err) {
+                    console.error(err);
+                    showStatus('No se pudieron cargar las emisoras de radio.', 'error');
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                }
+            } else {
+                try {
+                    const res = await fetch(TV_URL);
+                    const text = await res.text();
+                    tvList = parseM3U(text);
+                    renderGrid();
+                } catch (err) {
+                    console.error(err);
+                    showStatus('Error al cargar la lista de televisión.', 'error');
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                }
+            }
+        }
+
+        function refreshData() {
+            fetchData();
+        }
+
+        function switchSection(sec) {
+            currentSection = sec;
+            favoritesOnly = false;
+            document.getElementById('favActiveBanner').classList.add('hidden');
+            
+            const rBtn = document.getElementById('tabRadio');
+            const tBtn = document.getElementById('tabTv');
+            const favBtn = document.getElementById('favFilterBtn');
+
+            if (sec === 'radio') {
+                rBtn.className = "px-6 py-3 rounded-xl bg-cyan-950/60 border-2 border-cyan-500 text-cyan-300 font-extrabold text-base flex items-center space-x-2 shadow-lg transition-all";
+                tBtn.className = "px-6 py-3 rounded-xl bg-slate-900 border-2 border-slate-800 text-slate-400 font-extrabold text-base flex items-center space-x-2 hover:border-slate-700 transition-all";
+                favBtn.classList.remove('hidden');
+            } else {
+                tBtn.className = "px-6 py-3 rounded-xl bg-rose-950/60 border-2 border-rose-500 text-rose-300 font-extrabold text-base flex items-center space-x-2 shadow-lg transition-all";
+                rBtn.className = "px-6 py-3 rounded-xl bg-slate-900 border-2 border-slate-800 text-slate-400 font-extrabold text-base flex items-center space-x-2 hover:border-slate-700 transition-all";
+                favBtn.classList.add('hidden');
+            }
+            fetchData();
+        }
+
+        function parseM3U(m3uText) {
+            const lines = m3uText.split(/\r?\n/);
+            const items = [];
+            let currentInfo = null;
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                if (line.toUpperCase().startsWith('#EXTINF')) {
+                    const logoMatch = /(?:tvg-logo|logo)="([^"]*)"/i.exec(line);
+                    const logo = logoMatch ? logoMatch[1] : '';
+                    const commaIdx = line.indexOf(',');
+                    const name = commaIdx !== -1 ? line.substring(commaIdx + 1).trim() : 'Canal';
+                    currentInfo = { name, logo };
+                } else if (!line.startsWith('#') && currentInfo) {
+                    currentInfo.url = line;
+                    items.push(currentInfo);
+                    currentInfo = null;
+                }
+            }
+            return items;
+        }
+
+        function toggleFavoritesFilter() {
+            favoritesOnly = !favoritesOnly;
+            const banner = document.getElementById('favActiveBanner');
+            const favBtn = document.getElementById('favFilterBtn');
+            if (favoritesOnly) {
+                banner.classList.remove('hidden');
+                favBtn.classList.add('border-amber-500', 'bg-amber-950/40');
+            } else {
+                banner.classList.add('hidden');
+                favBtn.classList.remove('border-amber-500', 'bg-amber-950/40');
+            }
+            renderGrid();
+        }
+
+        function renderGrid() {
+            document.getElementById('loadingState').classList.add('hidden');
+            const list = currentSection === 'radio' ? stations : tvList;
+            
+            let filtered = list.filter(item => {
+                const name = (item.name || item.title || item.nombre || '').toLowerCase();
+                const matchesSearch = name.includes(searchQuery);
+                const id = getItemId(item);
+                const matchesFav = !favoritesOnly || favorites.includes(id);
+                return matchesSearch && matchesFav;
+            });
+
+            const grid = document.getElementById('stationsGrid');
+            const empty = document.getElementById('emptyState');
+
+            if (filtered.length === 0) {
+                grid.classList.add('hidden');
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            let html = '';
+            filtered.forEach(item => {
+                const id = getItemId(item);
+                const name = item.name || item.title || item.nombre || 'Sin título';
+                const image = item.image || item.logo || item.img || 'https://placehold.co/150x150/101622/00d2ff?text=BOX';
+                const isFav = favorites.includes(id);
+                const isCurrent = currentItem && getItemId(currentItem) === id;
+                const isRadio = currentSection === 'radio';
+
+                html += `
+                    <div onclick="playItem(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="car-card p-5 rounded-2xl flex flex-col justify-between cursor-pointer relative ${isCurrent ? 'border-cyan-500 bg-slate-900 shadow-lg shadow-cyan-500/20' : ''}">
+                        ${isRadio ? `
+                            <button onclick="event.stopPropagation(); toggleFavorite('${escapeHtml(id)}')" class="absolute top-4 right-4 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-amber-400 transition-all z-10">
+                                <i class="${isFav ? 'fa-solid text-amber-400' : 'fa-regular'} fa-heart text-lg"></i>
+                            </button>
+                        ` : ''}
+
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-800 shadow-md flex items-center justify-center">
+                                <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/101622/00d2ff?text=BOX'">
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-base font-extrabold text-white truncate">${escapeHtml(name)}</h3>
+                                <p class="text-xs text-slate-400 font-semibold mt-0.5">${isRadio ? 'Radio en Vivo' : 'Canal TV'}</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-black text-cyan-400">
+                            <span>${isCurrent && !audio.paused ? '▶ Reproduciendo' : '⚡ Toca para abrir'}</span>
+                            <i class="fa-solid fa-chevron-right text-slate-600"></i>
+                        </div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        function getItemId(item) {
+            return item.id || item.url || item.stream || item.name || item.nombre;
+        }
+
+        function playItem(item) {
+            currentItem = item;
+            const url = item.url || item.stream || item.link;
+            const name = item.name || item.title || item.nombre || 'Reproduciendo';
+            const image = item.image || item.logo || item.img || 'https://placehold.co/150x150/101622/00d2ff?text=BOX';
+
+            if (currentSection === 'radio') {
+                if (!url) {
+                    showStatus('Enlace de radio no válido.', 'error');
+                    return;
+                }
+                audio.src = url;
+                audio.play().then(() => {
+                    setIsPlaying(true);
+                    updatePlayerInfo(name, image);
+                    renderGrid();
+                    enterDrivingMode();
+                }).catch(err => {
+                    console.error(err);
+                    showStatus('No se pudo sintonizar la emisora.', 'error');
+                    setLoadingState(false);
+                });
+            } else {
+                openTvModal(item);
+            }
+        }
+
+        function openTvModal(item) {
+            const modal = document.getElementById('tvModal');
+            document.getElementById('tvChannelName').textContent = item.name;
+            modal.classList.remove('hidden');
+
+            if (Hls.isSupported() && (item.url.includes('.m3u8') || item.url.includes('m3u'))) {
+                if (hlsInstance) hlsInstance.destroy();
+                hlsInstance = new Hls();
+                hlsInstance.loadSource(item.url);
+                hlsInstance.attachMedia(tvVideo);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => tvVideo.play());
+            } else {
+                tvVideo.src = item.url;
+                tvVideo.play();
+            }
+        }
+
+        function closeTvModal() {
+            document.getElementById('tvModal').classList.add('hidden');
+            tvVideo.pause();
+            tvVideo.src = '';
+            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+        }
+
+        function togglePlayPause() {
+            if (!currentItem) return;
+            if (audio.paused) {
+                audio.play();
+                setIsPlaying(true);
+            } else {
+                audio.pause();
+                setIsPlaying(false);
+            }
+            renderGrid();
+        }
+
+        function setIsPlaying(isPlaying) {
+            const icon = document.getElementById('playPauseIcon');
+            const eq = document.getElementById('playerEqualizer');
+            if (isPlaying) {
+                icon.className = "fa-solid fa-pause text-xl";
+                eq.classList.remove('hidden');
+                eq.classList.add('flex');
+            } else {
+                icon.className = "fa-solid fa-play text-xl ml-0.5";
+                eq.classList.add('hidden');
+                eq.classList.remove('flex');
+            }
+        }
+
+        function setLoadingState(isLoading) {
+            const spinner = document.getElementById('spinnerLoader');
+            const btn = document.getElementById('playPauseBtn');
+            if (isLoading) {
+                spinner.classList.remove('hidden');
+                btn.classList.add('hidden');
+            } else {
+                spinner.classList.add('hidden');
+                btn.classList.remove('hidden');
+            }
+        }
+
+        function updatePlayerInfo(name, image) {
+            document.getElementById('playerTitle').textContent = name;
+            document.getElementById('playerCategory').textContent = 'Reproduciendo en Vivo';
+            document.getElementById('playerImg').src = image;
+            document.getElementById('playPauseBtn').disabled = false;
+
+            document.getElementById('drivingTitle').textContent = name;
+            document.getElementById('drivingImg').src = image;
+
+            const id = getItemId(currentItem);
+            const isFav = favorites.includes(id);
+            document.getElementById('playerFavBtn').innerHTML = `<i class="${isFav ? 'fa-solid text-amber-400' : 'fa-regular'} fa-heart text-xl"></i>`;
+        }
+
+        function enterDrivingMode() {
+            drivingOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            drivingOverlay.classList.add('opacity-100', 'pointer-events-auto');
+        }
+
+        function exitDrivingMode() {
+            drivingOverlay.classList.remove('opacity-100', 'pointer-events-auto');
+            drivingOverlay.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function toggleFavorite(id) {
+            const idx = favorites.indexOf(id);
+            if (idx > -1) favorites.splice(idx, 1);
+            else favorites.push(id);
+            localStorage.setItem('box_play_favs', JSON.stringify(favorites));
+            updateFavoritesBadge();
+            renderGrid();
+            if (currentItem && getItemId(currentItem) === id) updatePlayerInfo(currentItem.name, currentItem.image || currentItem.logo);
+        }
+
+        function toggleFavoriteCurrent() {
+            if (!currentItem) return;
+            toggleFavorite(getItemId(currentItem));
+        }
+
+        function updateFavoritesBadge() {
+            document.getElementById('favTextCount').textContent = `Favoritos (${favorites.length})`;
+        }
+
+        function toggleMute() {
+            audio.muted = !audio.muted;
+            document.getElementById('muteIcon').className = audio.muted ? "fa-solid fa-volume-xmark text-xl text-rose-500" : "fa-solid fa-volume-high text-xl";
+        }
+
+        function openSearchModal() {
+            document.getElementById('searchModal').classList.remove('hidden');
+            document.getElementById('modalSearchInput').value = searchQuery;
+            renderModalSearchResults();
+            setTimeout(() => document.getElementById('modalSearchInput').focus(), 100);
+        }
+
+        function closeSearchModal() {
+            document.getElementById('searchModal').classList.add('hidden');
+            renderGrid();
+        }
+
+        function renderModalSearchResults() {
+            const q = document.getElementById('modalSearchInput').value.toLowerCase();
+            const list = currentSection === 'radio' ? stations : tvList;
+            const filtered = list.filter(i => (i.name || i.title || i.nombre || '').toLowerCase().includes(q));
+            const container = document.getElementById('searchResultsContainer');
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-500 py-12">No se encontraron resultados</p>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(item => {
+                const name = item.name || item.title || item.nombre || 'Sin título';
+                const image = item.image || item.logo || item.img || 'https://placehold.co/150x150/101622/00d2ff?text=BOX';
+                html += `
+                    <div onclick="playItem(${JSON.stringify(item).replace(/"/g, '&quot;')}); closeSearchModal();" class="car-card p-4 rounded-xl flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-4">
+                            <img src="${escapeHtml(image)}" class="w-14 h-14 rounded-lg object-cover bg-slate-950 border border-slate-800" onerror="this.src='https://placehold.co/150x150/101622/00d2ff?text=BOX'">
+                            <div>
+                                <h4 class="text-base font-bold text-white">${escapeHtml(name)}</h4>
+                                <span class="text-xs text-cyan-400 font-semibold">Toca para reproducir</span>
+                            </div>
+                        </div>
+                        <span class="px-5 py-2.5 rounded-lg bg-cyan-500 text-slate-950 font-extrabold text-sm">Escuchar</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function showStatus(text, type = 'info') {
+            const m = document.getElementById('statusMessage');
+            document.getElementById('statusText').textContent = text;
+            m.classList.remove('hidden');
+        }
+
+        function closeStatus() {
+            document.getElementById('statusMessage').classList.add('hidden');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#039;');
+        }
+    </script>
 </body>
 </html>
