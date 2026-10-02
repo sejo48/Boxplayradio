@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Box Play Radio - Car Edition</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- HLS.js for Live Streams -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
         tailwind.config = {
@@ -42,6 +38,10 @@
         #drivingOverlay {
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
+
+        #bottomPlayer {
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
     </style>
 </head>
 <body class="bg-[#07090e] text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
@@ -71,7 +71,6 @@
         </div>
 
         <div class="flex items-center space-x-4">
-            <!-- 12-Hour Digital Clock Display in Header -->
             <div class="hidden lg:flex flex-col items-end px-4 py-1.5 rounded-xl bg-slate-900 border border-slate-800 shadow-inner">
                 <span id="digitalClock" class="text-xl font-black text-cyan-400 tracking-wider">00:00:00 AM</span>
                 <span id="digitalDate" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Cargando...</span>
@@ -132,7 +131,6 @@
                 <span>Ver Emisoras</span>
             </button>
 
-            <!-- 12-Hour Digital Clock Display in Driving Mode -->
             <div class="flex items-center space-x-3 px-5 py-2 rounded-2xl bg-slate-900 border border-cyan-500/30 shadow-lg">
                 <i class="fa-regular fa-clock text-cyan-400 text-lg"></i>
                 <span id="drivingClock" class="text-xl font-black text-white tracking-wider">00:00:00 AM</span>
@@ -144,10 +142,7 @@
             </div>
         </div>
 
-        <!-- Split Screen Layout: Left Huge Cover Art, Right Equalizer & Info -->
         <div class="flex-1 flex flex-col md:flex-row items-center justify-center gap-12 max-w-6xl mx-auto w-full">
-            
-            <!-- Left Side: Massive Cover Art / Logo -->
             <div class="flex flex-col items-center flex-shrink-0">
                 <div class="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl bg-slate-900 border-3 border-cyan-500/50 shadow-2xl shadow-cyan-500/30 flex items-center justify-center overflow-hidden p-8">
                     <img id="drivingImg" src="https://placehold.co/300x300/101622/00d2ff?text=BOX" alt="Logo" class="w-full h-full object-contain rounded-2xl" onerror="this.src='https://placehold.co/300x300/101622/00d2ff?text=BOX'">
@@ -155,7 +150,6 @@
                 </div>
             </div>
 
-            <!-- Right Side: Station Name & Equalizer -->
             <div class="flex flex-col items-center md:items-start text-center md:text-left flex-1 min-w-0">
                 <p class="text-sm font-extrabold text-cyan-400 tracking-widest uppercase mb-2">Box Play Radio</p>
                 <h2 id="drivingTitle" class="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-6 line-clamp-2 drop-shadow-md">Selecciona una emisora</h2>
@@ -241,9 +235,15 @@
     <audio id="audioStream" preload="none"></audio>
 
     <script>
+        // ============================================================
+        // CONFIGURACIÓN DE URLs
+        // ============================================================
         const RADIO_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/radios.json';
         const TV_URL = 'https://raw.githubusercontent.com/sejo48/StreamTube-V20/refs/heads/main/listaoficial.m3u';
 
+        // ============================================================
+        // ESTADO GLOBAL
+        // ============================================================
         let currentSection = 'radio';
         let stations = [];
         let tvList = [];
@@ -253,10 +253,24 @@
         let searchQuery = '';
         let hlsInstance = null;
 
+        // Auto-ocultar barra inferior
+        let playerBarHideTimer = null;
+        let playerBarVisible = true;
+
+        // Reconexión automática
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+        let reconnectTimer = null;
+        let lastPlayedItem = null;
+        let isReconnecting = false;
+
         const audio = document.getElementById('audioStream');
         const tvVideo = document.getElementById('tvVideo');
         const drivingOverlay = document.getElementById('drivingOverlay');
 
+        // ============================================================
+        // INICIALIZACIÓN
+        // ============================================================
         window.addEventListener('DOMContentLoaded', () => {
             fetchData();
             updateFavoritesBadge();
@@ -272,23 +286,76 @@
                 renderModalSearchResults();
             });
 
+            // Eventos del audio
             audio.addEventListener('error', () => {
-                showStatus('Error de conexión con el flujo de audio.', 'error');
+                showStatus('Error de conexión. Reintentando...', 'error');
                 setLoadingState(false);
                 setIsPlaying(false);
+                scheduleReconnect();
             });
 
+            audio.addEventListener('stalled', () => scheduleReconnect());
+            audio.addEventListener('ended', () => scheduleReconnect());
+
             audio.addEventListener('playing', () => {
+                reconnectAttempts = 0;
+                isReconnecting = false;
                 setLoadingState(false);
                 setIsPlaying(true);
             });
 
-            audio.addEventListener('waiting', () => {
-                setLoadingState(true);
+            audio.addEventListener('waiting', () => setLoadingState(true));
+
+            // Reconexión al recuperar internet
+            window.addEventListener('online', () => {
+                reconnectAttempts = 0;
+                if (lastPlayedItem) {
+                    showStatus('Conexión restaurada. Reconectando...', 'info');
+                    attemptReconnect();
+                }
+            });
+
+            window.addEventListener('offline', () => {
+                showStatus('Sin conexión a Internet.', 'error');
+                setLoadingState(false);
+            });
+
+            // Al volver a la app
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && lastPlayedItem) {
+                    if (audio.paused || audio.readyState < 2) {
+                        reconnectAttempts = 0;
+                        attemptReconnect();
+                    }
+                }
+            });
+
+            window.addEventListener('focus', () => {
+                if (lastPlayedItem && (audio.paused || audio.readyState < 2)) {
+                    reconnectAttempts = 0;
+                    attemptReconnect();
+                }
+            });
+
+            // Mostrar barra al tocar o mover
+            document.addEventListener('touchstart', () => {
+                if (!playerBarVisible && currentItem) {
+                    showPlayerBar();
+                    schedulePlayerBarAutoHide();
+                }
+            }, { passive: true });
+
+            document.addEventListener('mousemove', () => {
+                if (!playerBarVisible && currentItem) {
+                    showPlayerBar();
+                    schedulePlayerBarAutoHide();
+                }
             });
         });
 
-        // 12-Hour Digital Clock Updater for Car Dashboard & Driving Mode
+        // ============================================================
+        // RELOJ DIGITAL
+        // ============================================================
         function startDigitalClock() {
             function updateClock() {
                 const now = new Date();
@@ -296,16 +363,13 @@
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 const ampm = hours >= 12 ? 'PM' : 'AM';
-                
                 hours = hours % 12;
                 hours = hours ? hours : 12;
                 const formattedHours = String(hours).padStart(2, '0');
-
                 const timeString = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
                 
                 const clockEl = document.getElementById('digitalClock');
                 if (clockEl) clockEl.textContent = timeString;
-
                 const drivingClockEl = document.getElementById('drivingClock');
                 if (drivingClockEl) drivingClockEl.textContent = timeString;
 
@@ -317,6 +381,79 @@
             setInterval(updateClock, 1000);
         }
 
+        // ============================================================
+        // AUTO-OCULTAR BARRA INFERIOR
+        // ============================================================
+        function schedulePlayerBarAutoHide() {
+            if (playerBarHideTimer) clearTimeout(playerBarHideTimer);
+            playerBarHideTimer = setTimeout(() => hidePlayerBar(), 5000);
+        }
+
+        function hidePlayerBar() {
+            const bar = document.getElementById('bottomPlayer');
+            if (!bar) return;
+            bar.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
+            bar.classList.remove('translate-y-0', 'opacity-100');
+            playerBarVisible = false;
+        }
+
+        function showPlayerBar() {
+            const bar = document.getElementById('bottomPlayer');
+            if (!bar) return;
+            bar.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+            bar.classList.add('translate-y-0', 'opacity-100');
+            playerBarVisible = true;
+        }
+
+        // ============================================================
+        // RECONEXIÓN AUTOMÁTICA
+        // ============================================================
+        function attemptReconnect() {
+            if (!lastPlayedItem || isReconnecting) return;
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                showStatus('No se pudo reconectar. Verifica tu conexión.', 'error');
+                return;
+            }
+            isReconnecting = true;
+            reconnectAttempts++;
+
+            const url = lastPlayedItem.url || lastPlayedItem.stream || lastPlayedItem.link;
+            if (!url) { isReconnecting = false; return; }
+
+            setLoadingState(true);
+
+            try {
+                audio.pause();
+                audio.src = url;
+                audio.load();
+
+                audio.play().then(() => {
+                    reconnectAttempts = 0;
+                    isReconnecting = false;
+                    setLoadingState(false);
+                    setIsPlaying(true);
+                }).catch(() => {
+                    isReconnecting = false;
+                    setLoadingState(false);
+                    scheduleReconnect();
+                });
+            } catch (e) {
+                isReconnecting = false;
+                setLoadingState(false);
+                scheduleReconnect();
+            }
+        }
+
+        function scheduleReconnect() {
+            if (!lastPlayedItem) return;
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 15000);
+            reconnectTimer = setTimeout(() => attemptReconnect(), delay);
+        }
+
+        // ============================================================
+        // CARGA DE DATOS (RADIO Y TV)
+        // ============================================================
         async function fetchData() {
             document.getElementById('loadingState').classList.remove('hidden');
             document.getElementById('stationsGrid').classList.add('hidden');
@@ -324,28 +461,70 @@
 
             if (currentSection === 'radio') {
                 try {
-                    const res = await fetch(RADIO_URL);
-                    const data = await res.json();
-                    if (Array.isArray(data)) stations = data;
-                    else if (data.radios) stations = data.radios;
-                    else if (data.stations) stations = data.stations;
-                    else stations = Object.values(data).find(v => Array.isArray(v)) || [];
+                    console.log('Cargando radios desde:', RADIO_URL);
+                    const res = await fetch(RADIO_URL, { cache: 'no-store' });
+                    
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const text = await res.text();
+                    console.log('Respuesta (primeros 300 chars):', text.substring(0, 300));
+
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        console.error('No es JSON válido');
+                        throw new Error('El servidor no devolvió JSON válido');
+                    }
+
+                    console.log('Datos parseados:', data);
+
+                    // Detección automática del array de emisoras
+                    if (Array.isArray(data)) {
+                        stations = data;
+                    } else if (Array.isArray(data.radios)) {
+                        stations = data.radios;
+                    } else if (Array.isArray(data.stations)) {
+                        stations = data.stations;
+                    } else if (Array.isArray(data.emisoras)) {
+                        stations = data.emisoras;
+                    } else if (Array.isArray(data.data)) {
+                        stations = data.data;
+                    } else if (typeof data === 'object' && data !== null) {
+                        const arrayKey = Object.keys(data).find(k => Array.isArray(data[k]));
+                        if (arrayKey) stations = data[arrayKey];
+                        else stations = [];
+                    } else {
+                        stations = [];
+                    }
+
+                    console.log('Emisoras cargadas:', stations.length);
+
+                    if (stations.length === 0) {
+                        showStatus('El archivo de radios está vacío o tiene otro formato.', 'error');
+                        document.getElementById('loadingState').classList.add('hidden');
+                        document.getElementById('emptyState').classList.remove('hidden');
+                        return;
+                    }
+
                     renderGrid();
                 } catch (err) {
-                    console.error(err);
-                    showStatus('No se pudieron cargar las emisoras de radio.', 'error');
+                    console.error('Error completo:', err);
+                    showStatus('Error al cargar radios: ' + err.message, 'error');
                     document.getElementById('loadingState').classList.add('hidden');
                     document.getElementById('emptyState').classList.remove('hidden');
                 }
             } else {
                 try {
-                    const res = await fetch(TV_URL);
+                    const res = await fetch(TV_URL, { cache: 'no-store' });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const text = await res.text();
                     tvList = parseM3U(text);
+                    console.log('Canales TV cargados:', tvList.length);
                     renderGrid();
                 } catch (err) {
                     console.error(err);
-                    showStatus('Error al cargar la lista de televisión.', 'error');
+                    showStatus('Error al cargar la lista de televisión: ' + err.message, 'error');
                     document.getElementById('loadingState').classList.add('hidden');
                     document.getElementById('emptyState').classList.remove('hidden');
                 }
@@ -480,6 +659,7 @@
 
         function playItem(item) {
             currentItem = item;
+            lastPlayedItem = item;
             const url = item.url || item.stream || item.link;
             const name = item.name || item.title || item.nombre || 'Reproduciendo';
             const image = item.image || item.logo || item.img || 'https://placehold.co/150x150/101622/00d2ff?text=BOX';
@@ -489,6 +669,8 @@
                     showStatus('Enlace de radio no válido.', 'error');
                     return;
                 }
+                reconnectAttempts = 0;
+                isReconnecting = false;
                 audio.src = url;
                 audio.play().then(() => {
                     setIsPlaying(true);
@@ -499,6 +681,7 @@
                     console.error(err);
                     showStatus('No se pudo sintonizar la emisora.', 'error');
                     setLoadingState(false);
+                    scheduleReconnect();
                 });
             } else {
                 openTvModal(item);
@@ -548,10 +731,12 @@
                 icon.className = "fa-solid fa-pause text-xl";
                 eq.classList.remove('hidden');
                 eq.classList.add('flex');
+                schedulePlayerBarAutoHide();
             } else {
                 icon.className = "fa-solid fa-play text-xl ml-0.5";
                 eq.classList.add('hidden');
                 eq.classList.remove('flex');
+                showPlayerBar();
             }
         }
 
@@ -589,6 +774,8 @@
         function exitDrivingMode() {
             drivingOverlay.classList.remove('opacity-100', 'pointer-events-auto');
             drivingOverlay.classList.add('opacity-0', 'pointer-events-none');
+            showPlayerBar();
+            schedulePlayerBarAutoHide();
         }
 
         function toggleFavorite(id) {
@@ -613,6 +800,13 @@
         function toggleMute() {
             audio.muted = !audio.muted;
             document.getElementById('muteIcon').className = audio.muted ? "fa-solid fa-volume-xmark text-xl text-rose-500" : "fa-solid fa-volume-high text-xl";
+        }
+
+        function updateVolumeIcon(vol) {
+            const icon = document.getElementById('muteIcon');
+            if (vol == 0) icon.className = "fa-solid fa-volume-xmark text-xl text-rose-500";
+            else if (vol < 0.5) icon.className = "fa-solid fa-volume-low text-xl";
+            else icon.className = "fa-solid fa-volume-high text-xl";
         }
 
         function openSearchModal() {
